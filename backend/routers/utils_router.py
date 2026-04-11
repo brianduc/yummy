@@ -6,7 +6,9 @@ Endpoints: /, /help, /health, /health/model
 import time
 import httpx
 from fastapi import APIRouter
-from config import DB, API_CONFIG, GEMINI_MODEL, GEMINI_BASE_URL
+from google import genai
+from google.genai import types
+from config import DB, API_CONFIG, GEMINI_MODEL
 
 router = APIRouter(tags=["Utilities"])
 
@@ -42,21 +44,21 @@ async def health_model():
         model = API_CONFIG.get("gemini_model", GEMINI_MODEL)
         if not key:
             return {"status": "error", "provider": "gemini", "model": model, "error": "GEMINI_API_KEY not configured."}
-        url = f"{GEMINI_BASE_URL}/{model}:generateContent?key={key}"
-        payload = {
-            "contents": [{"role": "user", "parts": [{"text": "ping"}]}],
-            "systemInstruction": {"parts": [{"text": "Reply with the single word: pong"}]},
-            "generationConfig": {"maxOutputTokens": 5}
-        }
         try:
-            async with httpx.AsyncClient(timeout=15) as client:
-                resp = await client.post(url, json=payload)
+            sdk_client = genai.Client(api_key=key)
+            await sdk_client.aio.models.generate_content(
+                model=model,
+                contents="ping",
+                config=types.GenerateContentConfig(
+                    system_instruction="Reply with the single word: pong",
+                    max_output_tokens=5,
+                ),
+            )
             latency = round((time.time() - start) * 1000)
-            if resp.status_code != 200:
-                return {"status": "error", "provider": "gemini", "model": model, "latency_ms": latency, "error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
             return {"status": "ok", "provider": "gemini", "model": model, "latency_ms": latency}
         except Exception as e:
-            return {"status": "error", "provider": "gemini", "model": GEMINI_MODEL, "error": str(e)}
+            latency = round((time.time() - start) * 1000)
+            return {"status": "error", "provider": "gemini", "model": model, "latency_ms": latency, "error": str(e)}
 
     else:  # ollama
         base_url = API_CONFIG.get("ollama_base_url", "http://localhost:11434")
