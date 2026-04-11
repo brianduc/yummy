@@ -18,8 +18,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 // ── Config ─────────────────────────────────────────────────
 export const api = {
   config: {
-    setGeminiKey: (api_key: string) =>
-      request('/config/api-key', { method: 'POST', body: JSON.stringify({ api_key }) }),
+    setGeminiKey: (api_key: string, model?: string) =>
+      request('/config/api-key', { method: 'POST', body: JSON.stringify({ api_key, model }) }),
 
     setOllama: (base_url: string, model: string) =>
       request('/config/ollama', { method: 'POST', body: JSON.stringify({ base_url, model }) }),
@@ -90,4 +90,9 @@ export const api = {
 
   // ── Metrics ───────────────────────────────────────────────
   metrics: () => request('/metrics'),
+
+  // ── Health ────────────────────────────────────────────────
+  health: {
+    model: () => request('/health/model'),
+  },
 }

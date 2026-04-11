@@ -33,47 +33,35 @@ export default function Home() {
   }, [router])
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '2rem',
-      background: 'var(--bg)',
-      fontFamily: 'var(--font-mono)',
-    }}>
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 bg-bg font-mono">
       {/* ASCII-style logo */}
-      <pre style={{ color: 'var(--green)', fontSize: '0.7rem', lineHeight: 1.3, textAlign: 'center', textShadow: '0 0 20px rgba(0,255,136,0.4)' }}>{`
+      <pre
+        className="text-green text-[0.7rem] leading-[1.3] text-center"
+        style={{ textShadow: '0 0 20px rgba(0,255,136,0.4)' }}
+      >{`
 ██╗   ██╗██╗   ██╗███╗   ███╗███╗   ███╗██╗   ██╗
 ╚██╗ ██╔╝██║   ██║████╗ ████║████╗ ████║╚██╗ ██╔╝
- ╚████╔╝ ██║   ██║██╔████╔██║██╔████╔██║ ╚████╔╝ 
-  ╚██╔╝  ██║   ██║██║╚██╔╝██║██║╚██╔╝██║  ╚██╔╝  
-   ██║   ╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║   ██║   
-   ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝   ╚═╝   
+ ╚████╔╝ ██║   ██║██╔████╔██║██╔████╔██║ ╚████╔╝
+  ╚██╔╝  ██║   ██║██║╚██╔╝██║██║╚██╔╝██║  ╚██╔╝
+   ██║   ╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║   ██║
+   ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝   ╚═╝
 `}</pre>
 
-      <div style={{ textAlign: 'center', color: 'var(--text-2)', fontSize: '0.8rem' }}>
-        <div style={{ color: 'var(--green)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+      <div className="text-center text-text-2 text-[0.8rem]">
+        <div className="text-green mb-2 text-[0.9rem]">
           AI-powered Multi-Agent SDLC Platform
         </div>
         <div>Initializing workspace{dots}</div>
       </div>
 
       {status === 'ready' && (
-        <div style={{ textAlign: 'center', color: 'var(--red)', fontSize: '0.8rem' }}>
+        <div className="text-center text-red text-[0.8rem]">
           ⚠ Cannot connect to backend (localhost:8000)<br/>
-          <span style={{ color: 'var(--text-2)' }}>Run: <code style={{ color: 'var(--amber)' }}>uvicorn main:app --reload</code> in yummy-core</span>
+          <span className="text-text-2">Run: <code className="text-amber">uvicorn main:app --reload</code> in yummy-core</span>
         </div>
       )}
 
-      <div style={{
-        position: 'fixed',
-        bottom: '1.5rem',
-        color: 'var(--text-3)',
-        fontSize: '0.72rem',
-        letterSpacing: '0.08em',
-      }}>
+      <div className="fixed bottom-6 text-text-3 text-xs tracking-[0.08em]">
         YUMMY v2.0 · better than your ex
       </div>
     </div>

@@ -16,8 +16,8 @@ interface Props {
 export default function JiraBoard({ backlog }: Props) {
   if (backlog.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', fontSize: '0.8rem', flexDirection: 'column', gap: '0.5rem' }}>
-        <div style={{ fontSize: '2rem', opacity: 0.3 }}>⬡</div>
+      <div className="flex items-center justify-center h-full text-text-3 text-[0.8rem] flex-col gap-2">
+        <div className="text-[2rem] opacity-30">⬡</div>
         <div>JIRA backlog generated after SA approval</div>
       </div>
     )
@@ -27,73 +27,56 @@ export default function JiraBoard({ backlog }: Props) {
   const totalPoints = backlog.reduce((n, e) => n + e.tasks.reduce((m, t) => m + (t.story_points || 0), 0), 0)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
       {/* Header stats */}
-      <div style={{
-        display: 'flex', gap: '1rem', padding: '0.6rem 0.9rem',
-        borderBottom: '1px solid var(--border)', fontSize: '0.75rem',
-      }}>
-        <span><span style={{ color: 'var(--green)' }}>{backlog.length}</span> epics</span>
-        <span><span style={{ color: 'var(--amber)' }}>{totalTasks}</span> tasks</span>
-        {totalPoints > 0 && <span><span style={{ color: 'var(--text-2)' }}>{totalPoints}</span> pts</span>}
+      <div className="flex gap-4 px-[0.9rem] py-[0.6rem] border-b border-border text-[0.75rem]">
+        <span><span className="text-green">{backlog.length}</span> epics</span>
+        <span><span className="text-amber">{totalTasks}</span> tasks</span>
+        {totalPoints > 0 && <span><span className="text-text-2">{totalPoints}</span> pts</span>}
       </div>
 
       {/* Epics */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className="flex-1 overflow-auto p-3 flex flex-col gap-3">
         {backlog.map((epic, ei) => (
-          <div key={ei} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+          <div key={ei} className="border border-border rounded-lg overflow-hidden">
 
             {/* Epic header */}
-            <div style={{
-              padding: '0.5rem 0.75rem',
-              background: 'var(--bg-2)',
-              borderBottom: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-            }}>
-              <span style={{ color: 'var(--green)', fontSize: '0.7rem' }}>EPIC</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
+            <div className="px-3 py-2 bg-bg-2 border-b border-border flex items-center gap-2">
+              <span className="text-green text-[0.7rem]">EPIC</span>
+              <span className="font-display font-bold text-[0.88rem] text-text">
                 {epic.title}
               </span>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-3)' }}>
+              <span className="ml-auto text-[0.7rem] text-text-3">
                 {epic.tasks.length} tasks
               </span>
             </div>
 
             {/* Tasks */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="flex flex-col">
               {epic.tasks.map((task, ti) => (
-                <details key={ti} style={{ borderBottom: ti < epic.tasks.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  <summary style={{
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    padding: '0.45rem 0.75rem', cursor: 'pointer', listStyle: 'none',
-                  }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-3)' }}>▸</span>
+                <details key={ti} className={ti < epic.tasks.length - 1 ? 'border-b border-border' : ''}>
+                  <summary className="flex items-center gap-2 px-3 py-[0.45rem] cursor-pointer list-none">
+                    <span className="text-2xs text-text-3">▸</span>
                     <span style={{
-                      fontSize: '0.68rem', padding: '0.1em 0.4em', borderRadius: 'var(--radius)',
                       background: `${TYPE_COLORS[task.type] || '#888'}18`,
                       color: TYPE_COLORS[task.type] || '#888',
                       border: `1px solid ${TYPE_COLORS[task.type] || '#888'}44`,
-                      textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600, flexShrink: 0,
-                    }}>
+                    }} className="text-[0.68rem] px-[0.4em] py-[0.1em] rounded uppercase tracking-[0.04em] font-semibold flex-shrink-0">
                       {task.type}
                     </span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text)', flex: 1 }}>{task.title}</span>
+                    <span className="text-[0.8rem] text-text flex-1">{task.title}</span>
                     {task.story_points && (
-                      <span style={{
-                        fontSize: '0.68rem', padding: '0.1em 0.4em', borderRadius: 'var(--radius)',
-                        background: 'var(--bg-3)', color: 'var(--text-2)',
-                        border: '1px solid var(--border)', flexShrink: 0,
-                      }}>
+                      <span className="text-[0.68rem] px-[0.4em] py-[0.1em] rounded bg-bg-3 text-text-2 border border-border flex-shrink-0">
                         {task.story_points} pts
                       </span>
                     )}
                   </summary>
 
                   {task.subtasks.length > 0 && (
-                    <div style={{ padding: '0.3rem 0.75rem 0.6rem 2.2rem', background: 'var(--bg-1)' }}>
+                    <div className="px-3 pt-[0.3rem] pb-[0.6rem] pl-[2.2rem] bg-bg-1">
                       {task.subtasks.map((sub, si) => (
-                        <div key={si} style={{ display: 'flex', gap: '0.4rem', fontSize: '0.76rem', color: 'var(--text-2)', padding: '0.15rem 0', alignItems: 'flex-start' }}>
-                          <span style={{ color: 'var(--text-3)', flexShrink: 0, marginTop: '0.1rem' }}>○</span>
+                        <div key={si} className="flex gap-[0.4rem] text-[0.76rem] text-text-2 py-[0.15rem] items-start">
+                          <span className="text-text-3 flex-shrink-0 mt-[0.1rem]">○</span>
                           <span>{sub}</span>
                         </div>
                       ))}

@@ -16,3 +16,7 @@ frontend/.next/
 # Misc
 .DS_Store
 *.log
+.gitnexus/
+AGENTS.md
+CLAUDE.md
+.claude/

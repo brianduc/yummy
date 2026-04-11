@@ -82,19 +82,21 @@ function TreeNode({ node, level = 0, onFile, selected }: any) {
     return (
       <div
         onClick={() => onFile(node.path)}
+        className={`flex items-center gap-1.5 cursor-pointer font-mono text-sm ${active ? 'border-l-2 border-green-500' : 'border-l-2 border-transparent'}`}
         style={{
-          paddingLeft: indent, padding: `5px 8px 5px ${indent}px`,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+          paddingLeft: indent,
+          paddingTop: 5,
+          paddingBottom: 5,
+          paddingRight: 8,
           background: active ? 'var(--green-glow)' : 'transparent',
-          borderLeft: active ? '2px solid var(--green)' : '2px solid transparent',
-          fontSize: '.78rem', color: active ? 'var(--green)' : 'var(--text-2)',
+          color: active ? 'var(--green)' : 'var(--text-2)',
           fontFamily: 'var(--font-mono)',
         }}
       >
-        <span style={{ flexShrink: 0, fontSize: '.65rem', opacity: .7 }}>
+        <span className="flex-shrink-0 text-2xs opacity-70">
           {node.status === 'processing' ? '⟳' : node.status === 'done' ? '✓' : '⬡'}
         </span>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.name}</span>
+        <span className="truncate">{node.name}</span>
       </div>
     )
   }
@@ -102,15 +104,19 @@ function TreeNode({ node, level = 0, onFile, selected }: any) {
     <div>
       <div
         onClick={() => setOpen((o: boolean) => !o)}
+        className="flex items-center gap-1 cursor-pointer text-sm"
         style={{
-          paddingLeft: level * 14, padding: `5px 8px 5px ${level * 14}px`,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
-          fontSize: '.78rem', color: 'var(--text-2)', fontFamily: 'var(--font-mono)',
+          paddingLeft: level * 14,
+          paddingTop: 5,
+          paddingBottom: 5,
+          paddingRight: 8,
+          color: 'var(--text-2)',
+          fontFamily: 'var(--font-mono)',
         }}
       >
-        <span style={{ fontSize: '.65rem' }}>{open ? '▾' : '▸'}</span>
-        <span style={{ color: level === 0 ? 'var(--green)' : 'var(--amber)', fontSize: '.65rem' }}>📁</span>
-        <span style={{ fontWeight: 600, color: 'var(--text)' }}>{node.name}</span>
+        <span className="text-2xs">{ open ? '▾' : '▸'}</span>
+        <span className="text-2xs" style={{ color: level === 0 ? 'var(--green)' : 'var(--amber)' }}>📁</span>
+        <span className="font-semibold" style={{ color: 'var(--text)' }}>{node.name}</span>
       </div>
       {open && (
         <div>
@@ -132,10 +138,10 @@ function NodeGraph({ tree, repoInfo }: { tree: FileNode[], repoInfo: any }) {
 
   if (!tree || tree.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-3)', fontSize: '.85rem' }}>
-        <div style={{ fontSize: '3rem', opacity: .15 }}>⬡</div>
+      <div className="flex flex-col items-center justify-center h-full gap-4 text-base" style={{ color: 'var(--text-3)' }}>
+        <div className="text-5xl opacity-15">⬡</div>
         <p>Chưa có Topology Graph.</p>
-        <p style={{ fontSize: '.75rem' }}>Chạy Scan Repo để AI bóc tách.</p>
+        <p className="text-xs">Chạy Scan Repo để AI bóc tách.</p>
       </div>
     )
   }
@@ -176,7 +182,7 @@ function NodeGraph({ tree, repoInfo }: { tree: FileNode[], repoInfo: any }) {
   })
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--bg)', borderRadius: 8 }}>
+    <div className="relative w-full h-full rounded-lg" style={{ background: 'var(--bg)' }}>
       <svg width="100%" height="100%" viewBox="0 0 800 500">
         <defs>
           <marker id="arr" markerWidth="8" markerHeight="6" refX="26" refY="3" orient="auto">
@@ -206,7 +212,7 @@ function NodeGraph({ tree, repoInfo }: { tree: FileNode[], repoInfo: any }) {
           <g key={n.id}
             onMouseEnter={(e: any) => setHovered({ ...n, mx: e.clientX, my: e.clientY })}
             onMouseLeave={() => setHovered(null)}
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           >
             <circle cx={n.x} cy={n.y} r="38" fill={`url(#g${n.id})`} stroke={n.color} strokeWidth="2" />
             <circle cx={n.x} cy={n.y} r="32" fill="#0d1210" />
@@ -216,18 +222,21 @@ function NodeGraph({ tree, repoInfo }: { tree: FileNode[], repoInfo: any }) {
         ))}
       </svg>
       {hovered && (
-        <div style={{
-          position: 'fixed', zIndex: 100,
-          left: Math.min(hovered.mx + 12, window.innerWidth - 260),
-          top: hovered.my + 12,
-          background: '#111a14', border: '1px solid #1e2e24',
-          borderRadius: 8, padding: '.75rem', width: 240,
-          pointerEvents: 'none', fontSize: '.78rem',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #1e2e24' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: hovered.color }} />
+        <div
+          className="fixed z-[100] rounded-lg pointer-events-none text-sm"
+          style={{
+            left: Math.min(hovered.mx + 12, window.innerWidth - 260),
+            top: hovered.my + 12,
+            background: '#111a14',
+            border: '1px solid #1e2e24',
+            padding: '.75rem',
+            width: 240,
+          }}
+        >
+          <div className="flex items-center gap-1.5 mb-2 pb-2" style={{ borderBottom: '1px solid #1e2e24' }}>
+            <div className="w-2 h-2 rounded-full" style={{ background: hovered.color }} />
             <strong style={{ color: '#c8ddd2', fontFamily: 'Syne, sans-serif' }}>{hovered.label}</strong>
-            <span style={{ marginLeft: 'auto', background: '#080c0a', border: '1px solid #1e2e24', color: '#3a5a48', fontSize: '.65rem', padding: '1px 6px', borderRadius: 3 }}>{hovered.type}</span>
+            <span className="ml-auto text-2xs" style={{ background: '#080c0a', border: '1px solid #1e2e24', color: '#3a5a48', padding: '1px 6px', borderRadius: 3 }}>{hovered.type}</span>
           </div>
           <div style={{ color: '#7a9e8a', lineHeight: 1.7 }}>
             <div><span style={{ color: '#3a5a48' }}>Entities: </span>{hovered.entities}</div>
@@ -248,37 +257,43 @@ function AgentCard({ dot, title, loading, content, editable, editValue, onEditCh
   onApprove: () => void; approveLabel: string; approveColor: string; busy: boolean
 }) {
   return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', left: -38, top: 14, width: 14, height: 14, borderRadius: '50%', background: 'var(--bg)', border: `2px solid ${dot}` }} />
-      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,.25)' }}>
-        <div style={{ padding: '.6rem 1.25rem', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: '.78rem', color: dot }}>
+    <div className="relative">
+      <div className="absolute" style={{ left: -38, top: 14, width: 14, height: 14, borderRadius: '50%', background: 'var(--bg)', border: `2px solid ${dot}` }} />
+      <div className="rounded-lg overflow-hidden" style={{ background: 'var(--bg)', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,.25)' }}>
+        <div className="px-5 py-2.5 border-b font-bold text-sm" style={{ borderColor: 'var(--border)', color: dot }}>
           {title}
         </div>
-        <div style={{ padding: '1.25rem' }}>
+        <div className="p-5">
           {loading ? (
-            <span style={{ color: 'var(--amber)', fontSize: '.8rem' }}>⟳ AI đang xử lý...</span>
+            <span className="text-sm" style={{ color: 'var(--amber)' }}>⟳ AI đang xử lý...</span>
           ) : editable ? (
             <textarea
               value={editValue}
               onChange={e => onEditChange(e.target.value)}
+              className="w-full font-mono text-base resize-y rounded"
               style={{
-                width: '100%', minHeight: 280, background: 'var(--bg-1)',
-                border: '1px solid var(--border)', color: 'var(--text)',
-                padding: '.75rem', borderRadius: 6,
-                fontFamily: 'var(--font-mono)', fontSize: '.82rem', lineHeight: 1.7, resize: 'vertical'
+                minHeight: 280,
+                background: 'var(--bg-1)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+                padding: '.75rem',
+                borderRadius: 6,
+                fontSize: '.82rem',
+                lineHeight: 1.7,
               }}
             />
           ) : (
             content && (
-              <div className="prose" style={{ maxHeight: 400, overflow: 'auto' }} dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
+              <div className="prose overflow-auto" style={{ maxHeight: 400 }} dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
             )
           )}
           {editable && (
-            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <div className="mt-4 flex justify-end border-t pt-4" style={{ borderColor: 'var(--border)' }}>
               <button
                 onClick={onApprove}
                 disabled={busy}
-                style={{ background: approveColor, color: 'var(--bg)', border: 'none', padding: '.45rem 1.2rem', borderRadius: 6, fontWeight: 700, fontSize: '.82rem', cursor: 'pointer', opacity: busy ? .6 : 1 }}
+                className="font-bold text-base cursor-pointer rounded"
+                style={{ background: approveColor, color: 'var(--bg)', border: 'none', padding: '.45rem 1.2rem', borderRadius: 6, fontSize: '.82rem', opacity: busy ? .6 : 1 }}
               >
                 ✓ {approveLabel}
               </button>
@@ -293,7 +308,7 @@ function AgentCard({ dot, title, loading, content, editable, editValue, onEditCh
 // ─── MAIN PAGE ───────────────────────────────────────────────────────────────
 
 type RightTab = 'ide' | 'graph' | 'wiki' | 'insights' | 'rag' | 'sdlc' | 'backlog' | 'db'
-type LeftTab = 'chat' | 'sessions' | 'tracing'
+type LeftTab = 'chat' | 'sessions' | 'tracing' | 'settings'
 
 export default function WorkspacePage({ params }: { params: { sessionId: string } }) {
   const { sessionId } = params
@@ -327,6 +342,17 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
   const [editDevLead, setEditDevLead] = useState('')
 
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
+  const [suggestionIdx, setSuggestionIdx] = useState(0)
+
+  // ── settings form state ──────────────────────────────────────────────────────
+  const [cfgProvider, setCfgProvider] = useState<'gemini' | 'ollama'>('gemini')
+  const [cfgGeminiKey, setCfgGeminiKey] = useState('')
+  const [cfgGeminiModel, setCfgGeminiModel] = useState('')
+  const [cfgOllamaUrl, setCfgOllamaUrl] = useState('')
+  const [cfgOllamaModel, setCfgOllamaModel] = useState('')
+  const [cfgGithubToken, setCfgGithubToken] = useState('')
+  const [cfgSaving, setCfgSaving] = useState(false)
+  const [cfgMsg, setCfgMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const termRef = useRef<HTMLDivElement>(null)
@@ -372,7 +398,13 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
   useEffect(() => {
     if (leftTab === 'tracing') fetchMetrics()
-  }, [leftTab, fetchMetrics])
+    if (leftTab === 'settings' && status) {
+      setCfgProvider(status.ai_provider)
+      setCfgGeminiModel(status.gemini_model || '')
+      setCfgOllamaUrl(status.ollama_url || '')
+      setCfgOllamaModel(status.ollama_model || '')
+    }
+  }, [leftTab, fetchMetrics, status])
 
   // sync session state once on session change
   const prevId = useRef('')
@@ -490,6 +522,37 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
     } finally { setBusy(false) }
   }
 
+  // ── settings save ────────────────────────────────────────────────────────────
+
+  const saveSettings = async (section: 'gemini' | 'ollama' | 'provider' | 'github') => {
+    setCfgSaving(true); setCfgMsg(null)
+    try {
+      if (section === 'provider') {
+        await api.config.setProvider(cfgProvider)
+        setCfgMsg({ ok: true, text: `Provider switched to ${cfgProvider}.` })
+      } else if (section === 'gemini') {
+        if (!cfgGeminiKey) throw new Error('API key is required.')
+        await api.config.setGeminiKey(cfgGeminiKey, cfgGeminiModel || undefined)
+        await api.config.setProvider('gemini')
+        setCfgProvider('gemini')
+        setCfgMsg({ ok: true, text: 'Gemini API key saved.' })
+      } else if (section === 'ollama') {
+        await api.config.setOllama(cfgOllamaUrl || 'http://localhost:11434', cfgOllamaModel || 'llama3')
+        await api.config.setProvider('ollama')
+        setCfgProvider('ollama')
+        setCfgMsg({ ok: true, text: 'Ollama config saved.' })
+      } else if (section === 'github') {
+        await api.config.setup(status?.repo ? `https://github.com/${status.repo.owner}/${status.repo.repo}` : '', cfgGithubToken, status ? 10000 : 10000)
+        setCfgMsg({ ok: true, text: 'GitHub token saved.' })
+      }
+      await fetchStatus()
+    } catch (e: any) {
+      setCfgMsg({ ok: false, text: e.message })
+    } finally {
+      setCfgSaving(false)
+    }
+  }
+
   // ── command handler ──────────────────────────────────────────────────────────
 
   const handleCmd = async (force?: string) => {
@@ -511,6 +574,7 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
             '  /cr <yêu cầu>         — Khởi động SDLC brainstorm\n' +
             '  /new                  — Tạo workspace mới\n' +
             '  /delete [session_id]  — Xóa session (mặc định: hiện tại)\n' +
+            '  /healthcheck          — Kiểm tra kết nối AI model\n' +
             '  /info                 — Thông tin hệ thống'
           )
           break
@@ -587,6 +651,19 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
           break
         }
 
+        case '/healthcheck': {
+          print('⟳ Pinging AI model...')
+          setBusy(true)
+          const hc = await api.health.model() as any
+          setBusy(false)
+          if (hc.status === 'ok') {
+            print(`✅ Model connection OK\n- Provider : ${hc.provider}\n- Model    : ${hc.model}\n- Latency  : ${hc.latency_ms}ms`)
+          } else {
+            print(`❌ Model connection FAILED\n- Provider : ${hc.provider}\n- Model    : ${hc.model}\n- Error    : ${hc.error}`)
+          }
+          break
+        }
+
         case '/info': {
           if (status) print(
             `System Info:\n- Repo: ${status.repo ? `${status.repo.owner}/${status.repo.repo}` : 'chưa set'}\n` +
@@ -606,7 +683,7 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
   if (!session) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: '.8rem' }}>
+      <div className="h-screen flex items-center justify-center font-mono text-sm" style={{ color: 'var(--text-3)' }}>
         <span style={{ color: 'var(--green)' }}>▊</span>&nbsp;Loading workspace...
       </div>
     )
@@ -617,86 +694,111 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
   const outputs = session.agent_outputs || {}
 
   const RTAB = (key: RightTab, label: string, color = 'var(--text-2)') => (
-    <button key={key} onClick={() => setRightTab(key)} style={{
-      padding: '.45rem .9rem', background: 'none', border: 'none',
-      borderBottom: rightTab === key ? `2px solid ${color}` : '2px solid transparent',
-      color: rightTab === key ? color : 'var(--text-3)',
-      fontFamily: 'var(--font-mono)', fontSize: '.72rem', cursor: 'pointer', whiteSpace: 'nowrap',
-    }}>
+    <button key={key} onClick={() => setRightTab(key)}
+      className="whitespace-nowrap cursor-pointer font-mono text-xs bg-transparent border-none"
+      style={{
+        padding: '.45rem .9rem',
+        borderBottom: rightTab === key ? `2px solid ${color}` : '2px solid transparent',
+        color: rightTab === key ? color : 'var(--text-3)',
+      }}
+    >
       {label}
     </button>
   )
 
   const LTAB = (key: LeftTab, label: string) => (
-    <button key={key} onClick={() => setLeftTab(key)} style={{
-      flex: 1, padding: '.5rem .3rem', background: 'none', border: 'none',
-      borderBottom: leftTab === key ? '2px solid var(--green)' : '2px solid transparent',
-      color: leftTab === key ? 'var(--green)' : 'var(--text-3)',
-      fontFamily: 'var(--font-mono)', fontSize: '.7rem', cursor: 'pointer',
-      textTransform: 'uppercase', letterSpacing: '.05em',
-    }}>
+    <button key={key} onClick={() => setLeftTab(key)}
+      className="flex-1 cursor-pointer bg-transparent border-none uppercase tracking-wide font-mono"
+      style={{
+        padding: '.5rem .3rem',
+        borderBottom: leftTab === key ? '2px solid var(--green)' : '2px solid transparent',
+        color: leftTab === key ? 'var(--green)' : 'var(--text-3)',
+        fontSize: '.7rem',
+        letterSpacing: '.05em',
+      }}
+    >
       {label}
     </button>
   )
 
+  const COMMANDS = [
+    { cmd: '/setup',       args: '<github_url> [token]', desc: 'Configure GitHub repo' },
+    { cmd: '/scan',        args: '',                     desc: 'Scan & index codebase' },
+    { cmd: '/ask',         args: '<question>',           desc: 'RAG chat with AI about code' },
+    { cmd: '/cr',          args: '<requirement>',        desc: 'Start SDLC brainstorm' },
+    { cmd: '/new',         args: '',                     desc: 'Create new workspace' },
+    { cmd: '/delete',      args: '[session_id]',         desc: 'Delete session (default: current)' },
+    { cmd: '/healthcheck', args: '',                     desc: 'Ping AI model connection' },
+    { cmd: '/info',        args: '',                     desc: 'Show system info' },
+    { cmd: '/help',        args: '',                     desc: 'List all commands' },
+  ]
+
+  const activeSuggestions = cmd.startsWith('/')
+    ? COMMANDS.filter(c => c.cmd.startsWith(cmd.split(' ')[0]))
+    : []
+
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: 'var(--font-mono)', background: 'var(--bg)' }}>
+    <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--bg)' }}>
 
       {/* ═══════════════════ LEFT ═══════════════════ */}
-      <div style={{ width: `${leftW}%`, minWidth: 300, display: 'flex', flexDirection: 'column', background: 'var(--bg-1)', borderRight: '1px solid var(--border)', flexShrink: 0 }}>
+      <div
+        className="flex flex-col flex-shrink-0 border-r"
+        style={{ width: `${leftW}%`, minWidth: 300, background: 'var(--bg-1)', borderColor: 'var(--border)' }}
+      >
 
         {/* header */}
-        <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', borderBottom: '1px solid var(--border)', background: 'var(--bg)', flexShrink: 0 }}>
-          <span style={{ color: 'var(--green)', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem' }}>
-            YUMMY <span style={{ fontSize: '.55rem', color: 'var(--text-3)', fontWeight: 400 }}>.better than your ex</span>
+        <div className="flex items-center justify-between px-4 border-b flex-shrink-0" style={{ height: 44, borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <span className="font-display font-extrabold text-lg" style={{ color: 'var(--green)' }}>
+            YUMMY <span className="text-2xs font-normal" style={{ color: 'var(--text-3)' }}>.better than your ex</span>
           </span>
           {(isRunning || scanStatus) && (
-            <span style={{ fontSize: '.62rem', color: 'var(--amber)', background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', padding: '2px 8px', borderRadius: 20 }}>
+            <span className="text-2xs" style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', padding: '2px 8px', borderRadius: 20 }}>
               ⟳ {scanStatus?.text?.slice(0, 26) || 'running...'}
             </span>
           )}
         </div>
 
         {/* left tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg)', flexShrink: 0 }}>
+        <div className="flex border-b flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
           {LTAB('chat', '⬡ Chat')}
           {LTAB('sessions', '⬡ Session')}
           {LTAB('tracing', '⬡ Tracing')}
+          {LTAB('settings', '⚙ Settings')}
         </div>
 
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="flex-1 overflow-hidden flex flex-col">
 
           {/* ── CHAT ── */}
           {leftTab === 'chat' && (
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ background: 'var(--green-mute)', borderBottom: '1px solid var(--border)', padding: '4px 1rem', fontSize: '.68rem', color: 'var(--green)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.08em', flexShrink: 0 }}>
+            <div className="flex flex-col h-full">
+              <div className="border-b flex-shrink-0 text-center uppercase tracking-widest text-2xs px-4 py-1" style={{ background: 'var(--green-mute)', borderColor: 'var(--border)', color: 'var(--green)', letterSpacing: '.08em' }}>
                 {session.name}
               </div>
 
-              <div style={{ flex: 1, overflow: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '.82rem', lineHeight: 1.65 }}>
+              <div className="flex-1 overflow-auto p-4 flex flex-col gap-4 text-base leading-relaxed">
                 {termLogs.map((log, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8, color: log.role === 'user' ? 'var(--green)' : 'var(--text-2)' }}>
-                    <span style={{ flexShrink: 0, color: 'var(--text-3)', marginTop: 2 }}>{log.role === 'user' ? '❯' : '⚡'}</span>
-                    <span style={{ whiteSpace: 'pre-wrap' }}>{log.text}</span>
+                  <div key={i} className="flex gap-2" style={{ color: log.role === 'user' ? 'var(--green)' : 'var(--text-2)' }}>
+                    <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{log.role === 'user' ? '❯' : '⚡'}</span>
+                    <span className="whitespace-pre-wrap">{log.text}</span>
                   </div>
                 ))}
 
                 {chatHistory.map((m, i) => (
-                  <div key={`c${i}`} style={{ display: 'flex', gap: 8, color: m.role === 'user' ? 'var(--green)' : 'var(--text)' }}>
-                    <span style={{ flexShrink: 0, color: 'var(--text-3)', marginTop: 2 }}>{m.role === 'user' ? '❯' : '🤖'}</span>
+                  <div key={`c${i}`} className="flex gap-2" style={{ color: m.role === 'user' ? 'var(--green)' : 'var(--text)' }}>
+                    <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{m.role === 'user' ? '❯' : '🤖'}</span>
                     {m.role === 'user' ? (
-                      <span style={{ fontWeight: 600 }}>{m.text}</span>
+                      <span className="font-semibold">{m.text}</span>
                     ) : (
-                      <div style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', padding: '.75rem', borderRadius: 8 }}>
+                      <div className="flex-1 border rounded-lg p-3" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                         <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(m.text) }} />
                         {m.trace && (
-                          <details style={{ marginTop: 8 }}>
-                            <summary style={{ fontSize: '.68rem', color: 'var(--text-3)', cursor: 'pointer' }}>
+                          <details className="mt-2">
+                            <summary className="text-2xs cursor-pointer" style={{ color: 'var(--text-3)' }}>
                               ⬡ RAG trace · {m.trace.source_chunks?.length || 0} chunks
                             </summary>
-                            <div style={{ marginTop: 6, padding: '.5rem', background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 4, fontSize: '.7rem', color: 'var(--text-3)' }}>
+                            <div className="mt-1.5 p-2 border rounded text-xs" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
                               {m.trace.source_chunks?.map((c: any, j: number) => (
-                                <div key={j} style={{ marginBottom: 6 }}>
+                                <div key={j} className="mb-1.5">
                                   <div style={{ color: 'var(--amber)' }}>{c.files?.slice(0, 3).join(' · ')}</div>
                                   <div>{c.summary_preview || c.summary}</div>
                                 </div>
@@ -710,7 +812,7 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                 ))}
 
                 {busy && (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: 'var(--amber)', fontSize: '.78rem', background: 'rgba(255,179,0,.05)', border: '1px solid rgba(255,179,0,.15)', padding: '.5rem .75rem', borderRadius: 6 }}>
+                  <div className="flex gap-2 items-center text-sm border rounded px-3 py-2" style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
                     <span>⟳</span> {scanStatus?.text || 'AI đang xử lý...'}
                   </div>
                 )}
@@ -718,25 +820,62 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
               </div>
 
               {/* quick cmds */}
-              <div style={{ padding: '0 .75rem', display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 6, flexShrink: 0 }}>
+              <div className="px-3 flex gap-1 overflow-x-auto pb-1.5 flex-shrink-0">
                 {['/scan', '/ask Giải thích flow?', '/cr Thêm export PDF', '/help'].map((h, i) => (
                   <button key={i} onClick={() => handleCmd(h)} disabled={busy}
-                    style={{ whiteSpace: 'nowrap', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-3)', padding: '3px 10px', borderRadius: 20, fontSize: '.65rem', cursor: 'pointer', flexShrink: 0 }}>
+                    className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0"
+                    style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '3px 10px' }}>
                     ⚡ {h}
                   </button>
                 ))}
               </div>
 
+              {/* suggestions */}
+              {activeSuggestions.length > 0 && (
+                <div className="mx-3 mb-1 border rounded-lg overflow-hidden flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  {activeSuggestions.map((s, i) => (
+                    <div key={s.cmd}
+                      onMouseEnter={() => setSuggestionIdx(i)}
+                      onClick={() => { setCmd(s.args ? s.cmd + ' ' : s.cmd); setSuggestionIdx(i) }}
+                      className="flex items-baseline gap-2 px-3 py-1.5 cursor-pointer"
+                      style={{
+                        background: i === suggestionIdx ? 'var(--green-glow)' : 'transparent',
+                        borderLeft: `2px solid ${i === suggestionIdx ? 'var(--green)' : 'transparent'}`,
+                      }}
+                    >
+                      <span className="font-mono text-sm font-bold flex-shrink-0" style={{ color: i === suggestionIdx ? 'var(--green)' : 'var(--text-2)' }}>{s.cmd}</span>
+                      {s.args && <span className="font-mono text-xs flex-shrink-0" style={{ color: 'var(--amber)' }}>{s.args}</span>}
+                      <span className="text-xs truncate" style={{ color: 'var(--text-3)' }}>{s.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* input */}
-              <div style={{ padding: '.6rem .75rem', borderTop: '1px solid var(--border)', display: 'flex', gap: 6, flexShrink: 0, background: 'var(--bg)' }}>
+              <div className="px-3 py-2.5 border-t flex gap-1.5 flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
                 <input
-                  value={cmd} onChange={e => setCmd(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCmd()}
-                  placeholder="Gõ /setup /scan /ask /cr..." disabled={busy} autoFocus
-                  style={{ flex: 1, background: 'var(--bg-2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '.5rem .75rem', borderRadius: 6, fontFamily: 'var(--font-mono)', fontSize: '.82rem', outline: 'none' }}
+                  value={cmd}
+                  onChange={e => { setCmd(e.target.value); setSuggestionIdx(0) }}
+                  onKeyDown={e => {
+                    if (activeSuggestions.length > 0) {
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setSuggestionIdx(i => Math.min(i + 1, activeSuggestions.length - 1)) }
+                      if (e.key === 'ArrowUp')   { e.preventDefault(); setSuggestionIdx(i => Math.max(i - 1, 0)) }
+                      if (e.key === 'Tab') {
+                        e.preventDefault()
+                        const s = activeSuggestions[suggestionIdx]
+                        setCmd(s.args ? s.cmd + ' ' : s.cmd)
+                      }
+                    }
+                    if (e.key === 'Enter') handleCmd()
+                    if (e.key === 'Escape') setCmd('')
+                  }}
+                  placeholder="Gõ / để xem lệnh..." disabled={busy} autoFocus
+                  className="flex-1 border rounded font-mono text-base outline-none"
+                  style={{ background: 'var(--bg-2)', borderColor: 'var(--border)', color: 'var(--text)', padding: '.5rem .75rem', fontSize: '.82rem' }}
                 />
                 <button onClick={() => handleCmd()} disabled={busy || !cmd.trim()}
-                  style={{ background: 'var(--green)', color: 'var(--bg)', border: 'none', borderRadius: 6, padding: '.5rem .9rem', cursor: 'pointer', fontWeight: 700, fontSize: '.85rem', opacity: busy ? .5 : 1 }}>
+                  className="border-none rounded cursor-pointer font-bold text-md"
+                  style={{ background: 'var(--green)', color: 'var(--bg)', padding: '.5rem .9rem', opacity: busy ? .5 : 1 }}>
                   ↑
                 </button>
               </div>
@@ -745,23 +884,29 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── SESSIONS ── */}
           {leftTab === 'sessions' && (
-            <div style={{ padding: '.75rem', display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto', height: '100%' }}>
+            <div className="p-3 flex flex-col gap-2 overflow-auto h-full">
               <button onClick={() => handleCmd('/new')}
-                style={{ padding: '.6rem', border: '1px dashed var(--border)', background: 'none', color: 'var(--text-3)', borderRadius: 6, cursor: 'pointer', fontSize: '.78rem', fontFamily: 'var(--font-mono)' }}>
+                className="border border-dashed rounded cursor-pointer font-mono text-sm"
+                style={{ padding: '.6rem', borderColor: 'var(--border)', background: 'none', color: 'var(--text-3)' }}>
                 + Tạo Workspace Mới
               </button>
               {sessions.map(s => (
                 <div key={s.id}
-                  style={{ position: 'relative', padding: '.65rem .75rem', borderRadius: 8, cursor: 'pointer', background: s.id === sessionId ? 'var(--green-glow)' : 'var(--bg)', border: `1px solid ${s.id === sessionId ? 'var(--green-dim)' : 'var(--border)'}`, borderLeft: `3px solid ${s.id === sessionId ? 'var(--green)' : 'var(--border)'}` }}
+                  className="relative rounded-lg cursor-pointer"
+                  style={{
+                    padding: '.65rem .75rem',
+                    background: s.id === sessionId ? 'var(--green-glow)' : 'var(--bg)',
+                    border: `1px solid ${s.id === sessionId ? 'var(--green-dim)' : 'var(--border)'}`,
+                    borderLeft: `3px solid ${s.id === sessionId ? 'var(--green)' : 'var(--border)'}`,
+                  }}
                   onClick={() => router.push(`/workspace/${s.id}`)}>
-                  <div style={{ fontWeight: 700, color: s.id === sessionId ? 'var(--green)' : 'var(--text)', fontSize: '.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 3, paddingRight: '1.5rem' }}>{s.name}</div>
-                  <div style={{ fontSize: '.65rem', color: 'var(--text-3)' }}>{s.workflow_state?.replace(/_/g, ' ')} · {new Date(s.created_at).toLocaleDateString()}</div>
+                  <div className="font-bold text-base truncate mb-0.5 pr-6" style={{ color: s.id === sessionId ? 'var(--green)' : 'var(--text)' }}>{s.name}</div>
+                  <div className="text-2xs" style={{ color: 'var(--text-3)' }}>{s.workflow_state?.replace(/_/g, ' ')} · {new Date(s.created_at).toLocaleDateString()}</div>
                   <button
                     onClick={e => { e.stopPropagation(); setDeleteTarget(s) }}
                     title="Delete session"
-                    style={{ position: 'absolute', top: '50%', right: '.5rem', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '.75rem', padding: '2px 4px', lineHeight: 1, borderRadius: 3 }}
-                    onMouseEnter={e => (e.currentTarget.style.color = '#ff6644')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
+                    className="absolute top-1/2 -translate-y-1/2 right-2 bg-transparent border-none cursor-pointer leading-none rounded hover:text-red-500 transition-colors"
+                    style={{ color: 'var(--text-3)', fontSize: '.75rem', padding: '2px 4px' }}
                   >✕</button>
                 </div>
               ))}
@@ -770,27 +915,27 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── TRACING ── */}
           {leftTab === 'tracing' && (
-            <div style={{ padding: '.75rem', display: 'flex', flexDirection: 'column', gap: 8, height: '100%', overflow: 'auto' }}>
+            <div className="p-3 flex flex-col gap-2 h-full overflow-auto">
               {metrics ? (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { label: 'Requests', value: metrics.total_requests, color: 'var(--green)' },
                       { label: 'Cost (est)', value: `$${metrics.total_cost_usd.toFixed(4)}`, color: 'var(--amber)' },
                     ].map(({ label, value, color }) => (
-                      <div key={label} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '.65rem', textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.2rem', color, fontWeight: 700 }}>{value}</div>
-                        <div style={{ fontSize: '.62rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 2 }}>{label}</div>
+                      <div key={label} className="border rounded-lg text-center" style={{ background: 'var(--bg)', borderColor: 'var(--border)', padding: '.65rem' }}>
+                        <div className="text-xl font-bold" style={{ color }}>{value}</div>
+                        <div className="text-2xs uppercase tracking-wide mt-0.5" style={{ color: 'var(--text-3)', letterSpacing: '.06em' }}>{label}</div>
                       </div>
                     ))}
                   </div>
                   {metrics.logs.map(log => (
-                    <div key={log.id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '.5rem .65rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ color: 'var(--green)', fontSize: '.72rem', fontWeight: 700 }}>⚡ {log.agent}</span>
-                        <span style={{ color: 'var(--text-3)', fontSize: '.65rem' }}>{log.time}</span>
+                    <div key={log.id} className="border rounded-lg" style={{ background: 'var(--bg)', borderColor: 'var(--border)', padding: '.5rem .65rem' }}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs font-bold" style={{ color: 'var(--green)' }}>⚡ {log.agent}</span>
+                        <span className="text-2xs" style={{ color: 'var(--text-3)' }}>{log.time}</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.68rem', color: 'var(--text-3)' }}>
+                      <div className="flex justify-between text-2xs" style={{ color: 'var(--text-3)' }}>
                         <span>In: {log.in_tokens}</span><span>Out: {log.out_tokens}</span>
                         <span style={{ color: 'var(--amber)' }}>${log.cost.toFixed(5)}</span>
                       </div>
@@ -798,12 +943,163 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                   ))}
                 </>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                  <button onClick={fetchMetrics} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-3)', padding: '.5rem 1rem', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
+                <div className="flex items-center justify-center flex-1">
+                  <button onClick={fetchMetrics} className="border rounded cursor-pointer font-mono" style={{ background: 'none', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '.5rem 1rem' }}>
                     ⟳ Load Metrics
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── SETTINGS ── */}
+          {leftTab === 'settings' && (
+            <div className="flex flex-col h-full overflow-auto">
+
+              {/* status bar */}
+              <div className="flex items-center gap-2 px-3 py-2 border-b flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                <span className="text-2xs uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Active provider</span>
+                <span className="text-2xs font-bold px-2 py-0.5 rounded" style={{ background: cfgProvider === 'gemini' ? 'var(--green-mute)' : 'rgba(255,179,0,.12)', color: cfgProvider === 'gemini' ? 'var(--green)' : 'var(--amber)', border: `1px solid ${cfgProvider === 'gemini' ? 'var(--green-dim)' : 'var(--amber-dim)'}` }}>
+                  {status?.ai_provider?.toUpperCase() ?? '—'}
+                </span>
+                {cfgMsg && (
+                  <span className="ml-auto text-2xs px-2 py-0.5 rounded" style={{ color: cfgMsg.ok ? 'var(--green)' : 'var(--red)', background: cfgMsg.ok ? 'var(--green-mute)' : 'rgba(255,68,68,.1)', border: `1px solid ${cfgMsg.ok ? 'var(--green-dim)' : 'var(--red-dim)'}` }}>
+                    {cfgMsg.ok ? '✓' : '✕'} {cfgMsg.text}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4 p-3 overflow-auto flex-1">
+
+                {/* ── Provider Toggle ── */}
+                <section className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                  <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold" style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>AI Provider</div>
+                  <div className="p-3 flex gap-2" style={{ background: 'var(--bg-1)' }}>
+                    {(['gemini', 'ollama'] as const).map(p => (
+                      <button key={p} onClick={() => setCfgProvider(p)}
+                        className="flex-1 py-2 rounded text-xs font-bold uppercase tracking-wide cursor-pointer border transition-colors"
+                        style={{ background: cfgProvider === p ? (p === 'gemini' ? 'var(--green-mute)' : 'rgba(255,179,0,.12)') : 'var(--bg-2)', color: cfgProvider === p ? (p === 'gemini' ? 'var(--green)' : 'var(--amber)') : 'var(--text-3)', borderColor: cfgProvider === p ? (p === 'gemini' ? 'var(--green-dim)' : 'var(--amber-dim)') : 'var(--border)' }}>
+                        {p === 'gemini' ? '✦ Gemini' : '⬡ Ollama'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="px-3 pb-3" style={{ background: 'var(--bg-1)' }}>
+                    <button onClick={() => saveSettings('provider')} disabled={cfgSaving}
+                      className="w-full py-1.5 rounded text-xs font-bold cursor-pointer transition-colors"
+                      style={{ background: 'var(--green-mute)', color: 'var(--green)', border: '1px solid var(--green-dim)', opacity: cfgSaving ? .5 : 1 }}>
+                      {cfgSaving ? '⟳ Saving...' : 'Apply Provider'}
+                    </button>
+                  </div>
+                </section>
+
+                {/* ── Gemini Config ── */}
+                <section className="rounded-lg border overflow-hidden" style={{ borderColor: cfgProvider === 'gemini' ? 'var(--green-dim)' : 'var(--border)' }}>
+                  <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold flex items-center gap-2" style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: cfgProvider === 'gemini' ? 'var(--green)' : 'var(--text-3)' }}>
+                    ✦ Gemini
+                    {status?.has_gemini_key && <span className="text-2xs px-1.5 rounded" style={{ background: 'var(--green-mute)', color: 'var(--green)', border: '1px solid var(--green-dim)' }}>key set</span>}
+                  </div>
+                  <div className="p-3 flex flex-col gap-3" style={{ background: 'var(--bg-1)' }}>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>API Key</span>
+                      <input
+                        type="password"
+                        value={cfgGeminiKey}
+                        onChange={e => setCfgGeminiKey(e.target.value)}
+                        placeholder={status?.has_gemini_key ? '••••••••••••••••' : 'AIza...'}
+                        className="input text-xs rounded px-2 py-1.5 font-mono w-full outline-none"
+                        style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', color: 'var(--text)', caretColor: 'var(--green)' }}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Model</span>
+                      <select
+                        value={cfgGeminiModel}
+                        onChange={e => setCfgGeminiModel(e.target.value)}
+                        className="cursor-pointer text-xs rounded px-2 py-1.5 font-mono w-full outline-none"
+                        style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }}
+                      >
+                        <option value="">-- keep current ({status?.gemini_model ?? 'default'}) --</option>
+                        <option value="gemini-2.5-flash-preview-09-2025">gemini-2.5-flash-preview (latest)</option>
+                        <option value="gemini-2.5-pro-preview-03-25">gemini-2.5-pro-preview</option>
+                        <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                        <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b</option>
+                        <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                      </select>
+                    </label>
+                    <button onClick={() => saveSettings('gemini')} disabled={cfgSaving || !cfgGeminiKey}
+                      className="w-full py-1.5 rounded text-xs font-bold cursor-pointer transition-colors"
+                      style={{ background: 'var(--green-mute)', color: 'var(--green)', border: '1px solid var(--green-dim)', opacity: (cfgSaving || !cfgGeminiKey) ? .5 : 1 }}>
+                      {cfgSaving ? '⟳ Saving...' : 'Save Gemini Config'}
+                    </button>
+                  </div>
+                </section>
+
+                {/* ── Ollama Config ── */}
+                <section className="rounded-lg border overflow-hidden" style={{ borderColor: cfgProvider === 'ollama' ? 'var(--amber-dim)' : 'var(--border)' }}>
+                  <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold" style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: cfgProvider === 'ollama' ? 'var(--amber)' : 'var(--text-3)' }}>
+                    ⬡ Ollama (Local)
+                  </div>
+                  <div className="p-3 flex flex-col gap-3" style={{ background: 'var(--bg-1)' }}>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Base URL</span>
+                      <input
+                        value={cfgOllamaUrl}
+                        onChange={e => setCfgOllamaUrl(e.target.value)}
+                        placeholder="http://localhost:11434"
+                        className="text-xs rounded px-2 py-1.5 font-mono w-full outline-none"
+                        style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', color: 'var(--text)', caretColor: 'var(--amber)' }}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Model</span>
+                      <input
+                        value={cfgOllamaModel}
+                        onChange={e => setCfgOllamaModel(e.target.value)}
+                        placeholder="codellama / llama3 / deepseek-coder"
+                        className="text-xs rounded px-2 py-1.5 font-mono w-full outline-none"
+                        style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', color: 'var(--text)', caretColor: 'var(--amber)' }}
+                      />
+                    </label>
+                    <p className="text-2xs" style={{ color: 'var(--text-3)' }}>
+                      Run <code className="px-1 rounded" style={{ background: 'var(--bg-3)', color: 'var(--amber)' }}>ollama serve</code> &amp; pull a model first.
+                    </p>
+                    <button onClick={() => saveSettings('ollama')} disabled={cfgSaving}
+                      className="w-full py-1.5 rounded text-xs font-bold cursor-pointer transition-colors"
+                      style={{ background: 'rgba(255,179,0,.1)', color: 'var(--amber)', border: '1px solid var(--amber-dim)', opacity: cfgSaving ? .5 : 1 }}>
+                      {cfgSaving ? '⟳ Saving...' : 'Save Ollama Config'}
+                    </button>
+                  </div>
+                </section>
+
+                {/* ── GitHub Token ── */}
+                <section className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                  <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold flex items-center gap-2" style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
+                    GitHub Token
+                    {status?.has_github_token && <span className="text-2xs px-1.5 rounded" style={{ background: 'rgba(0,170,255,.1)', color: '#00aaff', border: '1px solid rgba(0,170,255,.3)' }}>set</span>}
+                  </div>
+                  <div className="p-3 flex flex-col gap-3" style={{ background: 'var(--bg-1)' }}>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Personal Access Token</span>
+                      <input
+                        type="password"
+                        value={cfgGithubToken}
+                        onChange={e => setCfgGithubToken(e.target.value)}
+                        placeholder={status?.has_github_token ? '••••••••••••••••' : 'ghp_...'}
+                        className="text-xs rounded px-2 py-1.5 font-mono w-full outline-none"
+                        style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }}
+                      />
+                    </label>
+                    <p className="text-2xs" style={{ color: 'var(--text-3)' }}>Required for private repos. Needs <code className="px-1 rounded" style={{ background: 'var(--bg-3)', color: 'var(--amber)' }}>Contents: Read</code> scope.</p>
+                    <button onClick={() => saveSettings('github')} disabled={cfgSaving || !cfgGithubToken || !status?.repo}
+                      className="w-full py-1.5 rounded text-xs font-bold cursor-pointer transition-colors"
+                      style={{ background: 'rgba(0,170,255,.08)', color: '#00aaff', border: '1px solid rgba(0,170,255,.3)', opacity: (cfgSaving || !cfgGithubToken || !status?.repo) ? .5 : 1 }}>
+                      {cfgSaving ? '⟳ Saving...' : 'Save GitHub Token'}
+                    </button>
+                    {!status?.repo && <p className="text-2xs" style={{ color: 'var(--text-3)' }}>Run <code className="px-1 rounded" style={{ background: 'var(--bg-3)', color: 'var(--amber)' }}>/setup</code> first to set a repo.</p>}
+                  </div>
+                </section>
+
+              </div>
             </div>
           )}
 
@@ -813,16 +1109,15 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
       {/* ═══ RESIZER ═══ */}
       <div
         onMouseDown={() => setDragging(true)}
-        style={{ width: 4, cursor: 'col-resize', background: 'var(--border)', flexShrink: 0, zIndex: 50 }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--green)')}
-        onMouseLeave={e => (e.currentTarget.style.background = dragging ? 'var(--green)' : 'var(--border)')}
+        className="cursor-col-resize flex-shrink-0 z-50 hover:bg-green-500 transition-colors"
+        style={{ width: 4, background: dragging ? 'var(--green)' : 'var(--border)' }}
       />
 
       {/* ═══════════════════ RIGHT ═══════════════════ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
+      <div className="flex-1 flex flex-col min-w-0" style={{ background: 'var(--bg)' }}>
 
         {/* right tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-1)', overflowX: 'auto', height: 44, alignItems: 'flex-end', flexShrink: 0 }}>
+        <div className="flex border-b overflow-x-auto flex-shrink-0 items-end" style={{ height: 44, borderColor: 'var(--border)', background: 'var(--bg-1)' }}>
           {RTAB('ide', '⬡ IDE Simulator', 'var(--text-2)')}
           {RTAB('graph', '⬡ Node Arch', 'var(--green)')}
           {RTAB('wiki', '⬡ GitBook Wiki', '#ff79c6')}
@@ -833,20 +1128,20 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
           {RTAB('db', '⬡ Local DB', '#ff6644')}
         </div>
 
-        <div style={{ flex: 1, overflow: 'hidden', background: 'var(--bg-1)' }}>
+        <div className="flex-1 overflow-hidden" style={{ background: 'var(--bg-1)' }}>
 
           {/* ── IDE ── */}
           {rightTab === 'ide' && (
-            <div style={{ display: 'flex', height: '100%', fontSize: '.82rem' }}>
-              <div style={{ width: '28%', minWidth: 220, borderRight: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ padding: '.5rem .75rem', borderBottom: '1px solid var(--border)', fontSize: '.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.08em', display: 'flex', justifyContent: 'space-between', background: 'var(--bg-1)' }}>
+            <div className="flex h-full text-base">
+              <div className="border-r flex flex-col overflow-hidden" style={{ width: '28%', minWidth: 220, borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                <div className="flex justify-between items-center border-b text-2xs uppercase tracking-widest px-3 py-2" style={{ borderColor: 'var(--border)', color: 'var(--text-3)', background: 'var(--bg-1)', letterSpacing: '.08em' }}>
                   <span>FILE EXPLORER</span>
-                  <span style={{ color: 'var(--green)', background: 'var(--green-mute)', padding: '1px 6px', borderRadius: 3 }}>{kb?.tree?.length || 0}</span>
+                  <span className="rounded px-1.5 py-px" style={{ color: 'var(--green)', background: 'var(--green-mute)' }}>{kb?.tree?.length || 0}</span>
                 </div>
-                <div style={{ flex: 1, overflow: 'auto', paddingTop: 4 }}>
+                <div className="flex-1 overflow-auto pt-1">
                   {!kb?.tree?.length ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '70%', color: 'var(--text-3)', fontSize: '.78rem', gap: 8, textAlign: 'center', padding: '0 1rem' }}>
-                      <div style={{ fontSize: '2.5rem', opacity: .15 }}>📁</div>
+                    <div className="flex flex-col items-center justify-center text-sm gap-2 text-center px-4" style={{ height: '70%', color: 'var(--text-3)' }}>
+                      <div className="text-4xl opacity-15">📁</div>
                       <p>Workspace trống.<br />Chạy /scan để index.</p>
                     </div>
                   ) : (
@@ -856,20 +1151,20 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                   )}
                 </div>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <div style={{ height: 38, background: 'var(--bg)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', paddingLeft: '1rem', flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.78rem', color: 'var(--text-2)', borderTop: '2px solid #ff79c6', paddingTop: 4 }}>
+              <div className="flex-1 flex flex-col min-w-0">
+                <div className="border-b flex items-center pl-4 flex-shrink-0" style={{ height: 38, background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                  <span className="font-mono text-sm pt-1" style={{ color: 'var(--text-2)', borderTop: '2px solid #ff79c6' }}>
                     {ideFile ? ideFile.split('/').pop() : 'Welcome'}
                   </span>
                 </div>
-                <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                  <div style={{ width: 44, background: 'var(--bg)', borderRight: '1px solid var(--border)', padding: '1rem .5rem', fontFamily: 'var(--font-mono)', fontSize: '.78rem', color: 'var(--text-3)', textAlign: 'right', overflow: 'hidden', userSelect: 'none', lineHeight: '1.6' }}>
+                <div className="flex-1 flex overflow-hidden">
+                  <div className="border-r p-4 pr-2 font-mono text-sm text-right overflow-hidden select-none leading-relaxed" style={{ width: 44, background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
                     {Array.from({ length: 120 }).map((_, i) => <div key={i}>{i + 1}</div>)}
                   </div>
-                  <div style={{ flex: 1, padding: '1rem', fontFamily: 'var(--font-mono)', fontSize: '.82rem', color: 'var(--text)', overflow: 'auto', whiteSpace: 'pre', lineHeight: '1.6' }}>
+                  <div className="flex-1 p-4 font-mono text-base overflow-auto whitespace-pre leading-relaxed" style={{ color: 'var(--text)' }}>
                     {ideLoading ? <span style={{ color: 'var(--green)' }}>⟳ Tải source code...</span>
                       : ideContent ? <code>{ideContent}</code>
-                        : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'var(--text-3)', opacity: .2, gap: 8 }}><div style={{ fontSize: '3rem' }}>⬡</div><p>IDE Ready.</p></div>
+                        : <div className="flex flex-col items-center justify-center gap-2 opacity-20" style={{ height: '60%', color: 'var(--text-3)' }}><div className="text-5xl">⬡</div><p>IDE Ready.</p></div>
                     }
                   </div>
                 </div>
@@ -879,9 +1174,9 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── NODE GRAPH ── */}
           {rightTab === 'graph' && (
-            <div style={{ padding: '1.5rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: 'var(--green)', marginBottom: '1rem' }}>⬡ Node Architecture Graph</h2>
-              <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', background: 'var(--bg)' }}>
+            <div className="p-6 h-full flex flex-col">
+              <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--green)' }}>⬡ Node Architecture Graph</h2>
+              <div className="flex-1 border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
                 <NodeGraph tree={kb?.tree || []} repoInfo={status?.repo} />
               </div>
             </div>
@@ -889,21 +1184,22 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── WIKI ── */}
           {rightTab === 'wiki' && (
-            <div style={{ height: '100%', overflow: 'auto', background: 'var(--bg)' }}>
-              <div style={{ maxWidth: 900, margin: '0 auto', background: 'var(--bg-1)', minHeight: '100%', border: '1px solid var(--border)', borderTop: 'none', borderBottom: 'none' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid var(--border)', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text)' }}>📖 Project Documentation</span>
+            <div className="h-full overflow-auto" style={{ background: 'var(--bg)' }}>
+              <div className="max-w-[900px] mx-auto border-l border-r min-h-full" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+                <div className="flex justify-between items-center px-8 py-4 border-b sticky top-0 z-10" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <span className="font-display font-extrabold" style={{ fontSize: '1.05rem', color: 'var(--text)' }}>📖 Project Documentation</span>
                   {kb?.project_summary && (
                     <button onClick={() => { const b = new Blob([kb.project_summary], { type: 'text/markdown' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'wiki.md'; a.click() }}
-                      style={{ background: 'var(--green)', color: 'var(--bg)', border: 'none', padding: '.3rem .8rem', borderRadius: 5, fontSize: '.75rem', fontWeight: 700, cursor: 'pointer' }}>
+                      className="border-none rounded cursor-pointer font-bold text-xs"
+                      style={{ background: 'var(--green)', color: 'var(--bg)', padding: '.3rem .8rem' }}>
                       ↓ Export
                     </button>
                   )}
                 </div>
-                <div style={{ padding: '2rem' }}>
+                <div className="p-8">
                   {kb?.project_summary
                     ? <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(kb.project_summary) }} />
-                    : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', gap: 12 }}><div style={{ fontSize: '3rem', opacity: .12 }}>📖</div><p>Wiki chưa có. Chạy /scan để tạo.</p></div>
+                    : <div className="flex flex-col items-center justify-center gap-3" style={{ height: 300, color: 'var(--text-3)' }}><div className="text-5xl opacity-10">📖</div><p>Wiki chưa có. Chạy /scan để tạo.</p></div>
                   }
                 </div>
               </div>
@@ -912,21 +1208,21 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── INSIGHTS ── */}
           {rightTab === 'insights' && (
-            <div style={{ height: '100%', overflow: 'auto', padding: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: 'var(--amber)', marginBottom: '1rem' }}>⚡ AI Project Insights</h2>
+            <div className="h-full overflow-auto p-6">
+              <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--amber)' }}>⚡ AI Project Insights</h2>
               {!kb?.insights?.length
-                ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', gap: 12 }}><div style={{ fontSize: '3rem', opacity: .1 }}>⬡</div><p>Chưa có insights. Chạy /scan.</p></div>
-                : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '1rem', paddingBottom: '2rem' }}>
+                ? <div className="flex flex-col items-center justify-center gap-3" style={{ height: 300, color: 'var(--text-3)' }}><div className="text-5xl opacity-10">⬡</div><p>Chưa có insights. Chạy /scan.</p></div>
+                : <div className="grid gap-4 pb-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))' }}>
                   {kb.insights.map((ins, i) => (
-                    <div key={i} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: '1rem' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                    <div key={i} className="border rounded-lg p-4" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                      <div className="flex flex-wrap gap-1 mb-2.5 pb-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
                         {ins.files.map((f, j) => (
-                          <span key={j} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', color: 'var(--text-3)', padding: '2px 7px', borderRadius: 3, fontSize: '.65rem', fontFamily: 'var(--font-mono)' }}>
+                          <span key={j} className="border rounded font-mono text-2xs" style={{ background: 'var(--bg-2)', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '2px 7px' }}>
                             {f.split('/').pop()}
                           </span>
                         ))}
                       </div>
-                      <div className="prose" style={{ maxHeight: 200, overflow: 'auto' }} dangerouslySetInnerHTML={{ __html: mdToHtml(ins.summary) }} />
+                      <div className="prose overflow-auto" style={{ maxHeight: 200 }} dangerouslySetInnerHTML={{ __html: mdToHtml(ins.summary) }} />
                     </div>
                   ))}
                 </div>
@@ -936,14 +1232,14 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── RAG TRACE ── */}
           {rightTab === 'rag' && (
-            <div style={{ height: '100%', overflow: 'auto', padding: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: '#00aaff', marginBottom: '1rem' }}>⬡ RAG & Chat History</h2>
+            <div className="h-full overflow-auto p-6">
+              <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: '#00aaff' }}>⬡ RAG & Chat History</h2>
               {!chatHistory.length
-                ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', gap: 12 }}><div style={{ fontSize: '2.5rem', opacity: .2 }}>💬</div><p>Chưa có lịch sử. Gõ /ask ở Chat.</p></div>
-                : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingBottom: '2rem', maxWidth: 860, margin: '0 auto' }}>
+                ? <div className="flex flex-col items-center justify-center gap-3" style={{ height: 300, color: 'var(--text-3)' }}><div className="text-4xl opacity-20">💬</div><p>Chưa có lịch sử. Gõ /ask ở Chat.</p></div>
+                : <div className="flex flex-col gap-5 pb-8 max-w-[860px] mx-auto">
                   {chatHistory.map((m, i) => (
-                    <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', background: m.role === 'user' ? 'var(--green-glow)' : 'var(--bg)', marginLeft: m.role === 'user' ? '10%' : 0 }}>
-                      <div style={{ fontSize: '.68rem', color: m.role === 'user' ? 'var(--green)' : 'var(--text-3)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700 }}>
+                    <div key={i} className="border rounded-xl px-5 py-4" style={{ borderColor: 'var(--border)', background: m.role === 'user' ? 'var(--green-glow)' : 'var(--bg)', marginLeft: m.role === 'user' ? '10%' : 0 }}>
+                      <div className="text-2xs uppercase tracking-wide font-bold mb-2" style={{ color: m.role === 'user' ? 'var(--green)' : 'var(--text-3)', letterSpacing: '.06em' }}>
                         {m.role === 'user' ? '🔍 User Query' : '🤖 AI Response'}
                       </div>
                       {m.role === 'user'
@@ -951,13 +1247,13 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                         : <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(m.text) }} />
                       }
                       {m.trace && (
-                        <details style={{ marginTop: 10 }}>
-                          <summary style={{ fontSize: '.7rem', color: 'var(--text-3)', cursor: 'pointer' }}>⬡ RAG trace · {m.trace.source_chunks?.length || 0} chunks</summary>
-                          <div style={{ marginTop: 8, padding: '.75rem', background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 6, fontSize: '.72rem', lineHeight: 1.7 }}>
-                            <div style={{ color: 'var(--text-3)', marginBottom: 6 }}>Intent: <strong style={{ color: 'var(--amber)' }}>{m.trace.intent}</strong></div>
+                        <details className="mt-2.5">
+                          <summary className="text-xs cursor-pointer" style={{ color: 'var(--text-3)' }}>⬡ RAG trace · {m.trace.source_chunks?.length || 0} chunks</summary>
+                          <div className="mt-2 p-3 border rounded text-xs leading-relaxed" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+                            <div className="mb-1.5" style={{ color: 'var(--text-3)' }}>Intent: <strong style={{ color: 'var(--amber)' }}>{m.trace.intent}</strong></div>
                             {m.trace.source_chunks?.map((c: any, j: number) => (
-                              <div key={j} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '.5rem', marginBottom: 6 }}>
-                                <div style={{ color: 'var(--amber)', marginBottom: 3, fontSize: '.65rem' }}>{c.files?.slice(0, 3).join(' · ')}</div>
+                              <div key={j} className="border rounded p-2 mb-1.5" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                                <div className="mb-0.5 text-2xs" style={{ color: 'var(--amber)' }}>{c.files?.slice(0, 3).join(' · ')}</div>
                                 <div style={{ color: 'var(--text-3)' }}>{c.summary_preview || c.summary}</div>
                               </div>
                             ))}
@@ -973,13 +1269,13 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── SDLC ── */}
           {rightTab === 'sdlc' && (
-            <div style={{ height: '100%', overflow: 'auto', padding: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: 'var(--amber)', marginBottom: '1.5rem' }}>⚡ Multi-Agent SDLC Brainstorm</h2>
+            <div className="h-full overflow-auto p-6">
+              <h2 className="font-display font-extrabold text-xl mb-6" style={{ color: 'var(--amber)' }}>⚡ Multi-Agent SDLC Brainstorm</h2>
               {!outputs.requirement
-                ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', gap: 12 }}><div style={{ fontSize: '3rem', opacity: .1 }}>⬡</div><p>Gõ <code>/cr [Yêu cầu]</code> ở Terminal để bắt đầu SDLC.</p></div>
+                ? <div className="flex flex-col items-center justify-center gap-3" style={{ height: 300, color: 'var(--text-3)' }}><div className="text-5xl opacity-10">⬡</div><p>Gõ <code>/cr [Yêu cầu]</code> ở Terminal để bắt đầu SDLC.</p></div>
                 : (
-                  <div style={{ position: 'relative', paddingLeft: '3rem', display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: 820 }}>
-                    <div style={{ position: 'absolute', left: 22, top: 0, bottom: 0, width: 1, background: 'var(--border)' }} />
+                  <div className="relative pl-12 flex flex-col gap-8 max-w-[820px]">
+                    <div className="absolute top-0 bottom-0 w-px" style={{ left: 22, background: 'var(--border)' }} />
 
                     {(outputs.ba || session.workflow_state === 'running_ba') && (
                       <AgentCard dot="var(--green)" title="1. Business Analyst (BRD)"
@@ -1006,24 +1302,24 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                     )}
 
                     {(outputs.dev || outputs.security || session.workflow_state === 'running_rest') && (
-                      <div style={{ position: 'relative' }}>
-                        <div style={{ position: 'absolute', left: -38, top: 14, width: 14, height: 14, borderRadius: '50%', background: 'var(--bg)', border: '2px solid #aa88ff' }} />
-                        <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-                          <div style={{ background: 'rgba(170,136,255,.08)', borderBottom: '1px solid var(--border)', padding: '.6rem 1.25rem', fontSize: '.78rem', fontWeight: 700, color: '#aa88ff' }}>
+                      <div className="relative">
+                        <div className="absolute" style={{ left: -38, top: 14, width: 14, height: 14, borderRadius: '50%', background: 'var(--bg)', border: '2px solid #aa88ff' }} />
+                        <div className="border rounded-lg overflow-hidden" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                          <div className="border-b px-5 py-2.5 text-sm font-bold" style={{ background: 'rgba(170,136,255,.08)', borderColor: 'var(--border)', color: '#aa88ff' }}>
                             4. Implementation & Verification
                           </div>
-                          <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div className="p-5 flex flex-col gap-4">
                             {[
                               { key: 'dev', label: '💻 Lead Developer', color: 'var(--amber)' },
                               { key: 'security', label: '🔐 Security Review', color: 'var(--red)' },
                               { key: 'qa', label: '🧪 QA Engineer', color: '#aa88ff' },
                               { key: 'sre', label: '🚀 SRE / DevOps', color: '#44ddff' },
                             ].map(({ key, label, color }) => (
-                              <div key={key} style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 8, padding: '.75rem 1rem' }}>
-                                <div style={{ fontSize: '.72rem', fontWeight: 700, color, marginBottom: 8 }}>{label}</div>
+                              <div key={key} className="border rounded-lg px-4 py-3" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+                                <div className="text-xs font-bold mb-2" style={{ color }}>{label}</div>
                                 {(outputs as any)[key]
-                                  ? <div className="prose" style={{ maxHeight: 280, overflow: 'auto' }} dangerouslySetInnerHTML={{ __html: mdToHtml((outputs as any)[key]) }} />
-                                  : <span style={{ color: 'var(--text-3)', fontSize: '.75rem' }}>{session.workflow_state === 'running_rest' ? '⟳ Đang xử lý...' : '—'}</span>
+                                  ? <div className="prose overflow-auto" style={{ maxHeight: 280 }} dangerouslySetInnerHTML={{ __html: mdToHtml((outputs as any)[key]) }} />
+                                  : <span className="text-xs" style={{ color: 'var(--text-3)' }}>{session.workflow_state === 'running_rest' ? '⟳ Đang xử lý...' : '—'}</span>
                                 }
                               </div>
                             ))}
@@ -1033,7 +1329,7 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                     )}
 
                     {session.workflow_state === 'done' && (
-                      <div style={{ background: 'var(--green-mute)', border: '1px solid var(--green-dim)', borderRadius: 10, padding: '1rem 1.5rem', color: 'var(--green)', fontWeight: 700, textAlign: 'center' }}>
+                      <div className="border rounded-lg px-6 py-4 font-bold text-center" style={{ background: 'var(--green-mute)', borderColor: 'var(--green-dim)', color: 'var(--green)' }}>
                         🎉 SDLC Pipeline hoàn tất! Xem JIRA Kanban để xem backlog.
                       </div>
                     )}
@@ -1045,32 +1341,32 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── BACKLOG ── */}
           {rightTab === 'backlog' && (
-            <div style={{ height: '100%', overflow: 'auto', padding: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: '#aa88ff', marginBottom: '1.5rem' }}>⬡ JIRA Kanban Backlog</h2>
+            <div className="h-full overflow-auto p-6">
+              <h2 className="font-display font-extrabold text-xl mb-6" style={{ color: '#aa88ff' }}>⬡ JIRA Kanban Backlog</h2>
               {!session.jira_backlog?.length
-                ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', gap: 12 }}><div style={{ fontSize: '3rem', opacity: .1 }}>⬡</div><p>Backlog trống. Chạy /cr để sinh JIRA tasks.</p></div>
-                : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: 820 }}>
+                ? <div className="flex flex-col items-center justify-center gap-3" style={{ height: 300, color: 'var(--text-3)' }}><div className="text-5xl opacity-10">⬡</div><p>Backlog trống. Chạy /cr để sinh JIRA tasks.</p></div>
+                : <div className="flex flex-col gap-5 max-w-[820px]">
                   {session.jira_backlog.map((epic, ei) => (
-                    <div key={ei} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-                      <div style={{ background: 'rgba(170,136,255,.1)', borderBottom: '1px solid var(--border)', padding: '.7rem 1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ background: '#7c3aed', color: '#fff', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 3 }}>EPIC</span>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text)', fontSize: '1rem' }}>{epic.title}</span>
+                    <div key={ei} className="border rounded-lg overflow-hidden" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                      <div className="border-b px-5 py-3 flex items-center gap-2.5" style={{ background: 'rgba(170,136,255,.1)', borderColor: 'var(--border)' }}>
+                        <span className="text-white text-2xs font-extrabold rounded" style={{ background: '#7c3aed', padding: '2px 8px' }}>EPIC</span>
+                        <span className="font-display font-bold text-lg" style={{ color: 'var(--text)' }}>{epic.title}</span>
                       </div>
-                      <div style={{ padding: '.75rem 1rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div className="px-4 py-3 flex flex-col gap-2">
                         {epic.tasks?.map((task, ti) => (
-                          <div key={ti} style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 8, padding: '.65rem .9rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: task.subtasks?.length ? 6 : 0 }}>
-                              <span style={{ fontSize: '.6rem', padding: '2px 7px', borderRadius: 3, fontWeight: 700, background: task.type === 'backend' ? 'rgba(0,170,255,.15)' : task.type === 'frontend' ? 'rgba(170,136,255,.15)' : 'rgba(255,179,0,.12)', color: task.type === 'backend' ? '#00aaff' : task.type === 'frontend' ? '#aa88ff' : 'var(--amber)' }}>
+                          <div key={ti} className="border rounded-lg px-3.5 py-2.5" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+                            <div className="flex items-center gap-2 mb-1.5" style={{ marginBottom: task.subtasks?.length ? undefined : 0 }}>
+                              <span className="text-2xs rounded font-bold" style={{ padding: '2px 7px', background: task.type === 'backend' ? 'rgba(0,170,255,.15)' : task.type === 'frontend' ? 'rgba(170,136,255,.15)' : 'rgba(255,179,0,.12)', color: task.type === 'backend' ? '#00aaff' : task.type === 'frontend' ? '#aa88ff' : 'var(--amber)' }}>
                                 {task.type?.toUpperCase()}
                               </span>
-                              <span style={{ color: 'var(--text)', fontSize: '.85rem', fontWeight: 600 }}>{task.title}</span>
-                              {task.story_points && <span style={{ marginLeft: 'auto', color: 'var(--text-3)', fontSize: '.7rem' }}>{task.story_points} pts</span>}
+                              <span className="text-md font-semibold" style={{ color: 'var(--text)' }}>{task.title}</span>
+                              {task.story_points && <span className="ml-auto text-xs" style={{ color: 'var(--text-3)' }}>{task.story_points} pts</span>}
                             </div>
                             {task.subtasks?.length > 0 && (
-                              <div style={{ paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                              <div className="pl-4 flex flex-col gap-0.5">
                                 {task.subtasks.map((sub, si) => (
-                                  <div key={si} style={{ fontSize: '.72rem', color: 'var(--text-3)', display: 'flex', gap: 5 }}>
-                                    <span style={{ opacity: .5 }}>└</span> {sub}
+                                  <div key={si} className="text-xs flex gap-1" style={{ color: 'var(--text-3)' }}>
+                                    <span className="opacity-50">└</span> {sub}
                                   </div>
                                 ))}
                               </div>
@@ -1087,37 +1383,37 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
           {/* ── DB ── */}
           {rightTab === 'db' && (
-            <div style={{ height: '100%', overflow: 'auto', padding: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: '#ff6644', marginBottom: '1.5rem' }}>⬡ Backend Store</h2>
-              <div style={{ background: 'rgba(255,68,68,.06)', border: '1px solid rgba(255,68,68,.2)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', gap: 14, fontSize: '.8rem', color: 'rgba(255,100,100,.9)' }}>
-                <span style={{ fontSize: '1.5rem' }}>⬡</span>
-                <div><strong style={{ color: '#ff6644', display: 'block', marginBottom: 4 }}>Zero-Trust In-Memory Store (FastAPI Backend)</strong>Trong môi trường Production (Banking/Enterprise), dữ liệu bảo mật On-Premise.</div>
+            <div className="h-full overflow-auto p-6">
+              <h2 className="font-display font-extrabold text-xl mb-6" style={{ color: '#ff6644' }}>⬡ Backend Store</h2>
+              <div className="border rounded-lg px-5 py-4 mb-6 flex gap-3.5 text-sm" style={{ background: 'rgba(255,68,68,.06)', borderColor: 'rgba(255,68,68,.2)', color: 'rgba(255,100,100,.9)' }}>
+                <span className="text-2xl">⬡</span>
+                <div><strong className="block mb-1" style={{ color: '#ff6644' }}>Zero-Trust In-Memory Store (FastAPI Backend)</strong>Trong môi trường Production (Banking/Enterprise), dữ liệu bảo mật On-Premise.</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="grid grid-cols-3 gap-4 mb-6">
                 {[
                   { label: 'KB Files', value: status?.kb_files ?? 0, color: 'var(--green)' },
                   { label: 'KB Chunks', value: status?.kb_insights ?? 0, color: '#00aaff' },
                   { label: 'Sessions', value: status?.total_sessions ?? 0, color: '#aa88ff' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</div>
-                    <div style={{ fontSize: '.65rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 4 }}>{label}</div>
+                  <div key={label} className="border rounded-lg p-4 text-center" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                    <div className="text-2xl font-bold" style={{ color }}>{value}</div>
+                    <div className="text-2xs uppercase tracking-wide mt-1" style={{ color: 'var(--text-3)', letterSpacing: '.06em' }}>{label}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: '.7rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 8 }}>⬡ Active Workspaces</div>
-              <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 100px 140px', padding: '.5rem 1rem', fontSize: '.65rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em', borderBottom: '1px solid var(--border)', background: 'var(--bg-1)' }}>
+              <div className="text-2xs uppercase tracking-widest mb-2" style={{ color: 'var(--text-3)', letterSpacing: '.08em' }}>⬡ Active Workspaces</div>
+              <div className="border rounded-lg overflow-hidden" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                <div className="grid border-b px-4 py-2 text-2xs uppercase tracking-wide" style={{ gridTemplateColumns: '1fr 2fr 100px 140px', borderColor: 'var(--border)', color: 'var(--text-3)', background: 'var(--bg-1)', letterSpacing: '.04em' }}>
                   <span>ID</span><span>Name</span><span>Q&A Pairs</span><span>Created</span>
                 </div>
                 {sessions.map(s => (
-                  <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 100px 140px', padding: '.55rem 1rem', fontSize: '.75rem', borderBottom: '1px solid var(--border)', alignItems: 'center', background: s.id === sessionId ? 'var(--green-glow)' : 'transparent' }}>
-                    <span style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)', fontSize: '.65rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.id.slice(0, 10)}…</span>
-                    <span style={{ color: 'var(--text)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
-                    <span style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', color: 'var(--text-3)', padding: '1px 8px', borderRadius: 3, fontSize: '.65rem', width: 'fit-content' }}>
+                  <div key={s.id} className="grid border-b items-center px-4" style={{ gridTemplateColumns: '1fr 2fr 100px 140px', padding: '.55rem 1rem', borderColor: 'var(--border)', background: s.id === sessionId ? 'var(--green-glow)' : 'transparent' }}>
+                    <span className="font-mono text-2xs truncate" style={{ color: 'var(--green)' }}>{s.id.slice(0, 10)}…</span>
+                    <span className="font-semibold truncate" style={{ color: 'var(--text)' }}>{s.name}</span>
+                    <span className="border rounded text-2xs w-fit" style={{ background: 'var(--bg-2)', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '1px 8px' }}>
                       {Math.floor((s.chat_history?.length || 0) / 2)} pairs
                     </span>
-                    <span style={{ color: 'var(--text-3)', fontSize: '.68rem' }}>{new Date(s.created_at).toLocaleString()}</span>
+                    <span className="text-2xs" style={{ color: 'var(--text-3)' }}>{new Date(s.created_at).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -1129,27 +1425,28 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
       {/* ═══ DELETE CONFIRM MODAL ═══ */}
       {deleteTarget && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)' }}
+        <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)' }}
           onClick={() => setDeleteTarget(null)}>
-          <div style={{ background: 'var(--bg-1)', border: '1px solid #ff664455', borderRadius: 12, padding: '1.75rem 2rem', width: 360, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}
+          <div className="border rounded-xl" style={{ background: 'var(--bg-1)', borderColor: '#ff664455', padding: '1.75rem 2rem', width: 360, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}
             onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1rem' }}>
-              <span style={{ fontSize: '1.3rem' }}>🗑</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem', color: '#ff6644' }}>Delete Session</span>
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-2xl">🗑</span>
+              <span className="font-display font-extrabold text-lg" style={{ color: '#ff6644' }}>Delete Session</span>
             </div>
-            <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '.5rem' }}>
+            <p className="text-base leading-relaxed mb-2" style={{ color: 'var(--text-2)' }}>
               Are you sure you want to delete this workspace?
             </p>
-            <p style={{ fontSize: '.78rem', color: 'var(--text-3)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '.5rem .75rem', fontFamily: 'var(--font-mono)', marginBottom: '1.5rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <p className="text-sm border rounded px-3 py-2 mb-6 font-mono truncate" style={{ color: 'var(--text-3)', background: 'var(--bg)', borderColor: 'var(--border)' }}>
               {deleteTarget.name}
             </p>
-            <p style={{ fontSize: '.75rem', color: 'rgba(255,100,68,.7)', marginBottom: '1.5rem' }}>
+            <p className="text-xs mb-6" style={{ color: 'rgba(255,100,68,.7)' }}>
               This action cannot be undone.
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setDeleteTarget(null)}
-                style={{ padding: '.5rem 1.2rem', background: 'none', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.82rem' }}>
+                className="border rounded-lg cursor-pointer font-mono text-base"
+                style={{ padding: '.5rem 1.2rem', background: 'none', borderColor: 'var(--border)', color: 'var(--text-2)' }}>
                 Cancel
               </button>
               <button
@@ -1158,7 +1455,8 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
                   setDeleteTarget(null)
                   await handleCmd(`/delete ${target.id}`)
                 }}
-                style={{ padding: '.5rem 1.2rem', background: '#ff6644', border: 'none', color: '#fff', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.82rem', fontWeight: 700 }}>
+                className="border-none rounded-lg cursor-pointer font-mono text-base font-bold"
+                style={{ padding: '.5rem 1.2rem', background: '#ff6644', color: '#fff' }}>
                 Delete
               </button>
             </div>
@@ -1168,7 +1466,7 @@ export default function WorkspacePage({ params }: { params: { sessionId: string 
 
       {/* ═══ TOAST ═══ */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 300, background: 'var(--bg-1)', border: '1px solid var(--green-dim)', borderRadius: 8, padding: '.65rem 1.1rem', fontSize: '.82rem', color: 'var(--green)', fontFamily: 'var(--font-mono)', boxShadow: '0 8px 32px rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="fixed bottom-6 right-6 z-[300] border rounded-lg flex items-center gap-2 font-mono text-base" style={{ background: 'var(--bg-1)', borderColor: 'var(--green-dim)', padding: '.65rem 1.1rem', color: 'var(--green)', boxShadow: '0 8px 32px rgba(0,0,0,.4)' }}>
           {toast}
         </div>
       )}

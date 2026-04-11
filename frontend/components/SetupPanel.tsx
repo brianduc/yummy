@@ -59,8 +59,8 @@ export default function SetupPanel({ status, onRefresh }: Props) {
   }
 
   const row = (label: string, children: React.ReactNode) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-      <label style={{ color: 'var(--text-2)', fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+    <div className="flex flex-col gap-[0.3rem]">
+      <label className="text-text-2 text-xs uppercase tracking-[0.06em]">
         {label}
       </label>
       {children}
@@ -68,63 +68,48 @@ export default function SetupPanel({ status, onRefresh }: Props) {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
       {/* Status bar */}
       {status && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '0.5rem',
-          padding: '0.75rem',
-          borderBottom: '1px solid var(--border)',
-          fontSize: '0.75rem',
-        }}>
+        <div className="grid grid-cols-2 gap-2 p-3 border-b border-border text-[0.75rem]">
           {[
             ['AI Key', status.has_gemini_key || status.ai_provider === 'ollama'],
             ['GitHub Token', status.has_github_token],
             ['Repo', !!status.repo],
             ['KB Ready', status.kb_has_summary],
           ].map(([label, ok]) => (
-            <div key={label as string} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-              <span style={{ color: ok ? 'var(--green)' : 'var(--text-3)' }}>
+            <div key={label as string} className="flex gap-[0.4rem] items-center">
+              <span className={ok ? 'text-green' : 'text-text-3'}>
                 {ok ? '◉' : '○'}
               </span>
-              <span style={{ color: ok ? 'var(--text)' : 'var(--text-3)' }}>{label as string}</span>
+              <span className={ok ? 'text-text' : 'text-text-3'}>{label as string}</span>
             </div>
           ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+      <div className="flex border-b border-border">
         {(['ai', 'github'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            flex: 1,
-            padding: '0.55rem',
-            background: 'none',
-            border: 'none',
-            borderBottom: tab === t ? '2px solid var(--green)' : '2px solid transparent',
-            color: tab === t ? 'var(--green)' : 'var(--text-3)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-            transition: 'color 0.15s',
-          }}>
+          <button key={t} onClick={() => setTab(t)} className={[
+            'flex-1 py-[0.55rem] bg-transparent border-0 font-mono text-[0.75rem] cursor-pointer uppercase tracking-[0.06em] transition-colors duration-150',
+            tab === t
+              ? 'border-b-2 border-green text-green'
+              : 'border-b-2 border-transparent text-text-3',
+          ].join(' ')}>
             {t === 'ai' ? '⚡ AI Provider' : '🐙 GitHub'}
           </button>
         ))}
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+      <div className="flex-1 overflow-auto p-[0.9rem] flex flex-col gap-[0.9rem]">
 
         {tab === 'ai' && (
           <>
             {row('Provider', (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="flex gap-2">
                 {(['gemini', 'ollama'] as const).map(p => (
-                  <button key={p} onClick={() => setProvider(p)} className={`btn ${provider === p ? 'btn-primary' : 'btn-ghost'}`} style={{ flex: 1 }}>
+                  <button key={p} onClick={() => setProvider(p)} className={`btn flex-1 ${provider === p ? 'btn-primary' : 'btn-ghost'}`}>
                     {p === 'gemini' ? '☁ Gemini' : '🦙 Ollama'}
                   </button>
                 ))}
@@ -142,10 +127,10 @@ export default function SetupPanel({ status, onRefresh }: Props) {
                     onChange={e => setGeminiKey(e.target.value)}
                   />
                 ))}
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                <div className="text-xs text-text-3 leading-[1.5]">
                   Lấy key tại{' '}
                   <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer"
-                    style={{ color: 'var(--green)' }}>
+                    className="text-green">
                     aistudio.google.com
                   </a>
                   <br />Model: Gemini 2.5 Flash · ~$0.075/1M tokens in
@@ -157,8 +142,7 @@ export default function SetupPanel({ status, onRefresh }: Props) {
                   <input className="input" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)} />
                 ))}
                 {row('Model', (
-                  <select className="input" value={ollamaModel} onChange={e => setOllamaModel(e.target.value)}
-                    style={{ cursor: 'pointer' }}>
+                  <select className="input cursor-pointer" value={ollamaModel} onChange={e => setOllamaModel(e.target.value)}>
                     <option value="codellama">codellama (recommended for code)</option>
                     <option value="llama3">llama3 (general)</option>
                     <option value="deepseek-coder">deepseek-coder</option>
@@ -166,16 +150,16 @@ export default function SetupPanel({ status, onRefresh }: Props) {
                     <option value="phi3">phi3 (lightweight)</option>
                   </select>
                 ))}
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', lineHeight: 1.7, background: 'var(--bg-2)', padding: '0.6rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-                  <div style={{ color: 'var(--amber)', marginBottom: '0.3rem' }}>Setup Ollama:</div>
+                <div className="text-xs text-text-3 leading-[1.7] bg-bg-2 p-[0.6rem] rounded border border-border">
+                  <div className="text-amber mb-[0.3rem]">Setup Ollama:</div>
                   {['brew install ollama (Mac)', 'ollama serve', `ollama pull ${ollamaModel}`].map(cmd => (
-                    <div key={cmd} style={{ color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>$ {cmd}</div>
+                    <div key={cmd} className="text-green font-mono">$ {cmd}</div>
                   ))}
                 </div>
               </>
             )}
 
-            <button className="btn btn-primary" onClick={handleSaveAI} disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
+            <button className="btn btn-primary w-full justify-center" onClick={handleSaveAI} disabled={loading}>
               {loading ? 'Saving...' : 'Save AI Config'}
             </button>
           </>
@@ -184,10 +168,10 @@ export default function SetupPanel({ status, onRefresh }: Props) {
         {tab === 'github' && (
           <>
             {status?.repo && (
-              <div style={{ padding: '0.6rem', background: 'var(--green-glow)', border: '1px solid var(--green-mute)', borderRadius: 'var(--radius)', fontSize: '0.78rem' }}>
-                <span style={{ color: 'var(--green)' }}>◉ </span>
+              <div className="p-[0.6rem] bg-green-mute border border-green-dim rounded text-sm">
+                <span className="text-green">◉ </span>
                 {status.repo.owner}/{status.repo.repo}
-                {status.repo.branch && <span style={{ color: 'var(--text-2)' }}> @ {status.repo.branch}</span>}
+                {status.repo.branch && <span className="text-text-2"> @ {status.repo.branch}</span>}
               </div>
             )}
 
@@ -221,14 +205,14 @@ export default function SetupPanel({ status, onRefresh }: Props) {
               />
             ))}
 
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', lineHeight: 1.6, background: 'var(--bg-2)', padding: '0.6rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-              <div style={{ color: 'var(--amber)', marginBottom: '0.3rem' }}>Lấy GitHub Token:</div>
+            <div className="text-xs text-text-3 leading-[1.6] bg-bg-2 p-[0.6rem] rounded border border-border">
+              <div className="text-amber mb-[0.3rem]">Lấy GitHub Token:</div>
               <div>1. github.com/settings/tokens</div>
               <div>2. Fine-grained token → Contents: Read</div>
               <div>3. Cần cho private repo / tránh rate limit</div>
             </div>
 
-            <button className="btn btn-primary" onClick={handleSetupRepo} disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
+            <button className="btn btn-primary w-full justify-center" onClick={handleSetupRepo} disabled={loading}>
               {loading ? 'Connecting...' : 'Setup Repository'}
             </button>
           </>
@@ -237,15 +221,12 @@ export default function SetupPanel({ status, onRefresh }: Props) {
 
       {/* Flash message */}
       {msg && (
-        <div style={{
-          margin: '0 0.9rem 0.9rem',
-          padding: '0.5rem 0.8rem',
-          borderRadius: 'var(--radius)',
-          fontSize: '0.78rem',
-          background: msg.type === 'ok' ? 'var(--green-glow)' : 'rgba(255,68,68,0.08)',
-          border: `1px solid ${msg.type === 'ok' ? 'var(--green-mute)' : 'var(--red-dim)'}`,
-          color: msg.type === 'ok' ? 'var(--green)' : 'var(--red)',
-        }}>
+        <div className={[
+          'mx-[0.9rem] mb-[0.9rem] px-[0.8rem] py-2 rounded text-sm',
+          msg.type === 'ok'
+            ? 'bg-green-mute border border-green-dim text-green'
+            : 'bg-[rgba(255,68,68,0.08)] border border-red-dim text-red',
+        ].join(' ')}>
           {msg.text}
         </div>
       )}

@@ -16,7 +16,7 @@ ALLOWED_EXTENSIONS = {
 # ============================================================
 # AI MODEL CONFIG
 # ============================================================
-GEMINI_MODEL = "gemini-2.5-flash-preview-09-2025"
+GEMINI_MODEL = "gemini-3-flash-preview"
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 # Pricing per 1M tokens (USD)
@@ -48,8 +48,7 @@ DB: Dict[str, Any] = {
 # Dùng dict để có thể mutate từ router (tránh dùng global keyword)
 API_CONFIG: Dict[str, str] = {
     "gemini_key": os.getenv("GEMINI_API_KEY", ""),
-    # Nếu muốn dùng Ollama local, set OLLAMA_BASE_URL
-    # ví dụ: "http://localhost:11434"
+    "gemini_model": os.getenv("GEMINI_MODEL", GEMINI_MODEL),
     "ollama_base_url": os.getenv("OLLAMA_BASE_URL", ""),
     "ollama_model": os.getenv("OLLAMA_MODEL", "llama3"),
     "provider": os.getenv("AI_PROVIDER", "gemini"),  # "gemini" | "ollama"
