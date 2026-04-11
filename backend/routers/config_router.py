@@ -14,13 +14,17 @@ router = APIRouter(prefix="/config", tags=["Config"])
 @router.post("/api-key")
 def set_api_key(cfg: GeminiConfig):
     """
-    Set Gemini API key tại runtime.
-    Thay thế cho việc phải restart server khi đổi key.
-    
+    Set Gemini API key (và tuỳ chọn model) tại runtime.
     Lấy key tại: https://aistudio.google.com/app/apikey
     """
     API_CONFIG["gemini_key"] = cfg.api_key
-    return {"status": "ok", "message": "Gemini API key đã được cấu hình."}
+    if cfg.model:
+        API_CONFIG["gemini_model"] = cfg.model
+    return {
+        "status": "ok",
+        "message": "Gemini config đã được cấu hình.",
+        "model": API_CONFIG["gemini_model"],
+    }
 
 
 @router.post("/ollama")
@@ -107,6 +111,7 @@ def get_status():
         "has_gemini_key": bool(API_CONFIG.get("gemini_key")),
         "has_github_token": bool(DB.get("github_token")),
         "ollama_url": API_CONFIG.get("ollama_base_url") or None,
+        "gemini_model": API_CONFIG.get("gemini_model"),
         "ollama_model": API_CONFIG.get("ollama_model"),
         "kb_files": len(DB["knowledge_base"]["tree"]),
         "kb_insights": len(DB["knowledge_base"]["insights"]),

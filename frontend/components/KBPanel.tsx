@@ -62,19 +62,18 @@ export default function KBPanel({ hasRepo }: Props) {
     }
   }
 
-  const statusColor = scanStatus?.error ? 'var(--red)' : scanStatus?.running ? 'var(--amber)' : 'var(--green)'
+  const statusColorClass = scanStatus?.error ? 'text-red' : scanStatus?.running ? 'text-amber' : 'text-green'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Scan bar */}
-      <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: scanStatus ? '0.5rem' : 0 }}>
+      <div className="p-3 border-b border-border">
+        <div className={`flex gap-2 items-center ${scanStatus ? 'mb-2' : ''}`}>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary flex-1 justify-center"
             onClick={startScan}
             disabled={!hasRepo || loading || scanStatus?.running}
-            style={{ flex: 1, justifyContent: 'center' }}
           >
             {scanStatus?.running ? '⟳ Scanning...' : '⬡ Scan Repo'}
           </button>
@@ -84,23 +83,15 @@ export default function KBPanel({ hasRepo }: Props) {
         </div>
 
         {scanStatus && (
-          <div style={{ fontSize: '0.73rem' }}>
-            <div style={{ color: statusColor, marginBottom: '0.3rem', wordBreak: 'break-all' }}>
+          <div className="text-[0.73rem]">
+            <div className={`${statusColorClass} mb-[0.3rem] break-all`}>
               {scanStatus.text}
             </div>
-            <div style={{
-              height: '3px',
-              background: 'var(--bg-3)',
-              borderRadius: '2px',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${scanStatus.progress}%`,
-                background: scanStatus.error ? 'var(--red)' : 'var(--green)',
-                transition: 'width 0.5s ease',
-                boxShadow: '0 0 6px rgba(0,255,136,0.5)',
-              }} />
+            <div className="h-[3px] bg-bg-3 rounded-[2px] overflow-hidden">
+              <div style={{ width: `${scanStatus.progress}%` }} className={[
+                'h-full transition-[width] duration-500 ease-[ease] shadow-[0_0_6px_rgba(0,255,136,0.5)]',
+                scanStatus.error ? 'bg-red' : 'bg-green',
+              ].join(' ')} />
             </div>
           </div>
         )}
@@ -108,34 +99,27 @@ export default function KBPanel({ hasRepo }: Props) {
 
       {/* Tabs */}
       {kb && kb.file_count > 0 && (
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+        <div className="flex border-b border-border">
           {(['tree', 'summary', 'insights'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: 1,
-              padding: '0.45rem',
-              background: 'none',
-              border: 'none',
-              borderBottom: tab === t ? '2px solid var(--green)' : '2px solid transparent',
-              color: tab === t ? 'var(--green)' : 'var(--text-3)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.7rem',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}>
+            <button key={t} onClick={() => setTab(t)} className={[
+              'flex-1 py-[0.45rem] bg-transparent border-0 font-mono text-[0.7rem] cursor-pointer uppercase tracking-[0.05em]',
+              tab === t
+                ? 'border-b-2 border-green text-green'
+                : 'border-b-2 border-transparent text-text-3',
+            ].join(' ')}>
               {t}
             </button>
           ))}
         </div>
       )}
 
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className="flex-1 overflow-auto">
 
         {/* File tree */}
         {tab === 'tree' && kb && (
-          <div style={{ fontSize: '0.75rem' }}>
+          <div className="text-[0.75rem]">
             {kb.tree.length === 0 ? (
-              <div style={{ padding: '1.5rem', color: 'var(--text-3)', textAlign: 'center' }}>
+              <div className="p-6 text-text-3 text-center">
                 {hasRepo ? 'Click Scan Repo to index codebase' : 'Setup GitHub repo first'}
               </div>
             ) : (
@@ -143,24 +127,13 @@ export default function KBPanel({ hasRepo }: Props) {
                 <div
                   key={i}
                   onClick={() => openFile(f.path)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    padding: '0.25rem 0.75rem',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid transparent',
-                    transition: 'background 0.1s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  className="flex items-center gap-[0.4rem] px-3 py-1 cursor-pointer border-b border-transparent transition-[background] duration-100 hover:bg-bg-2"
                 >
                   <span style={{
-                    width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0,
                     background: f.status === 'done' ? 'var(--green)' : f.status === 'processing' ? 'var(--amber)' : 'var(--text-3)',
                     boxShadow: f.status === 'done' ? '0 0 4px var(--green)' : 'none',
-                  }} />
-                  <span style={{ color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  }} className="w-[6px] h-[6px] rounded-full flex-shrink-0" />
+                  <span className="text-text-2 overflow-hidden text-ellipsis whitespace-nowrap">
                     {f.path}
                   </span>
                 </div>
@@ -171,38 +144,29 @@ export default function KBPanel({ hasRepo }: Props) {
 
         {/* Project summary */}
         {tab === 'summary' && kb && (
-          <div style={{ padding: '0.9rem' }}>
+          <div className="p-[0.9rem]">
             {kb.project_summary ? (
               <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(kb.project_summary) }} />
             ) : (
-              <div style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>No summary yet. Run scan first.</div>
+              <div className="text-text-3 text-[0.8rem]">No summary yet. Run scan first.</div>
             )}
           </div>
         )}
 
         {/* Insights */}
         {tab === 'insights' && kb && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+          <div className="flex flex-col gap-0">
             {kb.insights.map((ins, i) => (
-              <details key={ins.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <summary style={{
-                  padding: '0.5rem 0.75rem',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  color: 'var(--text-2)',
-                  listStyle: 'none',
-                  display: 'flex',
-                  gap: '0.5rem',
-                  alignItems: 'center',
-                }}>
-                  <span style={{ color: 'var(--green)' }}>▸</span>
+              <details key={ins.id} className="border-b border-border">
+                <summary className="px-3 py-2 cursor-pointer text-[0.75rem] text-text-2 list-none flex gap-2 items-center">
+                  <span className="text-green">▸</span>
                   <span>Chunk {i + 1} — {ins.files.length} files</span>
                 </summary>
-                <div style={{ padding: '0.5rem 0.75rem 0.75rem', background: 'var(--bg-1)' }}>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.4rem' }}>
+                <div className="px-3 pt-2 pb-3 bg-bg-1">
+                  <div className="text-[0.7rem] text-text-3 mb-[0.4rem]">
                     {ins.files.slice(0, 4).join(' · ')}{ins.files.length > 4 ? ` +${ins.files.length - 4}` : ''}
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-2)', lineHeight: 1.6 }}>
+                  <div className="text-sm text-text-2 leading-[1.6]">
                     {ins.summary.slice(0, 300)}{ins.summary.length > 300 ? '...' : ''}
                   </div>
                 </div>
@@ -214,27 +178,19 @@ export default function KBPanel({ hasRepo }: Props) {
 
       {/* File viewer modal */}
       {fileContent && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
-        }} onClick={() => setFileContent(null)}>
-          <div style={{
-            background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
-            width: '100%', maxWidth: '800px', maxHeight: '80vh',
-            display: 'flex', flexDirection: 'column',
-          }} onClick={e => e.stopPropagation()}>
-            <div style={{
-              padding: '0.6rem 1rem', borderBottom: '1px solid var(--border)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--green)' }}>{fileContent.path}</span>
-              <button className="btn btn-ghost" onClick={() => setFileContent(null)} style={{ padding: '0.2rem 0.5rem' }}>✕</button>
+        <div
+          className="fixed inset-0 bg-[rgba(0,0,0,0.85)] z-[100] flex items-center justify-center p-8"
+          onClick={() => setFileContent(null)}
+        >
+          <div
+            className="bg-bg-1 border border-border rounded-lg w-full max-w-[800px] max-h-[80vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-4 py-[0.6rem] border-b border-border flex justify-between items-center">
+              <span className="text-[0.8rem] text-green">{fileContent.path}</span>
+              <button className="btn btn-ghost px-2 py-[0.2rem]" onClick={() => setFileContent(null)}>✕</button>
             </div>
-            <pre style={{
-              flex: 1, overflow: 'auto', padding: '1rem',
-              fontSize: '0.78rem', color: 'var(--text)', lineHeight: 1.6,
-              margin: 0, fontFamily: 'var(--font-mono)',
-            }}>
+            <pre className="flex-1 overflow-auto p-4 text-sm text-text leading-[1.6] m-0 font-mono">
               {fileContent.content}
             </pre>
           </div>

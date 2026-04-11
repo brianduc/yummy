@@ -69,7 +69,8 @@ async def _call_gemini(agent_role: str, prompt: str, instruction: str) -> str:
             )
         )
 
-    url = f"{GEMINI_BASE_URL}/{GEMINI_MODEL}:generateContent?key={key}"
+    model = API_CONFIG.get("gemini_model", GEMINI_MODEL)
+    url = f"{GEMINI_BASE_URL}/{model}:generateContent?key={key}"
     payload = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "systemInstruction": {"parts": [{"text": instruction}]}

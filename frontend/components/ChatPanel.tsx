@@ -49,54 +49,47 @@ export default function ChatPanel({ sessionId, chatHistory, onHistoryUpdate, has
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Messages */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className="flex-1 overflow-auto p-3 flex flex-col gap-3">
         {chatHistory.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.5rem', color: 'var(--text-3)', fontSize: '0.8rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', opacity: 0.4 }}>◎</div>
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-text-3 text-[0.8rem] text-center">
+            <div className="text-[2rem] opacity-40">◎</div>
             {hasKB ? 'Ask anything about the codebase' : 'Scan the repo first to enable chat'}
           </div>
         ) : (
           chatHistory.map((msg, i) => (
-            <div key={i} className="fade-in" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              gap: '0.2rem',
-            }}>
-              <div style={{
-                fontSize: '0.68rem',
-                color: 'var(--text-3)',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}>
+            <div
+              key={i}
+              className="fade-in flex flex-col gap-[0.2rem]"
+              style={{ alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}
+            >
+              <div className="text-[0.68rem] text-text-3 tracking-[0.04em] uppercase">
                 {msg.role === 'user' ? 'you' : msg.role === 'assistant' ? 'expert agent' : 'system'}
               </div>
-              <div style={{
-                maxWidth: '90%',
-                padding: '0.5rem 0.8rem',
-                borderRadius: 'var(--radius-lg)',
-                fontSize: '0.82rem',
-                lineHeight: 1.6,
-                ...(msg.role === 'user' ? {
-                  background: 'var(--green-mute)',
-                  border: '1px solid var(--green-dim)',
-                  color: 'var(--green)',
-                  borderBottomRightRadius: 'var(--radius)',
-                } : msg.role === 'assistant' ? {
-                  background: 'var(--bg-2)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text)',
-                  borderBottomLeftRadius: 'var(--radius)',
-                } : {
-                  background: 'rgba(255,68,68,0.06)',
-                  border: '1px solid var(--red-dim)',
-                  color: 'var(--red)',
-                  width: '100%',
-                }),
-              }}>
+              <div
+                className="max-w-[90%] px-[0.8rem] py-2 text-base leading-[1.6]"
+                style={{
+                  borderRadius: 'var(--radius-lg)',
+                  ...(msg.role === 'user' ? {
+                    background: 'var(--green-mute)',
+                    border: '1px solid var(--green-dim)',
+                    color: 'var(--green)',
+                    borderBottomRightRadius: 'var(--radius)',
+                  } : msg.role === 'assistant' ? {
+                    background: 'var(--bg-2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    borderBottomLeftRadius: 'var(--radius)',
+                  } : {
+                    background: 'rgba(255,68,68,0.06)',
+                    border: '1px solid var(--red-dim)',
+                    color: 'var(--red)',
+                    width: '100%',
+                  }),
+                }}
+              >
                 {msg.role === 'assistant' ? (
                   <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(msg.text) }} />
                 ) : (
@@ -106,28 +99,17 @@ export default function ChatPanel({ sessionId, chatHistory, onHistoryUpdate, has
 
               {/* RAG Trace */}
               {msg.trace && (
-                <details style={{ maxWidth: '90%', width: '100%' }}>
-                  <summary style={{
-                    fontSize: '0.68rem', color: 'var(--text-3)', cursor: 'pointer',
-                    listStyle: 'none', display: 'flex', gap: '0.3rem', alignItems: 'center',
-                  }}>
+                <details className="max-w-[90%] w-full">
+                  <summary className="text-[0.68rem] text-text-3 cursor-pointer list-none flex gap-[0.3rem] items-center">
                     <span>⬡</span> RAG trace · {msg.trace.source_chunks.length} chunks
                   </summary>
-                  <div style={{
-                    marginTop: '0.3rem',
-                    padding: '0.5rem',
-                    background: 'var(--bg-1)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius)',
-                    fontSize: '0.7rem',
-                    color: 'var(--text-3)',
-                  }}>
+                  <div className="mt-[0.3rem] p-2 bg-bg-1 border border-border rounded text-[0.7rem] text-text-3">
                     {msg.trace.source_chunks.map((c, j) => (
-                      <div key={j} style={{ marginBottom: '0.4rem' }}>
-                        <div style={{ color: 'var(--amber)', marginBottom: '0.1rem' }}>
+                      <div key={j} className="mb-[0.4rem]">
+                        <div className="text-amber mb-[0.1rem]">
                           {c.files.slice(0, 3).join(' · ')}
                         </div>
-                        <div style={{ color: 'var(--text-3)' }}>{c.summary_preview}</div>
+                        <div className="text-text-3">{c.summary_preview}</div>
                       </div>
                     ))}
                   </div>
@@ -138,8 +120,8 @@ export default function ChatPanel({ sessionId, chatHistory, onHistoryUpdate, has
         )}
 
         {loading && (
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: 'var(--text-3)', fontSize: '0.78rem' }}>
-            <span className="blink" style={{ color: 'var(--green)' }}>▊</span>
+          <div className="flex gap-2 items-center text-text-3 text-sm">
+            <span className="blink text-green">▊</span>
             Expert agent thinking...
           </div>
         )}
@@ -148,22 +130,20 @@ export default function ChatPanel({ sessionId, chatHistory, onHistoryUpdate, has
       </div>
 
       {/* Input */}
-      <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.5rem' }}>
+      <div className="p-3 border-t border-border flex gap-2">
         <textarea
-          className="input"
+          className="input resize-none flex-1"
           rows={2}
           placeholder={hasKB ? 'Ask about the codebase... (Enter to send)' : 'Scan repo first'}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
           disabled={!hasKB || loading}
-          style={{ resize: 'none', flex: 1 }}
         />
         <button
-          className="btn btn-primary"
+          className="btn btn-primary self-end px-[0.9rem] py-[0.45rem]"
           onClick={send}
           disabled={!hasKB || loading || !input.trim()}
-          style={{ alignSelf: 'flex-end', padding: '0.45rem 0.9rem' }}
         >
           ↑
         </button>

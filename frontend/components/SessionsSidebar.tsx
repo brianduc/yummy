@@ -76,22 +76,15 @@ export default function SessionsSidebar({ currentSessionId }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div style={{
-        padding: '0.75rem',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      <div className="p-3 border-b border-border flex items-center justify-between">
+        <span className="text-xs text-text-3 uppercase tracking-[0.08em]">
           Workspaces
         </span>
         <button
-          className="btn btn-ghost"
+          className="btn btn-ghost px-[0.4rem] py-[0.15rem] text-xs"
           onClick={() => setShowInput(!showInput)}
-          style={{ padding: '0.15rem 0.4rem', fontSize: '0.75rem' }}
         >
           +
         </button>
@@ -99,73 +92,56 @@ export default function SessionsSidebar({ currentSessionId }: Props) {
 
       {/* New session input */}
       {showInput && (
-        <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border)', display: 'flex', gap: '0.3rem' }}>
+        <div className="p-2 border-b border-border flex gap-[0.3rem]">
           <input
-            className="input"
+            className="input text-xs px-2 py-[0.3rem]"
             placeholder="Session name..."
             value={newName}
             onChange={e => setNewName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && createSession()}
             autoFocus
-            style={{ fontSize: '0.75rem', padding: '0.3rem 0.5rem' }}
           />
-          <button className="btn btn-primary" onClick={createSession} disabled={creating} style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}>
+          <button className="btn btn-primary px-2 py-[0.3rem] text-xs" onClick={createSession} disabled={creating}>
             {creating ? '⟳' : '✓'}
           </button>
         </div>
       )}
 
       {/* Session list */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className="flex-1 overflow-auto">
         {sessions.map(session => {
           const active = session.id === currentSessionId
           return (
             <div
               key={session.id}
               onClick={() => router.push(`/workspace/${session.id}`)}
+              className={`group px-3 py-[0.55rem] cursor-pointer border-b border-border transition-[background] duration-150 relative${active ? '' : ' hover:bg-bg-2'}`}
               style={{
-                padding: '0.55rem 0.75rem',
-                cursor: 'pointer',
-                background: active ? 'var(--green-glow)' : 'transparent',
+                background: active ? 'var(--green-glow)' : undefined,
                 borderLeft: active ? '2px solid var(--green)' : '2px solid transparent',
-                borderBottom: '1px solid var(--border)',
-                transition: 'background 0.15s',
-                position: 'relative',
               }}
-              onMouseEnter={e => !active && (e.currentTarget.style.background = 'var(--bg-2)')}
-              onMouseLeave={e => !active && (e.currentTarget.style.background = 'transparent')}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
-                <span style={{
-                  fontSize: '0.65rem',
-                  color: STATE_COLOR[session.workflow_state] || 'var(--text-3)',
-                }}>
+              <div className="flex items-center gap-[0.4rem] mb-[0.15rem]">
+                <span
+                  className="text-2xs"
+                  style={{ color: STATE_COLOR[session.workflow_state] || 'var(--text-3)' }}
+                >
                   {STATE_ICON[session.workflow_state] || '○'}
                 </span>
-                <span style={{
-                  fontSize: '0.78rem',
-                  color: active ? 'var(--green)' : 'var(--text)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flex: 1,
-                }}>
+                <span
+                  className="text-sm overflow-hidden text-ellipsis whitespace-nowrap flex-1"
+                  style={{ color: active ? 'var(--green)' : 'var(--text)' }}
+                >
                   {session.name}
                 </span>
                 <button
                   onClick={e => deleteSession(session.id, e)}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-3)', fontSize: '0.7rem', padding: '0',
-                    opacity: 0, transition: 'opacity 0.15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                  className="bg-transparent border-0 cursor-pointer text-text-3 text-[0.7rem] p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                 >
                   ✕
                 </button>
               </div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-3)', paddingLeft: '0.85rem' }}>
+              <div className="text-2xs text-text-3 pl-[0.85rem]">
                 {session.workflow_state.replace(/_/g, ' ')}
               </div>
             </div>

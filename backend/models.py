@@ -18,6 +18,7 @@ class SetupRequest(BaseModel):
 
 class GeminiConfig(BaseModel):
     api_key: str = Field(..., description="Gemini API Key từ Google AI Studio")
+    model: Optional[str] = Field(None, description="Gemini model ID (optional, giữ nguyên nếu không truyền)")
 
 
 class OllamaConfig(BaseModel):

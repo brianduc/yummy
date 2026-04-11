@@ -20,7 +20,7 @@ export default function MetricsPanel() {
   useEffect(() => { fetch() }, [])
 
   if (!data) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', fontSize: '0.8rem' }}>
+    <div className="flex items-center justify-center h-full text-text-3 text-[0.8rem]">
       {loading ? 'Loading...' : 'No metrics yet'}
     </div>
   )
@@ -28,20 +28,20 @@ export default function MetricsPanel() {
   const agentEntries = Object.entries(data.agent_breakdown || {})
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Top stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid var(--border)' }}>
+      <div className="grid grid-cols-3 border-b border-border">
         {[
           { label: 'Requests', value: data.total_requests },
           { label: 'Cost (USD)', value: `$${data.total_cost_usd.toFixed(5)}` },
           { label: 'Agents', value: agentEntries.length },
         ].map(({ label, value }) => (
-          <div key={label} style={{ padding: '0.75rem', textAlign: 'center', borderRight: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '1.1rem', color: 'var(--green)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+          <div key={label} className="p-3 text-center border-r border-border">
+            <div className="text-xl text-green font-bold font-display">
               {value}
             </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div className="text-[0.68rem] text-text-3 uppercase tracking-[0.06em]">
               {label}
             </div>
           </div>
@@ -50,24 +50,20 @@ export default function MetricsPanel() {
 
       {/* Agent breakdown */}
       {agentEntries.length > 0 && (
-        <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+        <div className="p-3 border-b border-border">
+          <div className="text-[0.68rem] text-text-3 uppercase tracking-[0.06em] mb-2">
             Agent Breakdown
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+          <div className="flex flex-col gap-[0.3rem]">
             {agentEntries.map(([agent, stats]) => (
-              <div key={agent} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem' }}>
-                <span style={{ color: 'var(--green)', width: '80px', flexShrink: 0 }}>{agent}</span>
-                <div style={{ flex: 1, height: '4px', background: 'var(--bg-3)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${Math.min(100, (stats.calls / data.total_requests) * 100)}%`,
-                    background: 'var(--green)',
-                    boxShadow: '0 0 4px rgba(0,255,136,0.4)',
-                  }} />
+              <div key={agent} className="flex items-center gap-2 text-[0.75rem]">
+                <span className="text-green w-20 flex-shrink-0">{agent}</span>
+                <div className="flex-1 h-1 bg-bg-3 rounded-[2px] overflow-hidden">
+                  <div style={{ width: `${Math.min(100, (stats.calls / data.total_requests) * 100)}%` }}
+                    className="h-full bg-green shadow-[0_0_4px_rgba(0,255,136,0.4)]" />
                 </div>
-                <span style={{ color: 'var(--text-2)', width: '40px', textAlign: 'right' }}>{stats.calls}x</span>
-                <span style={{ color: 'var(--text-3)', width: '60px', textAlign: 'right' }}>${stats.cost.toFixed(4)}</span>
+                <span className="text-text-2 w-10 text-right">{stats.calls}x</span>
+                <span className="text-text-3 w-[60px] text-right">${stats.cost.toFixed(4)}</span>
               </div>
             ))}
           </div>
@@ -75,34 +71,28 @@ export default function MetricsPanel() {
       )}
 
       {/* Request log */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '50px 60px 80px 55px 55px 55px 65px', gap: '0', borderBottom: '1px solid var(--border)', padding: '0.3rem 0.5rem', fontSize: '0.65rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', position: 'sticky', top: 0, background: 'var(--bg-1)' }}>
+      <div className="flex-1 overflow-auto">
+        <div className="grid gap-0 border-b border-border px-2 py-[0.3rem] text-2xs text-text-3 uppercase tracking-[0.04em] sticky top-0 bg-bg-1"
+          style={{ gridTemplateColumns: '50px 60px 80px 55px 55px 55px 65px' }}>
           <span>#</span><span>Time</span><span>Agent</span><span>In</span><span>Out</span><span>Lat</span><span>Cost</span>
         </div>
         {data.logs.map((log, i) => (
-          <div key={log.id} style={{
-            display: 'grid',
-            gridTemplateColumns: '50px 60px 80px 55px 55px 55px 65px',
-            gap: '0',
-            padding: '0.3rem 0.5rem',
-            fontSize: '0.72rem',
-            borderBottom: '1px solid var(--border)',
-            background: i % 2 === 0 ? 'transparent' : 'var(--bg-1)',
-            alignItems: 'center',
-          }}>
-            <span style={{ color: 'var(--text-3)' }}>{i + 1}</span>
-            <span style={{ color: 'var(--text-2)' }}>{log.time}</span>
-            <span style={{ color: 'var(--green)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.agent}</span>
-            <span style={{ color: 'var(--text-2)' }}>{(log.in_tokens / 1000).toFixed(1)}k</span>
-            <span style={{ color: 'var(--text-2)' }}>{(log.out_tokens / 1000).toFixed(1)}k</span>
-            <span style={{ color: 'var(--text-2)' }}>{log.latency}s</span>
-            <span style={{ color: log.cost > 0.001 ? 'var(--amber)' : 'var(--text-3)' }}>${log.cost.toFixed(4)}</span>
+          <div key={log.id}
+            className={`grid gap-0 px-2 py-[0.3rem] text-xs border-b border-border items-center ${i % 2 === 0 ? 'bg-transparent' : 'bg-bg-1'}`}
+            style={{ gridTemplateColumns: '50px 60px 80px 55px 55px 55px 65px' }}>
+            <span className="text-text-3">{i + 1}</span>
+            <span className="text-text-2">{log.time}</span>
+            <span className="text-green overflow-hidden text-ellipsis whitespace-nowrap">{log.agent}</span>
+            <span className="text-text-2">{(log.in_tokens / 1000).toFixed(1)}k</span>
+            <span className="text-text-2">{(log.out_tokens / 1000).toFixed(1)}k</span>
+            <span className="text-text-2">{log.latency}s</span>
+            <span className={log.cost > 0.001 ? 'text-amber' : 'text-text-3'}>${log.cost.toFixed(4)}</span>
           </div>
         ))}
       </div>
 
-      <div style={{ padding: '0.5rem', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)' }}>
-        <button className="btn btn-ghost" onClick={fetch} style={{ fontSize: '0.72rem' }}>
+      <div className="p-2 flex justify-end border-t border-border">
+        <button className="btn btn-ghost text-xs" onClick={fetch}>
           ⟳ Refresh
         </button>
       </div>

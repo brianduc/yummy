@@ -89,6 +89,7 @@ export interface SystemStatus {
   repo: { owner: string; repo: string; branch?: string } | null
   ai_provider: 'gemini' | 'ollama'
   has_gemini_key: boolean
+  gemini_model?: string
   has_github_token: boolean
   ollama_url?: string
   ollama_model?: string

@@ -80,66 +80,56 @@ export default function SDLCWorkflow({ session, onUpdate, hasKB }: Props) {
   const isWaiting = (approval: WorkflowState) => state === approval
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Pipeline visualization */}
-      <div style={{
-        padding: '0.75rem',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        gap: '0.25rem',
-        alignItems: 'center',
-        overflowX: 'auto',
-      }}>
+      <div className="p-3 border-b border-border flex gap-1 items-center overflow-x-auto">
         {AGENTS.map((agent, i) => {
           const status = agentStatus(agent.key, state, outputs)
           return (
-            <div key={agent.key} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0 }}>
+            <div key={agent.key} className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => outputs[agent.key as keyof AgentOutputs] && openAgent(agent.key)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.2rem',
-                  padding: '0.4rem 0.5rem',
-                  background: status === 'done' ? 'var(--green-glow)' : 'var(--bg-2)',
-                  border: `1px solid ${status === 'done' ? 'var(--green-mute)' : status === 'running' ? 'var(--amber-dim)' : 'var(--border)'}`,
-                  borderRadius: 'var(--radius)',
-                  cursor: outputs[agent.key as keyof AgentOutputs] ? 'pointer' : 'default',
-                  transition: 'all 0.2s',
-                  minWidth: '52px',
-                }}
+                className={[
+                  'flex flex-col items-center gap-[0.2rem] px-2 py-[0.4rem] rounded transition-all duration-200 min-w-[52px]',
+                  status === 'done'
+                    ? 'bg-green-mute border border-green-dim'
+                    : 'bg-bg-2 border',
+                  status === 'running'
+                    ? 'border-amber'
+                    : status === 'done'
+                      ? ''
+                      : 'border-border',
+                  outputs[agent.key as keyof AgentOutputs] ? 'cursor-pointer' : 'cursor-default',
+                ].join(' ')}
               >
-                <span style={{ fontSize: '1rem' }}>{agent.icon}</span>
-                <span style={{
-                  fontSize: '0.6rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  color: status === 'done' ? 'var(--green)' : status === 'running' ? 'var(--amber)' : 'var(--text-3)',
-                }}>
+                <span className="text-lg">{agent.icon}</span>
+                <span className={[
+                  'text-[0.6rem] font-bold tracking-[0.06em]',
+                  status === 'done' ? 'text-green' : status === 'running' ? 'text-amber' : 'text-text-3',
+                ].join(' ')}>
                   {status === 'running' ? '⟳' : status === 'done' ? '✓' : ''} {agent.label}
                 </span>
               </button>
               {i < AGENTS.length - 1 && (
-                <span style={{ color: 'var(--border-2)', fontSize: '0.7rem' }}>→</span>
+                <span className="text-border-2 text-[0.7rem]">→</span>
               )}
             </div>
           )
         })}
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+      <div className="flex-1 overflow-auto p-[0.9rem] flex flex-col gap-[0.9rem]">
 
         {/* IDLE: Start CR */}
         {(state === 'idle' || state === 'done') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+          <div className="flex flex-col gap-[0.7rem]">
             {state === 'done' && (
-              <div style={{ padding: '0.6rem 0.9rem', background: 'var(--green-glow)', border: '1px solid var(--green-mute)', borderRadius: 'var(--radius)', fontSize: '0.8rem', color: 'var(--green)' }}>
+              <div className="px-[0.9rem] py-[0.6rem] bg-green-mute border border-green-dim rounded text-sm text-green">
                 🎉 SDLC Pipeline complete! Start a new CR below.
               </div>
             )}
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <label className="text-xs text-text-2 uppercase tracking-[0.06em]">
               Change Request
             </label>
             <textarea
@@ -152,21 +142,20 @@ export default function SDLCWorkflow({ session, onUpdate, hasKB }: Props) {
               style={{ resize: 'vertical' }}
             />
             <button
-              className="btn btn-primary"
+              className="btn btn-primary justify-center"
               onClick={() => run(() => api.sdlc.start(session.id, requirement))}
               disabled={!hasKB || loading || !requirement.trim()}
-              style={{ justifyContent: 'center' }}
             >
               {loading ? '⟳ Running BA...' : '▶ Start SDLC Pipeline'}
             </button>
-            {!hasKB && <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>Scan repo first to enable SDLC.</div>}
+            {!hasKB && <div className="text-xs text-text-3">Scan repo first to enable SDLC.</div>}
           </div>
         )}
 
         {/* Running states */}
         {state.startsWith('running_') && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-2)', fontSize: '0.82rem' }}>
-            <div className="blink" style={{ color: 'var(--green)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>⟳</div>
+          <div className="text-center p-8 text-text-2 text-base">
+            <div className="blink text-green text-[1.5rem] mb-2">⟳</div>
             Agent running...
           </div>
         )}
@@ -212,23 +201,22 @@ export default function SDLCWorkflow({ session, onUpdate, hasKB }: Props) {
 
         {/* DONE — show all outputs */}
         {state === 'done' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div className="flex flex-col gap-2">
+            <div className="text-xs text-text-2 uppercase tracking-[0.06em]">
               Agent Outputs — click to view
             </div>
             {AGENTS.filter(a => outputs[a.key as keyof AgentOutputs]).map(agent => (
-              <button key={agent.key} className="btn btn-ghost" onClick={() => openAgent(agent.key)}
-                style={{ justifyContent: 'flex-start', gap: '0.5rem' }}>
+              <button key={agent.key} className="btn btn-ghost justify-start gap-2" onClick={() => openAgent(agent.key)}>
                 <span>{agent.icon}</span>
-                <span style={{ color: 'var(--text)' }}>{agent.full}</span>
-                <span style={{ marginLeft: 'auto', color: 'var(--green)', fontSize: '0.7rem' }}>view →</span>
+                <span className="text-text">{agent.full}</span>
+                <span className="ml-auto text-green text-[0.7rem]">view →</span>
               </button>
             ))}
           </div>
         )}
 
         {error && (
-          <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(255,68,68,0.06)', border: '1px solid var(--red-dim)', borderRadius: 'var(--radius)', color: 'var(--red)', fontSize: '0.78rem' }}>
+          <div className="px-3 py-2 bg-[rgba(255,68,68,0.06)] border border-red-dim rounded text-sm text-red">
             ❌ {error}
           </div>
         )}
@@ -236,43 +224,33 @@ export default function SDLCWorkflow({ session, onUpdate, hasKB }: Props) {
 
       {/* Agent output viewer/editor modal */}
       {viewingAgent && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 100,
-          display: 'flex', flexDirection: 'column',
-        }}>
-          <div style={{
-            background: 'var(--bg-1)', borderBottom: '1px solid var(--border)',
-            padding: '0.6rem 1rem', display: 'flex', gap: '0.75rem', alignItems: 'center',
-          }}>
-            <span style={{ color: 'var(--green)', fontSize: '0.82rem', fontWeight: 600 }}>
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.9)] z-[100] flex flex-col">
+          <div className="bg-bg-1 border-b border-border px-4 py-[0.6rem] flex gap-3 items-center">
+            <span className="text-green text-base font-semibold">
               {AGENTS.find(a => a.key === viewingAgent)?.full} Output
             </span>
-            <span style={{ color: 'var(--text-3)', fontSize: '0.72rem' }}>
+            <span className="text-text-3 text-xs">
               {isWaiting('waiting_ba_approval') && viewingAgent === 'ba' ? '— edit before approving' :
                isWaiting('waiting_sa_approval') && viewingAgent === 'sa' ? '— edit before approving' :
                isWaiting('waiting_dev_lead_approval') && viewingAgent === 'dev_lead' ? '— edit before approving' : ''}
             </span>
-            <button className="btn btn-ghost" onClick={() => setViewingAgent(null)} style={{ marginLeft: 'auto', padding: '0.2rem 0.5rem' }}>✕</button>
+            <button className="btn btn-ghost ml-auto px-2 py-[0.2rem]" onClick={() => setViewingAgent(null)}>✕</button>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          <div className="flex-1 flex overflow-hidden">
             {/* Rendered view */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '1.5rem' }}>
+            <div className="flex-1 overflow-auto p-6">
               <div className="prose" dangerouslySetInnerHTML={{ __html: mdToHtml(editContent) }} />
             </div>
             {/* Edit textarea */}
-            <div style={{ width: '45%', borderLeft: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '0.4rem 0.75rem', borderBottom: '1px solid var(--border)', fontSize: '0.7rem', color: 'var(--text-3)' }}>
+            <div className="w-[45%] border-l border-border flex flex-col">
+              <div className="px-3 py-[0.4rem] border-b border-border text-[0.7rem] text-text-3">
                 ✎ Edit
               </div>
               <textarea
                 value={editContent}
                 onChange={e => setEditContent(e.target.value)}
-                style={{
-                  flex: 1, background: 'var(--bg)', border: 'none', outline: 'none',
-                  padding: '0.75rem', fontFamily: 'var(--font-mono)', fontSize: '0.78rem',
-                  color: 'var(--text)', lineHeight: 1.6, resize: 'none',
-                }}
+                className="flex-1 bg-bg border-none outline-none px-3 py-3 font-mono text-sm text-text leading-[1.6] resize-none"
               />
             </div>
           </div>
@@ -288,23 +266,19 @@ function ApprovalCard({ title, agentKey, outputs, loading, onView, onApprove, on
 }) {
   const content = outputs[agentKey as keyof AgentOutputs] || ''
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-      <div style={{ fontSize: '0.72rem', color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <div className="flex flex-col gap-[0.7rem]">
+      <div className="text-xs text-amber uppercase tracking-[0.06em]">
         ⏳ Awaiting approval: {title}
       </div>
-      <div style={{
-        padding: '0.7rem', background: 'var(--bg-2)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', fontSize: '0.78rem', color: 'var(--text-2)', lineHeight: 1.6,
-        maxHeight: '120px', overflow: 'hidden', position: 'relative',
-      }}>
+      <div className="p-[0.7rem] bg-bg-2 border border-border rounded text-sm text-text-2 leading-[1.6] max-h-[120px] overflow-hidden relative">
         {content.slice(0, 400)}...
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(transparent, var(--bg-2))' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[40px] bg-gradient-to-t from-bg-2 to-transparent" />
       </div>
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <button className="btn btn-ghost" onClick={onView} style={{ flex: 1, justifyContent: 'center' }}>
+      <div className="flex gap-2">
+        <button className="btn btn-ghost flex-1 justify-center" onClick={onView}>
           View & Edit
         </button>
-        <button className="btn btn-amber" onClick={onApprove} disabled={loading} style={{ flex: 1, justifyContent: 'center' }}>
+        <button className="btn btn-amber flex-1 justify-center" onClick={onApprove} disabled={loading}>
           {loading ? '⟳' : '✓ Approve →'}
         </button>
       </div>
