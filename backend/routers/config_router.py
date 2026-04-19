@@ -145,7 +145,7 @@ def get_status():
 
     return {
         "repo": DB.get("repo_info"),
-        "ai_provider": API_CONFIG.get("provider", "gemini"),
+        "ai_provider": API_CONFIG.get("provider", "openai"),
         # Gemini
         "has_gemini_key": bool(API_CONFIG.get("gemini_key")),
         "gemini_key_source": _key_source("GEMINI_API_KEY", "gemini_key"),

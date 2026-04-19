@@ -93,22 +93,28 @@ The Min/Max = 1 is important: YUMMY currently keeps sessions and the repo knowle
 
 ### 2.4 Environment variables and secrets
 
-In the service configuration screen:
+The default provider is **OpenAI** (set in [apprunner.yaml](../../apprunner.yaml)). Set the following in the App Runner console:
 
-| Key              | Value                                     | Source              |
-|------------------|-------------------------------------------|---------------------|
-| `AI_PROVIDER`    | `gemini` (or `openai` / `bedrock` / etc.) | Plain text          |
-| `CORS_ORIGINS`   | `https://app.yourdomain.com`              | Plain text          |
-| `GEMINI_API_KEY` | your Gemini key                           | **Secrets Manager** |
+| Key              | Value                                                   | Source              |
+|------------------|---------------------------------------------------------|---------------------|
+| `AI_PROVIDER`    | `openai` (already set in `apprunner.yaml`)              | Plain text          |
+| `OPENAI_MODEL`   | `gpt-4o-mini` (already set in `apprunner.yaml`; override here if needed) | Plain text |
+| `CORS_ORIGINS`   | `https://app.yourdomain.com` (or the Amplify default URL while waiting for the domain) | Plain text |
+| `OPENAI_API_KEY` | your `sk-...` key                                       | **Secrets Manager** |
 
-Secrets Manager setup (2 minutes):
+Secrets Manager setup for `OPENAI_API_KEY` (2 minutes):
 
 1. AWS Console -> **Secrets Manager** -> **Store a new secret** -> **Other type** -> **Plaintext**.
-2. Paste the Gemini key as the value.
-3. Name it `yummy/GEMINI_API_KEY`.
-4. Back in App Runner, add env var `GEMINI_API_KEY` and select the secret reference.
+2. Paste the OpenAI key as the value.
+3. Name it `yummy/OPENAI_API_KEY`.
+4. Back in App Runner -> service -> **Configuration** -> **Environment variables** -> add `OPENAI_API_KEY`, choose **Reference**, point at `yummy/OPENAI_API_KEY`.
+5. The App Runner instance role needs `secretsmanager:GetSecretValue` on that secret ARN.
 
-Add others as needed: `OPENAI_API_KEY`, `COPILOT_GITHUB_TOKEN`, `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` / `BEDROCK_MODEL`.
+Other providers are optional. Switch anytime by changing `AI_PROVIDER` and adding the matching key:
+
+- Gemini: `GEMINI_API_KEY`
+- Copilot: `COPILOT_GITHUB_TOKEN`
+- Bedrock: attach an IAM role with `bedrock:InvokeModel` (preferred) or set `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_REGION` + `BEDROCK_MODEL`.
 
 ### 2.5 Create
 
@@ -172,10 +178,14 @@ Trigger a redeploy after changing env vars.
 - `https://api.yourdomain.com/docs` -> Swagger UI.
 - `https://app.yourdomain.com` -> UI loads.
 - In the UI:
-  1. Settings panel: set provider + API key.
-  2. Setup a public GitHub repo (e.g. `https://github.com/tiangolo/fastapi`) with `max_scan_limit` = 20.
-  3. Scan. Poll status.
-  4. Ask a question in Chat. Should stream the answer.
+  1. Open `https://api.yourdomain.com/config/status`. Confirm:
+     - `ai_provider: "bedrock"`, `fallback_provider: "openai"`
+     - `bedrock_key_source: "iam_role"` (or `"env"` if you intentionally set keys)
+     - `bedrock_region` matches the region where you enabled Bedrock model access
+  2. In the UI Settings panel: leave Bedrock as the provider; nothing to type if the IAM role is attached.
+  3. Setup a public GitHub repo (e.g. `https://github.com/tiangolo/fastapi`) with `max_scan_limit` = 20.
+  4. Scan. Poll status.
+  5. Ask a question in Chat. Should stream the answer. In Tracing, `provider` should be `bedrock` and `fallback_from` empty.
 - Browser DevTools -> Network: confirm requests go to `https://api.yourdomain.com` and succeed without CORS errors.
 
 ---

@@ -6,10 +6,10 @@
 #   2. Deployment trigger: Automatic on push to main.
 #   3. Configure service -> Configuration source: "Use a configuration file" (this file).
 #   4. Scaling: set Min instances = 1, Max instances = 1 (in-memory state lives in a single container).
-#   5. Environment variables / secrets (set in the App Runner console, NOT in this file):
-#        - GEMINI_API_KEY         (Secrets Manager reference recommended)
-#        - CORS_ORIGINS=https://app.yourdomain.com
-#        - (optional) OPENAI_API_KEY, COPILOT_GITHUB_TOKEN, AWS_*, etc.
+#   5. Environment variables / secrets (set in the App Runner CONSOLE, NOT in this file):
+#        - OPENAI_API_KEY         (Secrets Manager reference recommended)
+#        - CORS_ORIGINS=https://app.yourdomain.com  (or the Amplify default URL until your domain is live)
+#        - (optional) GEMINI_API_KEY, COPILOT_GITHUB_TOKEN, AWS_*, etc.
 #
 # Notes:
 #   - App Runner populates the PORT env var. Uvicorn binds to it, falling back to 8080 locally.
@@ -31,4 +31,6 @@ run:
     env: PORT
   env:
     - name: AI_PROVIDER
-      value: gemini
+      value: openai
+    - name: OPENAI_MODEL
+      value: gpt-4o-mini

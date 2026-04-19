@@ -9,6 +9,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Ensure public/ exists so the runner stage's COPY never fails, even if the
+# project does not ship any static assets in public/.
+RUN mkdir -p public
+
 # Baked at build time — must match your public API URL (e.g. https://api.yourdomain.com)
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL

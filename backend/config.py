@@ -61,5 +61,5 @@ API_CONFIG: Dict[str, str] = {
     "bedrock_secret_key": os.getenv("AWS_SECRET_ACCESS_KEY", ""),
     "bedrock_region": os.getenv("AWS_REGION", "us-east-1"),
     "bedrock_model": os.getenv("BEDROCK_MODEL", "anthropic.claude-3-5-sonnet-20241022-v2:0"),
-    "provider": os.getenv("AI_PROVIDER", "gemini"),  # "gemini" | "ollama" | "copilot" | "openai" | "bedrock"
+    "provider": os.getenv("AI_PROVIDER", "openai"),  # "openai" | "gemini" | "ollama" | "copilot" | "bedrock"
 }
