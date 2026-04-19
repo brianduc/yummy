@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yummy — AI-Native SWE Platform (Gartner Mapped)</title>
+<style>
+:root {
+  --navy:#0D2137; --teal:#00897B; --teal-lt:#E0F2F1; --teal-md:#4DB6AC;
+  --blue:#1565C0; --blue-lt:#E3F2FD; --blue-md:#64B5F6;
+  --orange:#E65100; --orange-lt:#FFF3E0; --orange-md:#FFB74D;
+  --purple:#4527A0; --purple-lt:#EDE7F6; --purple-md:#9575CD;
+  --green:#2E7D32; --green-lt:#E8F5E9; --green-md:#81C784;
+  --red:#B71C1C; --red-lt:#FFEBEE; --red-md:#E57373;
+  --gray:#37474F; --gray-lt:#ECEFF1; --gray-md:#90A4AE;
+  --amber:#F57F17; --amber-lt:#FFFDE7; --amber-md:#FFF176;
+  --bg:#F0F2F5; --white:#FFFFFF;
+  --shadow: 0 1px 4px rgba(0,0,0,.12);
+  --radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#1a1a1a;padding:16px;min-height:100vh}
+
+/* ── TOP HEADER ── */
+.header{background:var(--navy);color:#fff;border-radius:10px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:15px;font-weight:600;letter-spacing:.01em}
+.header p{font-size:11px;opacity:.7;margin-top:2px}
+.legend{display:flex;gap:16px;font-size:10px;margin-top:8px}
+.leg{display:flex;align-items:center;gap:5px}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.leg-ai{background:var(--navy);border:2px solid #4DB6AC}
+.leg-trad{background:var(--teal);border:2px solid #4DB6AC}
+.leg-act{width:30px;height:3px;border-radius:2px;background:var(--orange-md)}
+
+/* ── MAIN GRID ── */
+.board{display:grid;grid-template-columns:210px 1fr 180px;grid-template-rows:auto auto auto;gap:8px;max-width:1200px;margin:0 auto}
+
+/* ── SECTION BLOCKS ── */
+.section{border-radius:var(--radius);padding:10px;position:relative}
+.section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(0,0,0,.1)}
+
+/* Section colours */
+.s-plan {background:#E8EAF6;border:1.5px solid #7986CB}
+.s-plan .section-title{color:#283593}
+.s-ai   {background:#E0F2F1;border:1.5px solid #4DB6AC}
+.s-ai .section-title{color:#00695C}
+.s-gov  {background:#FFF3E0;border:1.5px solid #FFB74D}
+.s-gov .section-title{color:#BF360C}
+.s-ctx  {background:#F3E5F5;border:1.5px solid #CE93D8}
+.s-ctx .section-title{color:#4A148C}
+.s-det  {background:#E8F5E9;border:1.5px solid #81C784}
+.s-det .section-title{color:#1B5E20}
+.s-test {background:#FCE4EC;border:1.5px solid #F48FB1}
+.s-test .section-title{color:#880E4F}
+.s-sre  {background:#FFF8E1;border:1.5px solid #FFD54F}
+.s-sre .section-title{color:#E65100}
+.s-ops  {background:#E3F2FD;border:1.5px solid #90CAF9}
+.s-ops .section-title{color:#0D47A1}
+.s-bg   {background:#F1F8E9;border:1.5px solid #AED581}
+.s-bg .section-title{color:#33691E}
+.s-common{background:#FAFAFA;border:1.5px solid #B0BEC5}
+.s-common .section-title{color:#263238}
+.s-native{background:#FBE9E7;border:1.5px solid #FFAB91}
+.s-native .section-title{color:#BF360C}
+.s-mcp  {background:#E8F5E9;border:2px solid #43A047;box-shadow:0 0 0 2px rgba(67,160,71,.2)}
+.s-mcp .section-title{color:#1B5E20}
+
+/* ── CHIP ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;margin:2px;transition:all .12s;user-select:none;white-space:nowrap}
+.chip:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.chip.active{outline:2.5px solid #0D2137;outline-offset:2px}
+
+/* chip colour variants */
+.ch-plan{background:#C5CAE9;color:#283593;border-color:#9FA8DA}
+.ch-ai  {background:#B2DFDB;color:#00695C;border-color:#80CBC4}
+.ch-gov {background:#FFCCBC;color:#BF360C;border-color:#FFAB91}
+.ch-ctx {background:#E1BEE7;color:#4A148C;border-color:#CE93D8}
+.ch-det {background:#C8E6C9;color:#1B5E20;border-color:#A5D6A7}
+.ch-test{background:#F8BBD0;color:#880E4F;border-color:#F48FB1}
+.ch-sre {background:#FFE0B2;color:#E65100;border-color:#FFCC80}
+.ch-ops {background:#BBDEFB;color:#0D47A1;border-color:#90CAF9}
+.ch-bg  {background:#DCEDC8;color:#33691E;border-color:#C5E1A5}
+.ch-ide {background:#CFD8DC;color:#263238;border-color:#B0BEC5}
+.ch-native{background:#FFCCBC;color:#BF360C;border-color:#FFAB91}
+.ch-mcp {background:#A5D6A7;color:#1B5E20;border-color:#81C784;font-weight:700}
+.ch-yummy{background:#0D2137;color:#fff;border-color:#4DB6AC;font-weight:600}
+
+.badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;margin-left:3px}
+.b-ai{background:#0D2137;color:#4DB6AC}
+.b-trad{background:var(--teal);color:#fff}
+.b-pref{background:#1565C0;color:#fff}
+.b-mcp{background:#2E7D32;color:#fff}
+.b-key{background:#B71C1C;color:#fff}
+
+/* ── PANEL ── */
+.panel{position:fixed;right:16px;top:80px;width:380px;max-height:calc(100vh - 100px);overflow-y:auto;background:#fff;border:2px solid var(--navy);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:100;display:none}
+.panel.open{display:flex;flex-direction:column}
+.panel-head{background:var(--navy);color:#fff;padding:14px 16px;border-radius:10px 10px 0 0;position:sticky;top:0}
+.panel-head h3{font-size:13px;font-weight:600}
+.panel-head p{font-size:11px;opacity:.75;margin-top:3px;line-height:1.5}
+.panel-close{position:absolute;right:12px;top:12px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1;opacity:.8}
+.panel-close:hover{opacity:1}
+.panel-body{padding:14px 16px;flex:1}
+
+.p-gartner{background:#FFF3E0;border-left:3px solid #FFB74D;padding:8px 10px;border-radius:0 6px 6px 0;font-size:11px;color:#6D4C41;margin-bottom:12px;line-height:1.7}
+.p-gartner strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#BF360C;margin-bottom:3px}
+
+.p-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#546E7A;margin:12px 0 6px}
+.uc-list{list-style:none;padding:0}
+.uc-list li{padding:6px 0;border-bottom:1px solid #ECEFF1;font-size:12px;line-height:1.6;color:#37474F;display:flex;gap:8px}
+.uc-list li:last-child{border-bottom:none}
+.uc-icon{flex-shrink:0;font-size:13px}
+
+.mcp-block{background:#E8F5E9;border:1px solid #81C784;border-radius:6px;padding:10px;margin-top:10px}
+.mcp-block strong{display:block;font-size:10px;text-transform:uppercase;color:#2E7D32;font-weight:700;margin-bottom:6px}
+.mcp-block code{display:block;font-family:monospace;font-size:11px;background:#fff;border:1px solid #C8E6C9;border-radius:4px;padding:4px 7px;margin:3px 0;color:#1B5E20}
+
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.tag{font-size:10px;padding:2px 7px;border-radius:12px;background:#ECEFF1;color:#546E7A;border:1px solid #CFD8DC}
+
+/* ── LAYOUT SPECIFICS ── */
+.dev-env{grid-column:1/3;grid-row:1/4;display:grid;grid-template-columns:210px 1fr;grid-template-rows:auto auto auto auto;gap:8px}
+.col-left{grid-column:1;display:flex;flex-direction:column;gap:8px}
+.col-center{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.col-right{grid-column:3;grid-row:1/4;display:flex;flex-direction:column;gap:8px}
+
+.outer-dev{background:rgba(255,255,255,.6);border:2px dashed #90A4AE;border-radius:12px;padding:10px;grid-column:1/3}
+.outer-dev-label{font-size:10px;font-weight:700;color:#546E7A;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+
+/* center middle row: agentic IDEs + background agents side by side */
+.center-mid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* common functions row */
+.center-bot{grid-column:1/-1}
+
+/* small annotation arrows */
+.flow-note{font-size:10px;color:#546E7A;display:flex;align-items:center;gap:4px;margin:3px 0;padding:2px 0}
+.arrow{color:#E65100;font-weight:700}
+
+/* IDE chips row */
+.ide-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding-top:6px;border-top:1px dashed #B0BEC5}
+.ide-row-label{font-size:9px;color:#78909C;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+
+@media(max-width:900px){
+  .board{grid-template-columns:1fr;grid-template-rows:auto}
+  .dev-env{grid-column:1;grid-template-columns:1fr}
+  .panel{right:8px;left:8px;width:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>🍜 Yummy Platform — AI-Native Software Engineering</h1>
+    <p>Mapped to Gartner Reference Architecture G00845031 (Feb 2026) · Click bất kỳ component để xem use cases & MCP integration</p>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot leg-ai"></div> Yummy AI agent (AI-enabled)</div>
+      <div class="leg"><div class="leg-dot" style="background:#4DB6AC;border:2px solid #00695C"></div> Traditional / Deterministic</div>
+      <div class="leg"><div class="leg-dot leg-mcp" style="background:#2E7D32;border:2px solid #1B5E20"></div> MCP-exposed tool</div>
+    </div>
+  </div>
+</div>
+
+<div class="board" style="max-width:1200px;margin:0 auto">
+
+  <!-- ══ DEV ENVIRONMENT OUTER WRAPPER ══ -->
+  <div style="grid-column:1/3;grid-row:1">
+    <div class="outer-dev">
+      <div class="outer-dev-label">📦 Development Environment</div>
+      <div style="display:grid;grid-template-columns:210px 1fr;gap:8px">
+
+        <!-- LEFT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <!-- AI-AUGMENTED AGILE PLANNING -->
+          <div class="section s-plan">
+            <div class="section-title">🗓️ AI-Augmented Agile Planning</div>
+            <span class="chip ch-plan" onclick="show('po')">🎯 yummy-po <span class="badge b-ai">AI</span></span>
+            <span class="chip ch-plan" onclick="show('ba')">📋 yummy-ba <span class="badge b-ai">AI</span></span>
+            <span class="chip ch-plan" onclick="show('scrum')">🔄 yummy-scrum <span class="badge b-ai">AI</span></span>
+            <span class="chip ch-plan" onclick="show('pm')">📊 yummy-pm</span>
+            <span class="chip ch-plan" onclick="show('retro')">💬 yummy-retro</span>
+            <div class="flow-note" style="margin-top:6px"><span class="arrow">→</span> Acting on: GitHub Issues, Jira, Linear</div>
+          </div>
+
+          <!-- COMMAND LINE SWE AGENT -->
+          <div class="section s-ai">
+            <div class="section-title">⌨️ Command Line SWE Agent</div>
+            <span class="chip ch-yummy" onclick="show('cli')">⌨️ YummyCode CLI <span class="badge b-pref">Preferred</span></span>
+            <div class="ide-row-label" style="margin-top:6px">Fallback (MCP-connected)</div>
+            <div class="ide-row">
+              <span class="chip ch-ide" onclick="show('claudecode')">🤖 Claude Code</span>
+              <span class="chip ch-ide" onclick="show('copilot-cli')">🐙 Copilot CLI</span>
+            </div>
+            <div class="flow-note"><span class="arrow">↓</span> Sensing: yummy-memory context</div>
+          </div>
+
+          <!-- AI-NATIVE APP GENERATION -->
+          <div class="section s-native">
+            <div class="section-title">🚀 AI-Native App Generation</div>
+            <span class="chip ch-native" onclick="show('native')">⚡ yummy-code (build mode)</span>
+            <div class="flow-note"><span class="arrow">→</span> Rapid prototype → deploy</div>
+          </div>
+
+        </div><!-- /left -->
+
+        <!-- CENTER COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <!-- AGENT GOVERNANCE (top center) -->
+          <div class="section s-gov">
+            <div class="section-title">🛡️ Agent Governance</div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px">
+              <span class="chip ch-gov" onclick="show('finops')">💰 FinOps (yummy-brain)</span>
+              <span class="chip ch-gov" onclick="show('guardrails')">🚧 Guardrails (yummy-policy)</span>
+              <span class="chip ch-gov" onclick="show('access')">🔐 Access Control (yummy-vault)</span>
+              <span class="chip ch-gov" onclick="show('remote')">📡 Remote Mgmt (yummy-brain)</span>
+              <span class="chip ch-gov" onclick="show('roles')">🎭 Role Mgmt (yummy-router)</span>
+            </div>
+          </div>
+
+          <!-- AGENTIC IDEs + BACKGROUND AGENTS (side by side) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+
+            <div class="section s-ai">
+              <div class="section-title">💻 Agentic IDEs</div>
+              <span class="chip ch-yummy" onclick="show('yummycode-ide')">⌨️ YummyCode IDE <span class="badge b-pref">★ Self-hosted</span></span>
+              <div class="ide-row-label" style="margin-top:6px">IDE Agnostic (via yummy-mcp-server)</div>
+              <div class="ide-row">
+                <span class="chip ch-ide" onclick="show('vscode')">🔷 VS Code</span>
+                <span class="chip ch-ide" onclick="show('cursor')">⚡ Cursor</span>
+                <span class="chip ch-ide" onclick="show('jetbrains')">🧩 JetBrains</span>
+                <span class="chip ch-ide" onclick="show('neovim')">⬛ Neovim</span>
+              </div>
+              <div class="flow-note"><span class="arrow">↑</span> All connected via <strong>yummy-mcp-server</strong></div>
+            </div>
+
+            <div class="section s-bg">
+              <div class="section-title">⚡ Background SWE Agents</div>
+              <span class="chip ch-bg" onclick="show('bg-review')">🔍 yummy-review <span class="badge b-ai">triggered</span></span>
+              <span class="chip ch-bg" onclick="show('bg-guard')">🛡️ yummy-guard <span class="badge b-ai">triggered</span></span>
+              <span class="chip ch-bg" onclick="show('bg-qa')">🧪 yummy-qa <span class="badge b-ai">triggered</span></span>
+              <span class="chip ch-bg" onclick="show('bg-docs')">📝 yummy-docs <span class="badge b-ai">triggered</span></span>
+              <div class="flow-note"><span class="arrow">→</span> Triggered by yummy-bus (webhooks)</div>
+            </div>
+
+          </div><!-- /mid grid -->
+
+          <!-- COMMON AGENT FUNCTIONS -->
+          <div class="section s-common">
+            <div class="section-title">⚙️ Common Agent Functions (yummy-brain orchestrates)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px">
+              <span class="chip ch-ai" onclick="show('fn-workflow')">🔀 Dynamic workflow</span>
+              <span class="chip ch-ai" onclick="show('fn-code')">💻 Code creation</span>
+              <span class="chip ch-ai" onclick="show('fn-review')">🔍 Code review</span>
+              <span class="chip ch-ai" onclick="show('fn-bug')">🐛 Bug fixing</span>
+              <span class="chip ch-ai" onclick="show('fn-test')">🧪 Test generation</span>
+              <span class="chip ch-ai" onclick="show('fn-docs')">📝 Doc generation</span>
+              <span class="chip ch-ai" onclick="show('fn-build')">🔧 Build artifacts</span>
+              <span class="chip ch-ai" onclick="show('fn-orch')">🎭 Test orchestration</span>
+              <span class="chip ch-ai" onclick="show('fn-obs')">👁️ Agent observability</span>
+            </div>
+          </div>
+
+          <!-- CONTEXT SYSTEMS -->
+          <div class="section s-ctx">
+            <div class="section-title">🗄️ Context Systems — yummy-memory (RAG + Vector DB)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px">
+              <span class="chip ch-ctx" onclick="show('ctx-code')">📁 Source code repos (GitHub)</span>
+              <span class="chip ch-ctx" onclick="show('ctx-work')">📌 Work mgmt (Jira/Linear)</span>
+              <span class="chip ch-ctx" onclick="show('ctx-chat')">💬 Chat logs (Slack/Teams)</span>
+              <span class="chip ch-ctx" onclick="show('ctx-docs')">📚 Doc repos (Confluence)</span>
+              <span class="chip ch-ctx" onclick="show('ctx-design')">🎨 Design tools (Figma)</span>
+              <span class="chip ch-ctx" onclick="show('ctx-kg')">🕸️ Knowledge graph</span>
+              <span class="chip ch-ctx" onclick="show('ctx-idp')">🏠 Internal dev portal</span>
+            </div>
+            <div class="flow-note"><span class="arrow">↑ ↓</span> All sources indexed, vectorized, retrieved via semantic search</div>
+          </div>
+
+        </div><!-- /center -->
+      </div><!-- /2-col inner -->
+    </div><!-- /outer dev -->
+  </div>
+
+  <!-- ══ RIGHT COLUMN (Runtime Environment) ══ -->
+  <div style="grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:8px">
+
+    <div style="background:rgba(255,255,255,.6);border:2px dashed #90A4AE;border-radius:12px;padding:10px;flex:1;display:flex;flex-direction:column;gap:8px">
+      <div class="outer-dev-label">🖥️ Runtime Environment</div>
+
+      <!-- AI SRE -->
+      <div class="section s-sre">
+        <div class="section-title">📡 AI SRE</div>
+        <span class="chip ch-sre" onclick="show('obs')">📡 yummy-obs</span>
+        <span class="chip ch-sre" onclick="show('sre-noise')">🔇 Noise suppression</span>
+        <span class="chip ch-sre" onclick="show('sre-rca')">🔍 Root cause analysis</span>
+        <span class="chip ch-sre" onclick="show('sre-auto')">⚡ Auto remediation</span>
+        <span class="chip ch-sre" onclick="show('sre-deploy')">🚀 Deploy automation</span>
+      </div>
+
+      <!-- CI/CD PIPELINE -->
+      <div class="section s-ops">
+        <div class="section-title">🔧 CI/CD Pipeline</div>
+        <span class="chip ch-ops" onclick="show('pipeline')">🔧 yummy-pipeline</span>
+        <span class="chip ch-ops" onclick="show('deploy')">🚀 yummy-deploy</span>
+        <span class="chip ch-ops" onclick="show('infra')">☁️ yummy-infra</span>
+      </div>
+
+      <!-- DETERMINISTIC SWE TOOLS -->
+      <div class="section s-det">
+        <div class="section-title">✅ Deterministic SWE Tools</div>
+        <span class="chip ch-det" onclick="show('sast')">🔎 yummy-sast <span class="badge b-trad">Deterministic</span></span>
+        <span class="chip ch-det" onclick="show('det-review')">📋 Rule-based review</span>
+        <span class="chip ch-det" onclick="show('det-transform')">🔄 Code transform</span>
+        <span class="chip ch-det" onclick="show('det-test')">🧪 Test gen (rules)</span>
+        <span class="chip ch-det" onclick="show('det-sec')">🔒 Security rules</span>
+      </div>
+
+      <!-- AI-AUGMENTED TEST MANAGEMENT -->
+      <div class="section s-test">
+        <div class="section-title">🧪 AI Test Management</div>
+        <span class="chip ch-test" onclick="show('qa')">🧪 yummy-qa</span>
+        <span class="chip ch-test" onclick="show('test-sel')">🎯 Test selection</span>
+        <span class="chip ch-test" onclick="show('test-data')">📊 Test data gen</span>
+        <span class="chip ch-test" onclick="show('test-cov')">📈 Coverage optimize</span>
+        <span class="chip ch-test" onclick="show('test-gen')">⚡ Test generation</span>
+      </div>
+
+      <!-- MCP SERVER (★ KEY LAYER) -->
+      <div class="section s-mcp">
+        <div class="section-title">🔌 yummy-mcp-server <span class="badge b-key">★ KEY</span></div>
+        <p style="font-size:10px;color:#2E7D32;margin-bottom:6px;line-height:1.5">Biến toàn bộ backend → MCP Tools/Resources/Prompts → IDE agnostic</p>
+        <span class="chip ch-mcp" onclick="show('mcp-server')">🔌 Backend → MCP <span class="badge b-mcp">All IDEs</span></span>
+        <div class="flow-note"><span class="arrow">↔</span> stdio / HTTP-SSE / OAuth2</div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /board -->
+
+<!-- ══ DETAIL PANEL ══ -->
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <button class="panel-close" onclick="closePanel()">✕</button>
+    <h3 id="p-title"></h3>
+    <p id="p-subtitle"></p>
+  </div>
+  <div class="panel-body">
+    <div class="p-gartner" id="p-gartner"></div>
+    <div class="p-section" id="p-body"></div>
+    <div class="mcp-block" id="p-mcp" style="display:none"></div>
+    <div class="tags" id="p-tags"></div>
+  </div>
+</div>
+
+<script>
+const D = {
+  // ── AGILE PLANNING ──
+  po:{
+    title:"🎯 yummy-po — Product Owner Agent",
+    sub:"L1: AI-Augmented Agile Planning · Acting on GitHub Issues + Jira",
+    gartner:"Gartner: Work planning, Requirements refinement, User research — AI phân tích user request → sinh user stories với BDD acceptance criteria.",
+    ucs:[
+      {i:"💬",t:"Stakeholder nói 'thêm thanh toán MoMo' → yummy-po sinh PRD 5 trang + 8 user stories + 24 acceptance criteria trong dưới 3 phút"},
+      {i:"📊",t:"Phân tích user feedback từ Slack + review logs → đề xuất backlog priority dựa trên impact × effort"},
+      {i:"🗺️",t:"Tự động cập nhật roadmap Now/Next/Later khi sprint kết thúc"},
+      {i:"🎯",t:"Map feature → OKR: 'tính năng X tác động bao nhiêu % đến Key Result Y'"},
+      {i:"📋",t:"Groom backlog: estimate story points dựa trên codebase complexity (yummy-memory)"},
+    ],
+    mcp:"Tool: create_user_story\nTool: get_backlog_priorities\nTool: update_roadmap\nResource: yummy://po/current-roadmap\nPrompt: requirements-to-stories",
+    tags:["PRD","User stories","BDD","OKR","Backlog grooming","Roadmap"]
+  },
+  ba:{
+    title:"📋 yummy-ba — Business Analyst Agent",
+    sub:"L1: AI-Augmented Agile Planning · Produces: UML, BPMN, API specs",
+    gartner:"Gartner: Requirements refinement — AI phân tích requirements → technical tasks. BA Agent bridge giữa business language và technical spec.",
+    ucs:[
+      {i:"🗺️",t:"Đọc user story từ yummy-po → tự sinh sequence diagram + Use Case diagram + ERD"},
+      {i:"📝",t:"Viết functional spec theo IEEE 830: actors, flows, exceptions, constraints"},
+      {i:"🔄",t:"Gap analysis: so sánh As-Is process vs To-Be, highlight delta"},
+      {i:"📡",t:"Draft OpenAPI contract từ business logic mô tả bằng tiếng Việt"},
+      {i:"📊",t:"Data flow mapping: trace data từ user input → database → response"},
+    ],
+    mcp:"Tool: analyze_requirements\nTool: generate_uml_diagram\nTool: create_api_contract\nResource: yummy://ba/functional-specs",
+    tags:["UML","BPMN","ERD","IEEE 830","API contract","Data flow","Gap analysis"]
+  },
+  scrum:{
+    title:"🔄 yummy-scrum — Scrum Master Agent",
+    sub:"L1: AI-Augmented Agile Planning · 2-way sync: GitHub Projects ↔ Jira",
+    gartner:"Gartner: Task allocation, Work planning — identify team member với skills phù hợp nhất cho task, balance workload.",
+    ucs:[
+      {i:"📅",t:"Sprint planning: estimate capacity từ team calendar + velocity 3 sprint gần nhất → suggest sprint goal"},
+      {i:"📊",t:"Burndown chart real-time, tự alert #slack-standup khi sprint at-risk sau ngày 3"},
+      {i:"🗣️",t:"Daily standup: tổng hợp GitHub activity + Slack → 10-dòng summary gửi 9am"},
+      {i:"🔄",t:"Retrospective: collect anonymous sentiment → cluster themes → sinh action items → track close-loop"},
+      {i:"✅",t:"DoD checker: khi PR opened, verify acceptance criteria đã cover đủ chưa"},
+    ],
+    mcp:"Tool: get_current_sprint\nTool: get_sprint_burndown\nTool: create_sprint_plan\nTool: get_standup_summary\nResource: yummy://sprint/current",
+    tags:["Sprint planning","Velocity","Burndown","Retrospective","DoD","WIP limit"]
+  },
+  pm:{
+    title:"📊 yummy-pm — Project Manager",
+    sub:"L1: AI-Augmented Planning · DORA metrics + executive dashboard",
+    gartner:"Gartner: Work planning — balancing work across team members, cross-team dependency tracking.",
+    ucs:[
+      {i:"📈",t:"DORA metrics dashboard: deployment frequency, lead time, MTTR, change failure rate"},
+      {i:"⚠️",t:"Risk register tự động: code complexity × deadline pressure → risk score"},
+      {i:"🔗",t:"Cross-team dependency map: service A blocked service B → alert trước 3 ngày"},
+      {i:"👥",t:"Capacity planning: ai đang overloaded, ai có bandwidth nhận thêm task"},
+    ],
+    mcp:"Tool: get_dora_metrics\nTool: get_risk_register\nResource: yummy://pm/executive-dashboard",
+    tags:["DORA","Risk","Dependencies","Capacity","Executive dashboard"]
+  },
+  retro:{
+    title:"💬 yummy-retro — Retrospective Agent",
+    sub:"L1: AI-Augmented Planning · Stores insights → yummy-memory",
+    gartner:"Gartner: User research — tổng hợp qualitative feedback, identify themes từ ngôn ngữ tự nhiên.",
+    ucs:[
+      {i:"📝",t:"Cuối sprint: gửi anonymous survey link → collect sentiment trong 24h"},
+      {i:"🏷️",t:"Cluster feedback tự động: Process / Tools / People / Tech debt"},
+      {i:"✅",t:"Track action items từ retro trước → báo cáo % đã close trước retro tiếp"},
+      {i:"📈",t:"Trend analysis: team health score qua 6 sprint, early warning về burnout"},
+    ],
+    mcp:"Tool: create_retro_survey\nTool: get_retro_insights\nResource: yummy://retro/team-health",
+    tags:["Sentiment","Anonymous survey","Action items","Team health","Trends"]
+  },
+
+  // ── COMMAND LINE ──
+  cli:{
+    title:"⌨️ YummyCode CLI — Command Line SWE Agent",
+    sub:"Built on sst/opencode (MIT) · TUI terminal mode · Preferred self-hosted",
+    gartner:"Gartner: Command line SWE agents — lend themselves well to environments where developers build on remote servers. Store prompts → semi-repeatable automated processes.",
+    ucs:[
+      {i:"🖥️",t:"Chạy: yummycode trong bất kỳ terminal, navigate tới project → AI hiểu toàn bộ codebase qua yummy-mcp-server"},
+      {i:"⚡",t:"Non-interactive mode: yummycode -p 'fix all TypeScript errors in /src' → CI integration"},
+      {i:"📜",t:"Custom commands: /pr-review, /sprint-tasks, /security-audit stored as .md prompts"},
+      {i:"🔄",t:"Script automation: yummycode -p 'migrate all API calls from v1 to v2' -q → pipe output"},
+      {i:"🌐",t:"Server mode: yummycode serve → team connect remotely từ bất kỳ client"},
+    ],
+    mcp:"# Kết nối YummyCode CLI với yummy-mcp-server:\n~/.yummycode/config.json:\n{ mcp: { servers: { yummy: {\n  type: 'stdio',\n  command: 'yummy-mcp-server'\n}}}}\n\n# Hoặc team server:\n{ mcp: { servers: { yummy: {\n  type: 'sse',\n  url: 'http://yummy:3000/mcp'\n}}}}",
+    tags:["TUI","Terminal","stdio","Remote server","Custom commands","CI integration"]
+  },
+  claudecode:{
+    title:"🤖 Claude Code + yummy-mcp-server",
+    sub:"Fallback CLI khi không self-host YummyCode · 1-lệnh connect",
+    gartner:"Gartner: Command line SWE agents — Anthropic Claude Code là example technology được Gartner mention.",
+    ucs:[
+      {i:"⚡",t:"claude mcp add yummy --url http://yummy:3000/mcp → có ngay toàn bộ yummy tools"},
+      {i:"🔄",t:"Claude Code + yummy context = Claude's reasoning × yummy business context = rất mạnh"},
+      {i:"🔧",t:"CI mode: claude -p 'review PR #42' --mcp yummy → automated pipeline"},
+    ],
+    mcp:"# Setup 1 lệnh:\nclaude mcp add yummy \\\n  --url http://yummy:3000/mcp \\\n  --header 'Authorization: Bearer $YUMMY_KEY'",
+    tags:["Claude Code","Fallback","MCP connect","CI ready"]
+  },
+  "copilot-cli":{
+    title:"🐙 GitHub Copilot CLI + yummy-mcp",
+    sub:"Fallback option · MCP integration via GitHub Copilot extensions",
+    gartner:"Gartner: GitHub Copilot CLI là example technology cho Command Line SWE Agents.",
+    ucs:[
+      {i:"🔗",t:"GitHub Copilot Extensions support MCP → kết nối yummy-mcp-server"},
+      {i:"💬",t:"gh copilot suggest với context từ yummy-memory về codebase"},
+    ],
+    mcp:"# GitHub Copilot MCP extension:\n# .github/copilot-instructions.md:\n# mcp_servers:\n#   yummy: http://yummy:3000/mcp",
+    tags:["Copilot CLI","GitHub","MCP extension","Fallback"]
+  },
+
+  // ── AGENTIC IDEs ──
+  "yummycode-ide":{
+    title:"⌨️ YummyCode IDE — Preferred Agentic IDE",
+    sub:"★ Self-hosted · Zero code egress · Ollama local · yummy-mcp-server built-in",
+    gartner:"Gartner: Agentic IDEs — AI capabilities embedded natively, can interact with file system, internet, other context sources. Replacing plugins as core interaction surface.",
+    ucs:[
+      {i:"✅",t:"PREFERRED PATH: YummyCode binary + Ollama qwen2.5-coder:32b → 100% offline, zero egress"},
+      {i:"🌐",t:"Web UI trên browser :4096 — developer mở laptop, vào http://localhost:4096"},
+      {i:"🖥️",t:"TUI terminal — neovim-style, dev quen terminal thích hơn GUI"},
+      {i:"🔌",t:"Tự động connect yummy-mcp-server → có đủ: sprint data, review, security, docs"},
+      {i:"🏢",t:"Server mode: 1 YummyCode server, nhiều dev connect → shared powerful GPU"},
+      {i:"📦",t:"Distribution: curl http://internal/install.sh | bash → cài trong 2 phút"},
+    ],
+    mcp:"# YummyCode config (tự đọc yummy-mcp-server):\n~/.yummycode/config.json\n{\n  'model': 'ollama/qwen2.5-coder:32b',\n  'mcp': { 'servers': {\n    'yummy': { 'type':'stdio',\n      'command':'yummy-mcp-server' }\n  }}\n}",
+    tags:["Self-hosted","Ollama","Zero egress","Web UI","TUI","Binary distribution","Server mode"]
+  },
+  vscode:{
+    title:"🔷 VS Code + yummy-mcp Extension",
+    sub:"Fallback: IDE agnostic via yummy-mcp-server · VSIX nội bộ",
+    gartner:"Gartner: Microsoft Visual Studio Code with GitHub Copilot là example Agentic IDE.",
+    ucs:[
+      {i:"📦",t:"Cài yummy-mcp.vsix từ internal server: code --install-extension yummy-mcp.vsix"},
+      {i:"⚙️",t:"settings.json: 'mcp.servers': { 'yummy': { url: 'http://yummy:3000' } }"},
+      {i:"💬",t:"GitHub Copilot Chat: @yummy review this PR → gọi yummy-review tool"},
+      {i:"🖱️",t:"Right-click → Yummy: Security Scan (gọi yummy-guard)"},
+      {i:"📊",t:"Sidebar panel: sprint tasks hiển thị ngay trong VS Code"},
+    ],
+    mcp:"# VS Code settings.json:\n{\n  'mcp.servers': {\n    'yummy': {\n      'type': 'sse',\n      'url': 'http://yummy:3000/mcp',\n      'headers': {\n        'Authorization': 'Bearer ${env:YUMMY_KEY}'\n      }\n    }\n  }\n}",
+    tags:["VSIX","Copilot Chat","Inline actions","Sidebar","Fallback IDE"]
+  },
+  cursor:{
+    title:"⚡ Cursor + yummy-mcp-server",
+    sub:"Fallback: .cursor/mcp.json → yummy-mcp-server",
+    gartner:"Gartner: Anysphere Cursor là example Agentic IDE trong Reference Architecture.",
+    ucs:[
+      {i:"⚙️",t:".cursor/mcp.json: { 'yummy': { 'url': 'http://yummy:3000/mcp' } } → tự discover tools"},
+      {i:"🤖",t:"Cursor Agent: tự gọi yummy-review + yummy-guard khi implement feature"},
+      {i:"🎼",t:"Composer mode: plan sprint → assign → implement → review → PR trong 1 session"},
+      {i:"⚡",t:"Background agents: yummy-qa tự sinh tests khi Cursor implement xong"},
+    ],
+    mcp:"# .cursor/mcp.json (commit vào repo):\n{\n  'mcpServers': {\n    'yummy': {\n      'url': 'http://yummy:3000/mcp',\n      'headers': {\n        'Authorization': 'Bearer ${YUMMY_KEY}'\n      }\n    }\n  }\n}",
+    tags:["Cursor","mcp.json","Agent mode","Composer","Background agents"]
+  },
+  jetbrains:{
+    title:"🧩 JetBrains (IntelliJ / PyCharm / GoLand)",
+    sub:"Fallback: AI Assistant plugin + MCP → yummy-mcp-server",
+    gartner:"Gartner: JetBrains IDEs là example Agentic IDE trong Reference Architecture.",
+    ucs:[
+      {i:"🔌",t:"JetBrains AI Assistant (v2024.3+) hỗ trợ MCP → trỏ vào yummy-mcp-server"},
+      {i:"📊",t:"Tool window: yummy sprint board hiển thị trong IDE sidebar"},
+      {i:"⚠️",t:"Inline inspection: yummy-guard findings xuất hiện như built-in IDE warnings"},
+      {i:"🔍",t:"Code review panel tích hợp với yummy-review"},
+    ],
+    mcp:"Settings → AI Assistant → MCP Servers → Add:\nURL: http://yummy:3000/mcp\nAuth: Bearer ${YUMMY_KEY}",
+    tags:["IntelliJ","PyCharm","GoLand","AI Assistant","Tool window","Inline inspection"]
+  },
+  neovim:{
+    title:"⬛ Neovim + mcp.nvim",
+    sub:"Fallback: terminal-first developers · mcp.nvim plugin",
+    gartner:"Gartner: Command line agents lend themselves well to developers who prefer terminal environments.",
+    ucs:[
+      {i:"⌨️",t:"Plugin mcp.nvim: mount yummy tools vào Neovim command mode"},
+      {i:"🔑",t:"Keybind: <leader>yr → yummy-review file hiện tại"},
+      {i:"🔗",t:"Kết hợp tốt với YummyCode TUI trong tmux split pane"},
+    ],
+    mcp:"-- init.lua:\nrequire('mcp').setup({\n  servers = {\n    yummy = {\n      url = 'http://yummy:3000/mcp',\n      token = vim.env.YUMMY_KEY\n    }\n  }\n})",
+    tags:["Neovim","mcp.nvim","Terminal-first","Keybinds","tmux"]
+  },
+
+  // ── BACKGROUND AGENTS ──
+  "bg-review":{
+    title:"🔍 yummy-review — Background Review Agent",
+    sub:"Triggered: PR opened → yummy-bus → yummy-review",
+    gartner:"Gartner: Code review agent triggered when source code is checked in — background agent tự động, không cần developer kích hoạt.",
+    ucs:[
+      {i:"⚡",t:"PR opened → trong 2 phút: GitHub comment từ yummy-review với code quality assessment"},
+      {i:"🔍",t:"Detect: code smells, God class, N+1 query, missing error handling, magic numbers"},
+      {i:"📋",t:"Check coding standards từ AGENT.md — tự sinh deterministic rules từ standards"},
+      {i:"🧪",t:"Highlight uncovered code paths → suggest test cases"},
+      {i:"✅",t:"Simple PRs (chỉ docs, formatting): auto-approve + comment 'LGTM by yummy-review'"},
+    ],
+    mcp:"Tool: review_pull_request\nTool: review_code_snippet\nTrigger: GitHub webhook PR.opened\n→ yummy-bus → yummy-review",
+    tags:["PR review","Auto-triggered","Code smells","Standards","Auto-approve"]
+  },
+  "bg-guard":{
+    title:"🛡️ yummy-guard — Background Security Agent",
+    sub:"Triggered: every push + every PR → blocks if critical",
+    gartner:"Gartner: Security scanning agent triggered when source code is checked in. Best results: deterministic rules (Semgrep, CodeQL) + AI để generate rules mới.",
+    ucs:[
+      {i:"🔒",t:"Code push → yummy-guard scan OWASP Top 10: SQL injection, XSS, command injection"},
+      {i:"🔑",t:"Secret detection: regex + ML → tìm AWS keys, API tokens bị commit nhầm"},
+      {i:"📦",t:"Dependency CVE scan: npm audit + OSV + Snyk → alert nếu có CRITICAL"},
+      {i:"🚫",t:"Block merge nếu có CRITICAL vulnerability → GitHub branch protection gate"},
+      {i:"💡",t:"Gartner note: AI generate deterministic Semgrep rules → rules được dùng lại forever"},
+    ],
+    mcp:"Tool: scan_for_vulnerabilities\nTool: check_secrets_in_code\nTool: audit_dependencies\nTrigger: GitHub push + PR.opened",
+    tags:["SAST","CVE","Secrets","OWASP","Branch protection","Semgrep rules"]
+  },
+  "bg-qa":{
+    title:"🧪 yummy-qa — Background QA Agent",
+    sub:"Triggered: test fail → auto-fix suggestion · PR → coverage check",
+    gartner:"Gartner: Code fixing agent triggered when unit test fails. Requirements management agent analyzes newly created user requests.",
+    ucs:[
+      {i:"🔴",t:"Unit test fails in CI → yummy-qa phân tích error, propose fix, tạo draft PR"},
+      {i:"📊",t:"PR merged → coverage report so sánh với main, alert nếu coverage giảm >5%"},
+      {i:"🧪",t:"Từ user story (yummy-ba) → sinh E2E test scenarios Playwright/Cypress"},
+      {i:"🎯",t:"Regression test selection: changed files → identify dependent tests cần chạy"},
+      {i:"📈",t:"Mutation testing hàng tuần: verify tests actually catch real bugs"},
+    ],
+    mcp:"Tool: generate_tests\nTool: analyze_test_failure\nTool: get_coverage_report\nTrigger: CI test.failed, PR.opened",
+    tags:["Auto-triggered","Test fix","E2E","Coverage","Regression","Mutation testing"]
+  },
+  "bg-docs":{
+    title:"📝 yummy-docs — Background Docs Agent",
+    sub:"Triggered: merge to main → auto-update docs",
+    gartner:"Gartner: Documentation generation — AI quickly generates documentation from code. Good docs help both humans AND AI tools understand codebase.",
+    ucs:[
+      {i:"📚",t:"Merge to main → yummy-docs tự update API reference, changelog"},
+      {i:"🗺️",t:"Architecture diagram tự vẽ lại từ dependency analysis sau mỗi sprint"},
+      {i:"📝",t:"Conventional commits → structured changelog: Breaking Changes / Features / Fixes"},
+      {i:"🎓",t:"New developer joins → onboarding guide personalized theo their stack experience"},
+      {i:"⏰",t:"Stale docs detection: document không update >90 ngày → đánh dấu 'cần review'"},
+    ],
+    mcp:"Tool: generate_documentation\nTool: update_changelog\nTool: detect_stale_docs\nTrigger: push.main, schedule.weekly",
+    tags:["Auto-triggered","API docs","Changelog","Architecture diagrams","Onboarding","Stale detection"]
+  },
+
+  // ── AGENT GOVERNANCE ──
+  finops:{
+    title:"💰 FinOps — yummy-brain Cost Management",
+    sub:"Agent Governance: cost tracking per agent, team, task type",
+    gartner:"Gartner: FinOps — setting token và runtime limits for agents, tasks và teams. Significant concern for widespread use of coding agents.",
+    ucs:[
+      {i:"💰",t:"Token budget per developer per sprint: alert khi 80% used"},
+      {i:"📊",t:"Cost breakdown: bao nhiêu % dùng cho code review vs docs generation vs planning"},
+      {i:"🤖",t:"Model routing: simple tasks → cheap Ollama 7B; complex → Claude Sonnet → save cost"},
+      {i:"📉",t:"ROI dashboard: hours saved vs AI cost → business case cho leadership"},
+    ],
+    mcp:"Tool: get_usage_stats\nTool: set_budget_limits\nResource: yummy://finops/dashboard",
+    tags:["FinOps","Token budget","Cost routing","ROI","Budget alerts"]
+  },
+  guardrails:{
+    title:"🚧 Guardrails — yummy-policy (OPA)",
+    sub:"Agent Governance: enterprise-level guardrails limiting harmful actions",
+    gartner:"Gartner: Guardrails — defining enterprise-level guardrails to limit agents performing harmful actions or breaking code.",
+    ucs:[
+      {i:"🚫",t:"Policy: không deploy prod vào thứ Sáu sau 5pm → yummy-deploy blocked"},
+      {i:"🔐",t:"Policy: mọi external API call phải qua API gateway → enforce trong code generation"},
+      {i:"📋",t:"GDPR policy: không log PII data → yummy-guard check trong PR"},
+      {i:"⚡",t:"Guardrail violation → block + notify team lead + create compliance ticket"},
+    ],
+    mcp:"Tool: check_policy_compliance\nTool: get_policy_violations\nResource: yummy://policy/rules",
+    tags:["OPA","Policy as Code","GDPR","Compliance","Deploy gates","Guardrails"]
+  },
+  access:{
+    title:"🔐 Access Control — yummy-vault + RBAC",
+    sub:"Agent Governance: who has access to which agents",
+    gartner:"Gartner: Access control — defining who has access to which agents for cost control and damage limitation.",
+    ucs:[
+      {i:"👥",t:"Junior devs: read-only agent access; Senior: full write; DevOps: deploy access"},
+      {i:"🔑",t:"Dynamic secrets: API keys rotate 90 ngày tự động, không ai biết actual secret"},
+      {i:"📋",t:"Audit trail: ai dùng agent gì, lúc nào, kết quả gì → compliance report"},
+      {i:"🚨",t:"Emergency break-glass: revoke tất cả agent access trong 1 click khi incident"},
+    ],
+    mcp:"Tool: check_user_permissions\nTool: rotate_secrets\nResource: yummy://vault/audit-log",
+    tags:["RBAC","Secrets rotation","Audit trail","Break-glass","Principle of least privilege"]
+  },
+  remote:{
+    title:"📡 Remote Management — yummy-brain",
+    sub:"Agent Governance: start, stop, pause agents organization-wide",
+    gartner:"Gartner: Remote management — organization-level governance, control which agents available, manage costs.",
+    ucs:[
+      {i:"🛑",t:"Kill switch: dừng tất cả yummy agents khi phát hiện anomaly behavior"},
+      {i:"📊",t:"Agent health dashboard: uptime, latency, error rate per agent"},
+      {i:"🔄",t:"Rolling update: deploy new yummy-agent version không downtime"},
+      {i:"📋",t:"Usage report: team nào dùng agent nhiều nhất, agent nào không được dùng"},
+    ],
+    mcp:"Tool: start_agent\nTool: stop_agent\nTool: get_agent_health\nResource: yummy://brain/agent-registry",
+    tags:["Remote management","Kill switch","Health monitoring","Rolling update","Usage analytics"]
+  },
+  roles:{
+    title:"🎭 Role Management — yummy-router",
+    sub:"Agent Governance: define custom agent roles, share across teams",
+    gartner:"Gartner: Role management — enterprise-level agent role definition replaces prompt catalogs as way to share 'what works well' across teams.",
+    ucs:[
+      {i:"📋",t:"Định nghĩa roles: 'Security Reviewer', 'Sprint Planner', 'Onboarding Helper'"},
+      {i:"🔄",t:"Share roles across teams: team A tạo prompt tốt → publish → team B reuse"},
+      {i:"🎯",t:"Role routing: intent 'review security' → route tới role 'Security Reviewer'"},
+      {i:"📊",t:"Role effectiveness: role nào có highest developer satisfaction score"},
+    ],
+    mcp:"Tool: get_agent_roles\nTool: create_agent_role\nResource: yummy://router/role-catalog",
+    tags:["Role catalog","Prompt sharing","Intent routing","Effectiveness metrics","Cross-team sharing"]
+  },
+
+  // ── COMMON FUNCTIONS ──
+  "fn-workflow":{title:"🔀 Dynamic Workflow — yummy-brain",sub:"Common Agent Function: dynamic planning, selecting right tools",gartner:"Gartner: Dynamic workflow — agentic behavior relies on dynamic planning, selecting right tools, approaches to achieve goal.",ucs:[{i:"🧠",t:"yummy-brain nhận request → plan: tool nào cần, theo thứ tự nào, fallback nếu fail"},{i:"⚡",t:"Parallel execution: review + security scan chạy đồng thời, không sequential"},{i:"🔄",t:"Adaptive: nếu tool A fail → yummy-brain tự chuyển sang approach B"}],tags:["Orchestration","Parallel","Adaptive","Planning"]},
+  "fn-code":{title:"💻 Code Creation — yummy-code",sub:"Common Agent Function: create/update code locally or from SCM",gartner:"Gartner: Code creation — agents create or update code stored locally, or fetch from source code management.",ucs:[{i:"✍️",t:"'Implement user registration endpoint' → yummy-code tạo controller + service + tests"},{i:"📂",t:"Multi-file: tự tạo đúng files, đúng structure theo project conventions"},{i:"🔀",t:"Framework migration: Express v4 → v5 across toàn bộ codebase"}],tags:["Code gen","Multi-file","Framework migration","Project conventions"]},
+  "fn-review":{title:"🔍 Code Review — yummy-review",sub:"Common Agent Function: LLM + deterministic rules hybrid",gartner:"Gartner: Best tools use LLMs to generate deterministic rules, then rely on deterministic code review — repeatable results.",ucs:[{i:"🤖",t:"LLM phase: identify new patterns → generate Semgrep rules"},{i:"⚙️",t:"Deterministic phase: apply generated rules → consistent, repeatable"},{i:"📊",t:"Review score: 0-100, breakdown by category"}],tags:["LLM+deterministic","Semgrep rules","Repeatable","Review score"]},
+  "fn-bug":{title:"🐛 Bug Fixing — yummy-qa + yummy-code",sub:"Common Agent Function: strongest AI agent use case",gartner:"Gartner: Bug fixing proven valuable, especially simple bugs. Better context access (both from app and internet) made this one of strongest areas for AI agents.",ucs:[{i:"🔍",t:"Bug report created → agent trace code flow, read docs, identify root cause"},{i:"🔧",t:"Propose fix + unit test → create draft PR với explanation"},{i:"📊",t:"Bug triage: severity + effort estimate + owner suggestion"}],tags:["Root cause","Draft PR","Triage","Code tracing"]},
+  "fn-test":{title:"🧪 Test Generation — yummy-qa",sub:"Common Agent Function: code first then tests",gartner:"Gartner: Most tools operate best when they generate code first then tests, rather than vice versa.",ucs:[{i:"🧪",t:"After code generation: yummy-qa tự sinh unit tests với edge cases"},{i:"📊",t:"Coverage-aware: skip redundant tests, focus on uncovered branches"},{i:"🎯",t:"From requirements: E2E scenarios từ acceptance criteria (BDD Gherkin)"}],tags:["Unit tests","Edge cases","Coverage-aware","BDD Gherkin","E2E"]},
+  "fn-docs":{title:"📝 Documentation Generation — yummy-docs",sub:"Common Agent Function: docs help both humans and AI",gartner:"Gartner: Good documentation helps both humans AND AI tools understand what code is, how it works, why created. AI can quickly generate from code.",ucs:[{i:"📚",t:"JSDoc/PyDoc comments → structured API reference automatically"},{i:"📋",t:"README auto-update khi có module mới"},{i:"🗺️",t:"Architecture docs: why we made these decisions (ADR format)"}],tags:["API reference","README","ADR","Inline docs","Auto-update"]},
+  "fn-build":{title:"🔧 Build Artifacts — yummy-pipeline",sub:"Common Agent Function: Dockerfile, IaC, configs",gartner:"Gartner: Build and config artifact generation — Dockerfiles, IaC configs, environment configs follow well-defined structures, within AI-generation capabilities.",ucs:[{i:"🐳",t:"Sinh Dockerfile optimized theo project stack (multi-stage, security best practices)"},{i:"☁️",t:"Terraform modules từ architecture requirements"},{i:"⚙️",t:"GitHub Actions workflows cho CI/CD pipeline"}],tags:["Dockerfile","Terraform","GitHub Actions","Multi-stage","IaC"]},
+  "fn-orch":{title:"🎭 Test Orchestration — yummy-qa + yummy-pipeline",sub:"Common Agent Function: select and execute appropriate test set",gartner:"Gartner: Test orchestration — agentic AI tools can select and execute appropriate set of tests.",ucs:[{i:"🎯",t:"Changed files → identify test scope: không chạy toàn bộ, chạy đúng tests"},{i:"⚡",t:"Parallel test execution với optimal sharding"},{i:"📊",t:"Test result aggregation + flaky test quarantine"}],tags:["Smart selection","Parallel","Sharding","Flaky quarantine","Optimal scope"]},
+  "fn-obs":{title:"👁️ Agent Observability — yummy-brain",sub:"Common Agent Function: monitor, start, stop, pause agents",gartner:"Gartner: Agent observability and management — governance tools that monitor resources used by agents and can start, stop or pause them.",ucs:[{i:"📊",t:"Real-time dashboard: agent latency, token usage, success rate"},{i:"🔍",t:"Trace mỗi agent request: input → tool calls → output → audit log"},{i:"🚨",t:"Alert: agent cost vượt budget → auto-pause + notify admin"}],tags:["Tracing","Latency","Token usage","Audit log","Auto-pause"]},
+
+  // ── CONTEXT SYSTEMS ──
+  "ctx-code":{title:"📁 Source Code Repos — GitHub/GitLab",sub:"Context System: yummy-memory indexes full codebase",gartner:"Gartner: Source code repositories — primary context source for software engineering agents.",ucs:[{i:"🔍",t:"Semantic search: 'tìm nơi xử lý authentication' → trả exact files + context"},{i:"📊",t:"Git blame: ai viết đoạn code này, tại sao, khi nào"},{i:"🔄",t:"Auto-index mỗi commit: always fresh context"}],tags:["Semantic search","Git blame","Auto-index","Vector embedding","Full codebase"]},
+  "ctx-work":{title:"📌 Work Management — Jira/Linear",sub:"Context System: sprint context injected vào agent requests",gartner:"Gartner: Requirements and work management tools — context about what is being built and why.",ucs:[{i:"📋",t:"Agent biết: task đang làm là gì, acceptance criteria gì, belongs to sprint nào"},{i:"🔗",t:"Code changes linked với Jira ticket → traceability"},{i:"📊",t:"Velocity data → yummy-scrum estimate future sprints"}],tags:["Jira","Linear","Sprint context","Traceability","Velocity"]},
+  "ctx-chat":{title:"💬 Chat Logs — Slack/Teams",sub:"Context System: team communication context",gartner:"Gartner: Chat logs from team communication tools — valuable informal context about decisions made.",ucs:[{i:"📝",t:"'Tại sao chúng ta dùng approach này?' → search Slack history → tìm original discussion"},{i:"🔍",t:"Decision context: engineer bàn về trade-offs trong Slack → agent aware"},{i:"📊",t:"Standup summaries được synthesize từ Slack activity"}],tags:["Slack","Teams","Decision context","Informal knowledge","Search history"]},
+  "ctx-docs":{title:"📚 Document Repos — Confluence/Notion",sub:"Context System: formal documentation",gartner:"Gartner: Document repositories — formal documentation, design docs, runbooks.",ucs:[{i:"📚",t:"ADR library: agent aware architectural decisions → không suggest contradicting approaches"},{i:"📋",t:"Runbooks: agent tham khảo khi tạo incident response scripts"},{i:"🎓",t:"Onboarding docs: personalized guide dựa trên existing content"}],tags:["Confluence","Notion","ADR","Runbooks","Formal docs"]},
+  "ctx-design":{title:"🎨 Design Tools — Figma",sub:"Context System: design → code context",gartner:"Gartner: Design, prototyping and UX tools — design context helps agents generate code that matches intended UX.",ucs:[{i:"🎨",t:"Figma design → yummy-code sinh React components matching design specs"},{i:"📐",t:"Design tokens → CSS variables tự động"},{i:"🖼️",t:"Component library từ Figma frames → Storybook stories"}],tags:["Figma","Design-to-code","Design tokens","React components","Storybook"]},
+  "ctx-kg":{title:"🕸️ Knowledge Graph — yummy-memory",sub:"Context System: cross-tool knowledge synthesis",gartner:"Gartner: Knowledge graphs built across multiple tools and data sources — richer context than individual sources.",ucs:[{i:"🕸️",t:"Link: code ↔ ticket ↔ PR ↔ Slack discussion ↔ doc → full context chain"},{i:"🔍",t:"'Tại sao bug này xảy ra?' → trace: commit → ticket → discussion → original design"},{i:"📊",t:"Impact analysis: thay đổi service A ảnh hưởng gì đến services B, C, D"}],tags:["Knowledge graph","Cross-tool","Full context","Impact analysis","Traceability"]},
+  "ctx-idp":{title:"🏠 Internal Developer Portal — yummy-brain",sub:"Context System: developer experience hub",gartner:"Gartner: Internal developer portal — central hub for developer tools, docs, services catalog.",ucs:[{i:"🏠",t:"Developer onboarding: 'tôi cần làm gì để setup dev environment?' → complete guide"},{i:"📋",t:"Service catalog: services nào available, API endpoints, owners"},{i:"🔍",t:"Golden paths: recommended ways to do common tasks in yummy stack"}],tags:["IDP","Service catalog","Golden paths","Onboarding","Developer experience"]},
+
+  // ── DETERMINISTIC TOOLS ──
+  sast:{title:"🔎 yummy-sast — Static Analysis (Deterministic)",sub:"Deterministic SWE Tool: Semgrep + CodeQL + custom rules",gartner:"Gartner: Deterministic tools — same input, always same output. Repeatable, reliable. Errors solved once, won't recur unlike nondeterministic LLM tools.",ucs:[{i:"⚙️",t:"Semgrep: 200+ OWASP rules + custom yummy rules → always same result"},{i:"🔍",t:"CodeQL: deep data flow analysis → taint tracking từ user input → DB"},{i:"🤖",t:"AI generates new Semgrep rules khi tìm thấy pattern mới → rules dùng lâu dài"},{i:"📊",t:"SARIF output → GitHub Security dashboard + yummy-review comments"}],mcp:"Tool: run_semgrep_scan\nTool: run_codeql_analysis\nTool: generate_security_rule\nResource: yummy://sast/findings",tags:["Semgrep","CodeQL","SARIF","Deterministic","Custom rules","Taint analysis"]},
+  "det-review":{title:"📋 Deterministic Code Review",sub:"Deterministic: ESLint + custom rules → consistent results",gartner:"Gartner: Rule-based code review tools look for known anti-patterns. AI generates deterministic rules from LLM analysis.",ucs:[{i:"⚙️",t:"ESLint custom ruleset theo yummy coding standards → enforce always"},{i:"🤖",t:"yummy-review finds pattern → generates ESLint rule → rule runs deterministically forever"},{i:"📊",t:"Review violations tracked over time → measure coding quality improvement"}],tags:["ESLint","Custom rules","LLM→rules","Deterministic","Quality metrics"]},
+  "det-transform":{title:"🔄 Code Transformation — OpenRewrite",sub:"Deterministic: framework migrations, refactoring",gartner:"Gartner: Best tools combine LLMs with deterministic rule-based transformation engines such as OpenRewrite.",ucs:[{i:"🔄",t:"Java Spring Boot 2 → 3: OpenRewrite recipes → 100% consistent migration"},{i:"🤖",t:"LLM identify migration pattern → generate OpenRewrite recipe → apply deterministically"},{i:"📦",t:"Dependency version upgrades across toàn bộ monorepo"}],tags:["OpenRewrite","Framework migration","LLM+deterministic","Recipes","Monorepo"]},
+  "det-test":{title:"🧪 Deterministic Test Generation",sub:"Deterministic: rule-based test framework",gartner:"Gartner: Deterministic test generation — frameworks using rules to analyze code and create unit tests have existed for a long time.",ucs:[{i:"⚙️",t:"Analyze function signature + types → generate parameterized tests deterministically"},{i:"📊",t:"Same function → always same baseline test set (then LLM augments edge cases)"},{i:"🔄",t:"Mutation testing framework: deterministic code mutations → verify test quality"}],tags:["Rule-based","Parameterized tests","Mutation testing","Deterministic","Baseline"]},
+  "det-sec":{title:"🔒 Security Rules — OWASP Deterministic",sub:"Deterministic: known vulnerability patterns",gartner:"Gartner: Security-focused reviews look for known anti-patterns in code or known vulnerable libraries. Best results from deterministic rules.",ucs:[{i:"🔒",t:"OWASP Top 10 rules: SQL injection pattern → always detected, không miss"},{i:"📦",t:"SCA: known CVE database match → deterministic, không false negative"},{i:"🤖",t:"AI finds new vuln class → generates rule → rule detects it deterministically forever"}],tags:["OWASP Top 10","CVE","SCA","Zero false negative","Rule generation"]},
+
+  // ── AI SRE ──
+  obs:{title:"📡 yummy-obs — AI SRE + Observability",sub:"Runtime: Metrics + Logs + Traces → correlate với code changes",gartner:"Gartner: AI SRE — noise suppression, root cause analysis, auto remediation, deployment automation. Life of software extends far beyond creation.",ucs:[{i:"📊",t:"Correlate: 'deployment at 14:32 → latency spike at 14:35' → auto create incident"},{i:"🔇",t:"Alert noise suppression: 1 DB failure → 47 alerts → yummy-obs reduce thành 1 root alert"},{i:"🔍",t:"RCA: blame đúng commit, đúng developer, đúng line code gây regression"},{i:"⚡",t:"Auto-remediation: known patterns (OOM → restart pod) tự fix, alert human cho unknown"},{i:"📈",t:"SLA tracking: uptime, p95 latency, error rate → weekly report cho stakeholders"}],mcp:"Tool: get_service_metrics\nTool: create_incident\nTool: get_deployment_impact\nResource: yummy://obs/sla-dashboard",tags:["Noise suppression","RCA","Auto-remediation","SLA","Correlation","AIOps"]},
+  "sre-noise":{title:"🔇 Noise Suppression — yummy-obs",sub:"AI SRE: reduce alert fatigue",gartner:"Gartner: Noise suppression — understanding relationships between components, AI reduces noise to only show alerts related to actual failure.",ucs:[{i:"🔇",t:"DB connection pool exhausted → tất cả downstream services báo error → 1 root alert"},{i:"🧠",t:"ML model learn service dependencies → biết alert nào là symptom vs root cause"},{i:"📊",t:"Alert quality score: false positive rate tracked và improved theo thời gian"}],tags:["Alert fatigue","Root cause","Dependency graph","ML","False positive reduction"]},
+  "sre-rca":{title:"🔍 Root Cause Analysis — yummy-obs",sub:"AI SRE: analyze historical patterns → predict causes",gartner:"Gartner: RCA — analyzing historical alert patterns and their causes, AI predicts likelihood new alerts share same original cause.",ucs:[{i:"🔍",t:"Pattern match: 'last 3 times memory spike → OOM → restart' → predict and preempt"},{i:"💻",t:"Code blame: identify commit + file + developer → open ticket + notify"},{i:"🕐",t:"MTTR reduction: từ 45 phút xuống 8 phút với AI-assisted RCA"}],tags:["Pattern matching","Code blame","MTTR","Historical analysis","Prediction"]},
+  "sre-auto":{title:"⚡ Auto Remediation — yummy-obs",sub:"AI SRE: well-known low-risk scenarios only",gartner:"Gartner: Auto remediation reserved for small number of well-known, low-risk, trusted scenarios. Most enterprises: not possible for production without human approval.",ucs:[{i:"✅",t:"Low-risk auto: pod OOM → restart; disk 95% → clear logs; cache miss spike → warm cache"},{i:"👤",t:"High-risk: schema change, config update → propose + require human approval"},{i:"📋",t:"Remediation playbook: AI suggests steps → human executes với 1 click"}],tags:["Low-risk auto","Human approval","Playbooks","Pod restart","Log cleanup"]},
+  "sre-deploy":{title:"🚀 Deployment Automation — yummy-deploy",sub:"AI SRE: interact with Ansible, Terraform, K8s",gartner:"Gartner: AIOps tools interact with deployment automation technologies such as Ansible, Terraform. AI SRE creates and executes deployments.",ucs:[{i:"🎯",t:"Canary: 5% → health check → 20% → health check → 100% → automatic"},{i:"🔄",t:"Auto rollback: error rate >threshold sau deploy → rollback trong 2 phút"},{i:"🧪",t:"Post-deploy smoke tests tự chạy → kết quả vào Slack + yummy-obs"}],tags:["Canary","Auto-rollback","Smoke tests","K8s","Terraform","Ansible"]},
+
+  // ── CI/CD ──
+  pipeline:{title:"🔧 yummy-pipeline — CI/CD Intelligence",sub:"Runtime: GitHub Actions/GitLab CI + AI optimization",gartner:"Gartner: CI/CD pipeline là core của AI-native SWE platform, kết nối development environment với runtime environment.",ucs:[{i:"⚡",t:"CI failure → yummy-pipeline phân tích error message + stack trace → suggest fix ngay trong PR comment"},{i:"🎯",t:"Flaky test detection: fail 2/5 runs → mark flaky → quarantine → investigate"},{i:"📊",t:"Build time analytics: identify slowest steps → optimize cache strategy"},{i:"🔄",t:"Pipeline-as-code generation: từ architecture → GitHub Actions workflow"}],mcp:"Tool: get_pipeline_status\nTool: analyze_build_failure\nTool: get_flaky_tests\nResource: yummy://pipeline/metrics",tags:["GitHub Actions","Flaky tests","Build analytics","Cache optimization","Auto-fix suggestion"]},
+  deploy:{title:"🚀 yummy-deploy — Deployment Agent",sub:"Runtime: K8s / Docker / Cloud deployments",gartner:"Gartner: Deployment automation là key part of AI SRE capability.",ucs:[{i:"🎯",t:"Canary deployment: 5% traffic → monitor 10 phút → 20% → 100% tự động"},{i:"🔄",t:"Blue/Green switch: instant cutover với zero downtime"},{i:"🧪",t:"Post-deploy: smoke tests tự chạy → notify yummy-scrum close ticket"},{i:"📖",t:"Deployment diary: mọi deploy → who, when, version, result → audit trail"}],mcp:"Tool: trigger_deployment\nTool: get_deployment_status\nTool: rollback_deployment\nResource: yummy://deploy/history",tags:["Canary","Blue/Green","Smoke tests","K8s","Auto-rollback","Audit trail"]},
+  infra:{title:"☁️ yummy-infra — Infrastructure Agent",sub:"Runtime: Terraform + Helm + K8s analysis",gartner:"Gartner: Build and config artifact generation — IaC follows well-defined structures, within AI generation capabilities.",ucs:[{i:"📋",t:"Terraform plan review: 'destroying prod DB?' → block + require manual confirmation"},{i:"💰",t:"Cost optimization: idle resources, over-provisioned instances → save 30%"},{i:"🔍",t:"Drift detection: actual infra vs Terraform state → alert và suggest reconcile"},{i:"🔒",t:"Security group review: port 22 open to 0.0.0.0/0 → auto-flag"}],mcp:"Tool: review_terraform_plan\nTool: get_infra_cost\nTool: detect_drift\nResource: yummy://infra/compliance-report",tags:["Terraform","IaC review","Cost optimization","Drift","Security groups","K8s"]},
+
+  // ── TEST MANAGEMENT ──
+  qa:{title:"🧪 yummy-qa — AI-Augmented Test Management",sub:"Runtime + Dev: comprehensive testing intelligence",gartner:"Gartner: AI test management takes wider view of application testing. Testing must not become the bottleneck in AI-native SWE.",ucs:[{i:"🎯",t:"Test selection: changed files → dependency graph → identify exact test scope → run only needed"},{i:"📊",t:"Test data generation: synthetic PII-safe data cho integration tests"},{i:"📈",t:"Coverage optimization: not just line coverage — branch, mutation, boundary conditions"},{i:"🧪",t:"Full test types: unit, integration, UI, E2E, performance, security"},{i:"📋",t:"Test result explanation: 'test A failed vì service B không mock đúng timeout'"}],mcp:"Tool: generate_tests\nTool: select_test_scope\nTool: generate_test_data\nTool: get_coverage_report\nResource: yummy://qa/test-matrix",tags:["Test selection","Synthetic data","Coverage","Full test types","Result explanation","Smart scope"]},
+  "test-sel":{title:"🎯 Test Selection & Prioritization",sub:"AI Test Management: smart test scope",gartner:"Gartner: Testing should encompass more than code that changed. AI identifies dependencies and seemingly unrelated code that should be in test scope.",ucs:[{i:"🕸️",t:"Dependency graph: file A changed → test files B, C, D cần chạy"},{i:"⚡",t:"Priority: high-risk changes → full suite; low-risk → smoke only"},{i:"🕐",t:"Target: reduce CI time 60% while maintaining same defect escape rate"}],tags:["Dependency graph","Risk-based","Smart scope","CI time reduction"]},
+  "test-data":{title:"📊 Test Data Generation",sub:"AI Test Management: synthetic safe test data",gartner:"Gartner: One of the hardest problems in software engineering — having the right test data. AI well-placed to generate synthetic test data.",ucs:[{i:"🔒",t:"Synthetic PII: realistic user data không phải real customer data → GDPR safe"},{i:"🎯",t:"Edge case data: boundary values, null, max length, unicode, injection strings"},{i:"📊",t:"State combinations: generate data covering all important state transitions"}],tags:["Synthetic PII","GDPR safe","Edge cases","Boundary values","State combinations"]},
+  "test-cov":{title:"📈 Test Coverage Optimization",sub:"AI Test Management: beyond line coverage",gartner:"Gartner: Coverage optimization ensures you test the right things. Requires deep assessment of boundary conditions and code paths.",ucs:[{i:"📈",t:"Mutation score: thay đổi code → tests phải fail → verify tests actually catch bugs"},{i:"🎯",t:"Branch coverage + condition coverage + path coverage, không chỉ line coverage"},{i:"⚠️",t:"Identify: tests có coverage cao nhưng không verify business logic"}],tags:["Mutation testing","Branch coverage","Path coverage","Business logic","Beyond line coverage"]},
+  "test-gen":{title:"⚡ Test Generation — yummy-qa",sub:"AI Test Management: from code, requirements, docs",gartner:"Gartner: AI-augmented test generation must create unit, integration, UI, system tests. Summarize and explain results.",ucs:[{i:"💻",t:"From code: analyze function → comprehensive unit tests với mocks"},{i:"📋",t:"From requirements: Gherkin E2E scenarios từ acceptance criteria"},{i:"📚",t:"From docs: API tests từ OpenAPI spec tự động"},{i:"📊",t:"Result summary: 'X tests passed, Y failed vì reason Z' → readable report"}],tags:["Unit tests","Gherkin","API tests","Result summary","Multi-source","From requirements"]},
+
+  // ── AI NATIVE ──
+  native:{title:"🚀 yummy-code (build mode) — AI-Native App Generation",sub:"Rapid prototype + vibe coding mode cho proof of concepts",gartner:"Gartner: AI-native app generation great for tasks where speed > future maintainability: prototypes, learning new tech, quick demos.",ucs:[{i:"⚡",t:"'Build me a dashboard showing sprint metrics' → running prototype trong 5 phút"},{i:"🎨",t:"Figma design → working React component trong 1 prompt"},{i:"🧪",t:"Vibe mode: developer focus vào conversation + preview, không phải code"},{i:"⚠️",t:"Gartner caveat: prototype output cần engineering review trước production use"}],tags:["Prototyping","Rapid dev","Vibe coding","Figma-to-code","Learning","Demo"]},
+
+  // ── MCP SERVER ──
+  "mcp-server":{
+    title:"🔌 yummy-mcp-server — ★ KEY: Backend as MCP",
+    sub:"Biến toàn bộ yummy backend → MCP Tools + Resources + Prompts → IDE agnostic",
+    gartner:"Gartner: Context systems — tools with native support perform better than MCP-based. YummyCode IDE có native support; các IDE khác dùng MCP. Đây là layer cho phép IDE agnostic.",
+    ucs:[
+      {i:"🔌",t:"Wrap EVERY REST endpoint → MCP Tool với schema → IDE discover tự động"},
+      {i:"📚",t:"MCP Resources: expose codebase index, ADR, sprint data → AI có context không cần hỏi"},
+      {i:"📋",t:"MCP Prompts: pre-built workflows → /pr-review, /sprint-plan, /security-audit"},
+      {i:"🌐",t:"stdio transport: local dev (YummyCode, Claude Code) · SSE: team server (VS Code, Cursor)"},
+      {i:"🔐",t:"OAuth2/JWT: mỗi developer isolated session, không cross-contaminate context"},
+      {i:"📊",t:"Tool versioning: schema evolution không break existing IDE clients"},
+    ],
+    mcp:"REST → MCP mapping:\nPOST /api/review/pr → Tool: review_pull_request\nPOST /api/guard/scan → Tool: scan_for_vulnerabilities\nGET /api/scrum/sprint → Tool: get_current_sprint\nPOST /api/qa/generate → Tool: generate_tests\nGET /api/memory/search → Resource: yummy://codebase/search\nGET /api/adrs → Resource: yummy://adr/list\n\nConnect:\nclaude mcp add yummy --url http://yummy:3000/mcp\nCursor: .cursor/mcp.json → { url: 'http://yummy:3000/mcp' }\nVS Code: settings.json → mcp.servers.yummy",
+    tags:["MCP Tools","MCP Resources","MCP Prompts","stdio","SSE","OAuth2","IDE agnostic","REST→MCP","★ KEY INNOVATION"]
+  },
+};
+
+let cur = null;
+function show(id) {
+  const d = D[id];
+  if (!d) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  if (event && event.target) event.target.closest('.chip')?.classList.add('active');
+  if (cur === id) { closePanel(); return; }
+  cur = id;
+
+  document.getElementById('p-title').textContent = d.title;
+  document.getElementById('p-subtitle').textContent = d.sub || '';
+
+  const g = document.getElementById('p-gartner');
+  g.innerHTML = `<strong>Gartner Reference (G00845031)</strong>${d.gartner}`;
+
+  const b = document.getElementById('p-body');
+  const lis = (d.ucs || []).map(u => `<li><span class="uc-icon">${u.i}</span>${u.t}</li>`).join('');
+  b.innerHTML = `<h4>Use Cases & Chức năng</h4><ul class="uc-list">${lis}</ul>`;
+
+  const mbox = document.getElementById('p-mcp');
+  if (d.mcp) {
+    mbox.style.display = 'block';
+    mbox.innerHTML = `<strong>🔌 MCP / Integration Detail</strong>${d.mcp.split('\n').map(l => `<code>${l}</code>`).join('')}`;
+  } else {
+    mbox.style.display = 'none';
+  }
+
+  const tags = document.getElementById('p-tags');
+  tags.innerHTML = (d.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+
+  const panel = document.getElementById('panel');
+  panel.classList.add('open');
+}
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  cur = null;
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePanel(); });
+</script>
+</body>
+</html>

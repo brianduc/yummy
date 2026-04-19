@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yummy Platform — Full Architecture</title>
+<style>
+:root{--purple:#534AB7;--purple-lt:#EEEDFE;--teal:#0F6E56;--teal-lt:#E1F5EE;--blue:#185FA5;--blue-lt:#E6F1FB;--red:#A32D2D;--red-lt:#FCEBEB;--amber:#854F0B;--amber-lt:#FAEEDA;--pink:#993556;--pink-lt:#FBEAF0;--green:#3B6D11;--green-lt:#EAF3DE;--gray:#444441;--gray-lt:#F1EFE8;--border:#ddd;--bg:#fff;--bg2:#f7f7f5;--text:#1a1a18;--text2:#555552}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0eeea;color:var(--text);padding:20px;min-height:100vh}
+h1{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.subtitle{font-size:12px;color:var(--text2);margin-bottom:16px}
+.arch{display:flex;flex-direction:column;gap:8px;max-width:1100px;margin:0 auto}
+.layer{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px}
+.layer-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;user-select:none}
+.chip:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.chip.sel{outline:2.5px solid #1a1a18;outline-offset:2px}
+
+.c-biz{background:var(--purple-lt);color:var(--purple);border-color:#AFA9EC}
+.c-plan{background:var(--teal-lt);color:var(--teal);border-color:#5DCAA5}
+.c-ai{background:var(--pink-lt);color:var(--pink);border-color:#ED93B1}
+.c-dev{background:var(--blue-lt);color:var(--blue);border-color:#85B7EB}
+.c-mcp{background:var(--green-lt);color:var(--green);border-color:#97C459;font-weight:700}
+.c-ide{background:var(--gray-lt);color:var(--gray);border-color:#B4B2A9}
+.c-sec{background:var(--red-lt);color:var(--red);border-color:#F09595}
+.c-ops{background:var(--amber-lt);color:var(--amber);border-color:#EF9F27}
+.c-ext{background:#fff;color:#333;border-color:#ccc}
+
+.badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;font-weight:600}
+.b-pref{background:#E6F1FB;color:#185FA5}
+.b-mcp{background:#EAF3DE;color:#3B6D11}
+.b-new{background:#EEEDFE;color:#534AB7}
+
+/* DETAIL PANEL */
+.panel{background:var(--bg);border:1.5px solid #534AB7;border-radius:12px;padding:16px;margin-top:8px;display:none;animation:fadeIn .18s ease}
+.panel.open{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.panel-title{font-size:14px;font-weight:600}
+.panel-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);padding:0;line-height:1}
+.panel-conn{font-size:11px;color:var(--text2);background:var(--bg2);padding:6px 10px;border-radius:6px;margin-bottom:10px;border-left:3px solid var(--purple)}
+.panel-usecases{font-size:12px}
+.panel-usecases h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:6px;font-weight:600}
+.panel-usecases ul{padding-left:16px;line-height:1.9;color:var(--text)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+
+/* MCP DETAIL BOX */
+.mcp-box{background:#EAF3DE;border:1px solid #97C459;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#27500A}
+.mcp-box strong{display:block;margin-bottom:4px;font-size:12px}
+.mcp-box code{background:#fff;border:1px solid #97C459;border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;font-size:11px;color:var(--text2)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="arch">
+  <div>
+    <h1>🍜 Yummy Platform — Full Architecture</h1>
+    <p class="subtitle">AI-powered multi-agent platform · bridges business ↔ technical teams · Click bất kỳ component để xem use cases</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#EEEDFE;border:1px solid #AFA9EC"></div> Business/Planning</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FBEAF0;border:1px solid #ED93B1"></div> AI Core</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E6F1FB;border:1px solid #85B7EB"></div> Development</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#EAF3DE;border:1px solid #97C459"></div> MCP Integration ★</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FCEBEB;border:1px solid #F09595"></div> Security</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FAEEDA;border:1px solid #EF9F27"></div> CI/CD &amp; Ops</div>
+  </div>
+
+  <!-- L1 BUSINESS -->
+  <div class="layer" style="border-color:#AFA9EC">
+    <div class="layer-label">👥 L1 · Business &amp; Stakeholder Layer</div>
+    <div class="chips">
+      <span class="chip c-biz" onclick="show('po')">🎯 yummy-po <span class="badge b-new">Agent</span></span>
+      <span class="chip c-biz" onclick="show('ba')">📋 yummy-ba <span class="badge b-new">Agent</span></span>
+      <span class="chip c-plan" onclick="show('scrum')">🔄 yummy-scrum <span class="badge b-new">Agent</span></span>
+      <span class="chip c-plan" onclick="show('pm')">📊 yummy-pm</span>
+      <span class="chip c-plan" onclick="show('retro')">💬 yummy-retro</span>
+    </div>
+  </div>
+
+  <!-- L2 AI CORE -->
+  <div class="layer" style="border-color:#ED93B1">
+    <div class="layer-label">🧠 L2 · AI Orchestration Core</div>
+    <div class="chips">
+      <span class="chip c-ai" onclick="show('brain')">🧠 yummy-brain (Orchestrator)</span>
+      <span class="chip c-ai" onclick="show('memory')">🗄️ yummy-memory (RAG + VectorDB)</span>
+      <span class="chip c-ai" onclick="show('router')">⚡ yummy-router</span>
+      <span class="chip c-ai" onclick="show('bus')">📨 yummy-bus (Event Bus)</span>
+    </div>
+  </div>
+
+  <!-- L3 DEVELOPMENT -->
+  <div class="layer" style="border-color:#85B7EB">
+    <div class="layer-label">💻 L3 · Development Layer</div>
+    <div class="chips">
+      <span class="chip c-dev" onclick="show('code')">⌨️ yummy-code <span class="badge b-pref">Preferred IDE</span></span>
+      <span class="chip c-dev" onclick="show('review')">🔍 yummy-review</span>
+      <span class="chip c-dev" onclick="show('qa')">🧪 yummy-qa</span>
+      <span class="chip c-dev" onclick="show('docs')">📝 yummy-docs</span>
+      <span class="chip c-dev" onclick="show('arch')">🏗️ yummy-arch</span>
+    </div>
+  </div>
+
+  <!-- L4 MCP LAYER — STAR -->
+  <div class="layer" style="border-color:#639922;background:rgba(234,243,222,0.4)">
+    <div class="layer-label">🔌 L4 · MCP Universal Integration Layer — <strong>yummy-mcp-server</strong> <span class="badge b-mcp">★ KEY LAYER</span></div>
+    <div class="chips">
+      <span class="chip c-mcp" onclick="show('mcp-server')">🔌 yummy-mcp-server <span class="badge b-mcp">Backend→MCP</span></span>
+      <span class="chip c-ide" onclick="show('yummycode-ide')">⌨️ YummyCode <span class="badge b-pref">Self-hosted</span></span>
+      <span class="chip c-ide" onclick="show('vscode')">🔷 VS Code + MCP</span>
+      <span class="chip c-ide" onclick="show('cursor')">⚡ Cursor</span>
+      <span class="chip c-ide" onclick="show('jetbrains')">🧩 JetBrains</span>
+      <span class="chip c-ide" onclick="show('neovim')">⬛ Neovim</span>
+      <span class="chip c-ide" onclick="show('claudecode')">🤖 Claude Code</span>
+    </div>
+  </div>
+
+  <!-- L5 SECURITY -->
+  <div class="layer" style="border-color:#F09595">
+    <div class="layer-label">🛡️ L5 · Security Layer</div>
+    <div class="chips">
+      <span class="chip c-sec" onclick="show('guard')">🛡️ yummy-guard</span>
+      <span class="chip c-sec" onclick="show('policy')">📜 yummy-policy</span>
+      <span class="chip c-sec" onclick="show('vault')">🔑 yummy-vault</span>
+      <span class="chip c-sec" onclick="show('sast')">🔎 yummy-sast</span>
+    </div>
+  </div>
+
+  <!-- L6 CICD -->
+  <div class="layer" style="border-color:#EF9F27">
+    <div class="layer-label">🚀 L6 · CI/CD &amp; Infrastructure</div>
+    <div class="chips">
+      <span class="chip c-ops" onclick="show('pipeline')">🔧 yummy-pipeline</span>
+      <span class="chip c-ops" onclick="show('deploy')">🚀 yummy-deploy</span>
+      <span class="chip c-ops" onclick="show('obs')">📡 yummy-obs</span>
+      <span class="chip c-ops" onclick="show('infra')">☁️ yummy-infra</span>
+    </div>
+  </div>
+
+  <!-- L7 EXTERNAL -->
+  <div class="layer">
+    <div class="layer-label">🔗 L7 · External Integrations</div>
+    <div class="chips">
+      <span class="chip c-ext" onclick="show('github')">🐙 GitHub / GitLab</span>
+      <span class="chip c-ext" onclick="show('jira')">📌 Jira / Linear</span>
+      <span class="chip c-ext" onclick="show('confluence')">📚 Confluence / Notion</span>
+      <span class="chip c-ext" onclick="show('slack')">💬 Slack / Teams</span>
+      <span class="chip c-ext" onclick="show('llm')">🤖 LLM Providers</span>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="panel" id="panel">
+    <div class="panel-header">
+      <div class="panel-title" id="p-title"></div>
+      <button class="panel-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-conn" id="p-conn"></div>
+    <div class="panel-usecases">
+      <h4>Use Cases &amp; Chức năng</h4>
+      <ul id="p-list"></ul>
+    </div>
+    <div class="tags" id="p-tags"></div>
+    <div class="mcp-box" id="p-mcp" style="display:none"></div>
+  </div>
+
+</div><!-- end arch -->
+
+<script>
+const D = {
+  po:{title:"🎯 yummy-po — Product Owner Agent",conn:"Flow: Stakeholder request → yummy-po → yummy-ba → yummy-scrum → GitHub Issues",items:["Nhận input bằng ngôn ngữ tự nhiên từ stakeholder → sinh PRD tự động","Phân tích user feedback + market signals → đề xuất backlog prioritization","Tạo & groom user stories với acceptance criteria đầy đủ (BDD format)","Roadmap visualization tự động: Now/Next/Later, Gantt chart","OKR tracking: map feature → objective → key result","Tích hợp với yummy-scrum để estimate capacity vs demand","Use case thực tế: 'Thêm thanh toán MoMo' → yummy-po sinh PRD 5 trang + 8 user stories + 24 acceptance criteria trong 3 phút"],tags:["PRD generation","Backlog grooming","Roadmap","OKR","BDD","User stories"]},
+  ba:{title:"📋 yummy-ba — Business Analyst Agent",conn:"Flow: yummy-po → yummy-ba → yummy-scrum + yummy-docs",items:["Phân tích yêu cầu → tự sinh UML/BPMN/ERD diagram","Gap analysis: so sánh As-Is vs To-Be business process","Sinh use case diagram từ user stories","Viết functional spec theo chuẩn IEEE 830","Data flow mapping cho mọi feature mới","API contract draft từ business logic","Use case: Đọc user story → sinh sequence diagram + OpenAPI spec draft → dev nhận được spec sẵn"],tags:["Requirements","UML/BPMN/ERD","Gap analysis","IEEE 830","Data flow","API spec"]},
+  scrum:{title:"🔄 yummy-scrum — Scrum Master Agent",conn:"Flow: yummy-po → yummy-scrum → GitHub Projects → Jira/Linear",items:["Sprint planning: estimate story points dựa trên historical velocity của team","Daily standup summarizer từ GitHub activity + Slack messages (9am tự động)","Sprint burndown real-time, tự alert khi sprint at risk","Retrospective facilitator: tổng hợp sentiment, sinh action items","Definition of Done checker khi PR opened","WIP limit enforcement tự động","Use case: Cuối sprint → yummy-scrum phân tích velocity trends, suggest sprint goal + capacity cho sprint tiếp theo"],tags:["Sprint planning","Velocity","Burndown","Retro","DoD","WIP limit"]},
+  pm:{title:"📊 yummy-pm — Project Manager",conn:"Flow: yummy-scrum → yummy-pm → leadership dashboard",items:["Cross-team dependency tracking và conflict detection","Risk register tự động từ code complexity + deadline pressure","Executive dashboard: TTM, lead time, deployment frequency (DORA metrics)","Resource allocation optimizer: ai đang bị overloaded","Milestone tracking vs plan"],tags:["Dependencies","Risk","DORA metrics","Executive dashboard","Resources"]},
+  retro:{title:"💬 yummy-retro — Retrospective Agent",conn:"Flow: sau mỗi sprint → yummy-retro → lưu vào yummy-memory",items:["Collect anonymous feedback qua survey link","Cluster feedback theo theme: Process / Tools / People / Technical debt","Track action items từ retro trước → đóng vòng lặp","Trend analysis qua nhiều sprint: team health dashboard","Sentiment tracking over time","Export retro notes → Confluence/Notion tự động"],tags:["Sentiment","Anonymous survey","Action items","Trends","Team health"]},
+  brain:{title:"🧠 yummy-brain — AI Orchestrator",conn:"Central hub: nhận mọi request → route đúng agent → aggregate + return",items:["Multi-agent orchestration: phối hợp PO + BA + Dev + Security agents đồng thời","Context management: inject codebase context từ yummy-memory vào mọi request","Agent-to-Agent (A2A) delegation protocol","Conflict resolution khi multiple agents có output khác nhau","Full audit log mọi decision cho compliance","LLM routing: chọn đúng model theo task complexity và cost","Retry + fallback: nếu agent fail → escalate lên human"],tags:["A2A","Orchestration","LLM routing","Context mgmt","Audit","Retry"]},
+  memory:{title:"🗄️ yummy-memory — RAG Knowledge Base",conn:"Feeds context to: TẤT CẢ agents qua yummy-brain",items:["Vector embedding toàn bộ codebase, tự update mỗi commit","Semantic search: 'tìm nơi xử lý authentication' → trả exact files + context","Architecture Decision Records (ADR) storage và retrieval","API documentation index tự động từ OpenAPI/Swagger specs","Team knowledge base: meeting notes, RFC, design docs, onboarding guides","Git history analysis: ai viết code này, tại sao, khi nào"],tags:["Vector DB","RAG","Semantic search","ADR","Codebase index","Git history"]},
+  router:{title:"⚡ yummy-router — Smart Agent Router",conn:"Intent detection → route to correct agent → track usage",items:["Intent classification: phân loại request (code/plan/security/ops/business)","Load balancing giữa agent instances","Priority queue: production incident > feature > docs","Fallback chain: agent fail → retry → human escalation","Usage analytics: agent nào được dùng nhiều nhất, latency stats"],tags:["Intent classification","Load balance","Priority queue","Fallback","Analytics"]},
+  bus:{title:"📨 yummy-bus — Event Bus",conn:"GitHub / Jira / CI webhooks → yummy-bus → dispatch to agents",items:["GitHub PR opened → trigger yummy-review + yummy-guard tự động","Issue created → classify: bug (yummy-qa) vs feature (yummy-ba)","CI failure → yummy-pipeline phân tích + suggest fix","Deploy success/fail → yummy-obs + Slack notification","Dead letter queue + automatic retry logic","Event replay: debug bằng cách replay events"],tags:["Webhooks","Async","Dispatch","DLQ","Event replay"]},
+  code:{title:"⌨️ yummy-code — Preferred Self-hosted IDE (YummyCode)",conn:"Built on sst/opencode (MIT) → rebranded binary · Chạy local với Ollama",items:["✅ PREFERRED: Zero code egress — Ollama local model + yummy-mcp-server nội bộ","Hiểu toàn bộ yummy codebase qua MCP GitHub server integration","Custom commands: /pr-review, /sprint-tasks, /security-audit, /generate-tests","Build agent (full write access) vs Plan agent (read-only analysis)","TUI terminal (neovim-style) + Web UI trên browser :4096","Phân phối binary nội bộ: yummycode.exe (Win) / yummycode (Linux/Mac)","Fallback: nếu self-host FAIL → developers dùng bất kỳ IDE khác + yummy-mcp-server"],tags:["Self-hosted","Ollama","Zero egress","TUI","Web UI","Binary","Custom commands"]},
+  review:{title:"🔍 yummy-review — Code Review Agent",conn:"Trigger: PR opened → yummy-bus → yummy-review → comment on GitHub",items:["Review theo coding standards định nghĩa trong AGENT.md","Detect code smells: God class, long method, magic numbers","Performance anti-patterns: N+1 query, missing index, sync in async context","Suggest tests cho uncovered code paths","Check breaking API changes so với API contract","Generate PR summary giúp reviewer tiết kiệm 60% thời gian","Auto-approve PR đơn giản (chỉ docs changes, formatting)"],tags:["PR review","Code smell","Performance","API compat","Auto-approve","Summary"]},
+  qa:{title:"🧪 yummy-qa — QA Agent",conn:"Flow: yummy-ba (user stories) → yummy-qa → test files → yummy-pipeline",items:["Sinh unit tests từ source code tự động (coverage-aware)","E2E test scenarios từ user stories (yummy-ba → yummy-qa pipeline)","Test coverage gap analysis: highlight uncovered branches","Regression test prioritization theo changed files","Performance benchmark automation sau mỗi release","Flaky test detection và quarantine","Mutation testing để verify test quality"],tags:["Unit test gen","E2E","Coverage","Regression","Benchmark","Flaky detection","Mutation"]},
+  docs:{title:"📝 yummy-docs — Documentation Agent",conn:"Sources: codebase + commits + ADR → output: docs site + API ref + changelog",items:["Auto-generate API docs từ code comments + OpenAPI specs","Changelog từ conventional commits (feat/fix/breaking changes)","Architecture diagrams tự vẽ từ codebase dependency analysis","Onboarding guide cá nhân hóa cho developer mới join team","Sync tự động lên Confluence / Notion / GitHub Pages","README update tự động khi có feature mới","Stale documentation detection: đánh dấu docs chưa update >3 tháng"],tags:["API docs","Changelog","Architecture diagrams","Onboarding","Confluence","Stale detection"]},
+  arch:{title:"🏗️ yummy-arch — Architecture Agent",conn:"Analyzes: codebase → detects issues → proposes improvements",items:["Phát hiện circular dependencies và layer boundary violations","Đề xuất microservice split khi module phình quá lớn","Coupling/cohesion analysis theo sprint","Security architecture review: data flow + trust boundaries","ADR generator: tự ghi lại quyết định kiến trúc","Technical debt backlog tự động prioritized theo risk × effort","Dependency graph visualization"],tags:["Circular deps","Layer violation","Tech debt","ADR","Coupling","Microservice","Dep graph"]},
+  "mcp-server":{title:"🔌 yummy-mcp-server — Backend as MCP ⭐",conn:"⭐ KEY INNOVATION: Wrap toàn bộ REST API → MCP Tools/Resources/Prompts → bất kỳ IDE nào",items:["Expose mọi yummy endpoint thành MCP Tool: get_sprint, create_story, review_code, check_security...","MCP Resources: codebase index, architecture docs, ADR có thể read từ IDE","MCP Prompts: pre-built prompts cho từng workflow (review PR, plan sprint, security audit)","Transport: stdio (local dev) hoặc HTTP/SSE (team server mode)","Auth: OAuth2/JWT — mỗi developer có session isolated","Discovery: IDE tự discover tất cả tools từ server manifest","Versioning: tool schema evolution không break existing IDE clients"],tags:["MCP Tools","MCP Resources","MCP Prompts","SSE","OAuth2","Discovery","IDE agnostic"],mcp:"Backend → MCP mapping:\nREST: POST /api/sprint/plan → MCP Tool: create_sprint_plan\nREST: GET /api/review/pr/:id → MCP Tool: review_pull_request\nREST: POST /api/security/scan → MCP Tool: scan_for_vulnerabilities\nREST: GET /api/docs/generate → MCP Tool: generate_documentation\nREST: GET /api/codebase/search → MCP Resource: yummy://codebase/search"},
+  "yummycode-ide":{title:"⌨️ YummyCode — Self-hosted Preferred IDE Client",conn:"YummyCode binary → kết nối yummy-mcp-server local → Ollama → zero egress",items:["Preferred path: install yummycode binary + ollama → 100% offline","Config trỏ vào yummy-mcp-server nội bộ: localhost:3000 hoặc team-server:3000","Nếu self-host THẤT BẠI: developer switch sang VS Code / Cursor / Claude Code + cùng yummy-mcp-server","Business continuity: không bao giờ lock vào 1 IDE duy nhất","Distribution: curl http://internal/install.sh | bash (1 lệnh)","Auto-update từ internal artifact registry"],tags:["Preferred","Offline","Binary","Fallback available","1-command install"]},
+  vscode:{title:"🔷 VS Code + yummy-mcp Extension",conn:"Cài VSIX nội bộ → config endpoint → dùng được toàn bộ yummy tools trong VS Code",items:["Cài yummy-mcp.vsix từ internal server (không cần VS Code Marketplace)","settings.json: { \"mcp.servers\": { \"yummy\": { \"url\": \"http://yummy:3000\" } } }","Dùng trong GitHub Copilot Chat: @yummy review this PR","Dùng trong Continue extension nếu không có Copilot","Inline code actions: right-click → Yummy: Security Scan"],tags:["VSIX","Copilot Chat","Continue","Inline actions","settings.json"]},
+  cursor:{title:"⚡ Cursor + yummy-mcp-server",conn:".cursor/mcp.json → yummy-mcp-server → tất cả yummy agents",items:["Thêm vào .cursor/mcp.json: { \"yummy\": { \"url\": \"http://yummy:3000/mcp\" } }","Cursor Agent mode: tự gọi yummy-review + yummy-guard khi viết code","Composer: multi-step workflow — plan sprint → assign task → implement → review","Background agents: yummy-qa tự sinh tests khi Cursor implement feature"],tags:["mcp.json","Agent mode","Composer","Background agents"]},
+  jetbrains:{title:"🧩 JetBrains (IntelliJ / PyCharm / GoLand)",conn:"AI Assistant plugin → MCP tool integration → yummy-mcp-server",items:["JetBrains AI Assistant hỗ trợ MCP từ v2024.3+","Tool window: yummy Sprint board hiển thị trong IDE sidebar","Inline inspection: yummy-guard findings xuất hiện như built-in IDE warnings","Code review panel tích hợp với yummy-review"],tags:["AI Assistant","Tool window","Inline inspection","v2024.3+"]},
+  neovim:{title:"⬛ Vim / Neovim + mcp.nvim",conn:"Neovim → mcp.nvim plugin → yummy-mcp-server",items:["Plugin: mcp.nvim mount yummy tools vào Neovim command mode","Phù hợp team dùng terminal-first workflow","Kết hợp tốt với YummyCode TUI (cùng terminal session)","Keybind: <leader>yr → yummy-review file hiện tại"],tags:["mcp.nvim","Terminal","Keybind","TUI compatible"]},
+  claudecode:{title:"🤖 Claude Code + yummy-mcp-server",conn:"claude mcp add yummy http://yummy:3000/mcp → dùng được ngay",items:["1 lệnh thêm: claude mcp add yummy --url http://yummy:3000/mcp","Claude Code có toàn bộ yummy tools: sprint data, review, security, docs...","Claude's reasoning + yummy's business context = rất mạnh cho complex tasks","Chạy trong CI: claude code --mcp-url http://yummy:3000 -p 'review this PR'"],tags:["claude mcp add","CI compatible","Business context","1-command setup"]},
+  guard:{title:"🛡️ yummy-guard — Security Agent",conn:"Trigger: mọi PR + mọi deploy → block nếu có critical finding",items:["SAST: detect SQL injection, XSS, command injection, path traversal","Dependency CVE scan: npm audit + Snyk + OSV (tự động update CVE database)","Secret detection: regex + ML → tìm leaked API keys, passwords, tokens","OWASP Top 10 checklist tự động cho mọi PR","Block merge nếu có CRITICAL vulnerability (GitHub branch protection)","Security debt dashboard: track findings theo team/module","Use case: developer vô tình commit AWS access key → yummy-guard chặn PR trong 30 giây"],tags:["SAST","CVE","Secrets","OWASP Top 10","Branch protection","Security debt"]},
+  policy:{title:"📜 yummy-policy — Policy Engine",conn:"OPA/Rego rules → enforce trên mọi deploy + merge",items:["Open Policy Agent (OPA) integration","Policy examples: không deploy prod thứ 6 sau 5pm; require 2 approvers cho service X","Compliance as Code: GDPR data handling, ISO 27001, SOC2 checks","Policy violation → block deploy + notify team lead","Audit trail: mọi policy decision được log"],tags:["OPA","Rego","GDPR","ISO 27001","SOC2","Audit trail"]},
+  vault:{title:"🔑 yummy-vault — Secrets Manager",conn:"Wraps HashiCorp Vault / AWS Secrets Manager → inject vào agents khi cần",items:["Central store cho tất cả API keys, PATs, credentials","Dynamic secrets: rotate tự động mỗi 90 ngày","Zero-trust: agent chỉ nhận secret khi cần, không lưu local","Audit log: ai đọc secret gì, từ IP nào, lúc nào","Emergency break-glass: revoke tất cả secrets khi incident"],tags:["HashiCorp Vault","Rotation","Zero-trust","Audit","Break-glass"]},
+  sast:{title:"🔎 yummy-sast — Static Analysis",conn:"yummy-guard → yummy-sast → findings → yummy-review comment",items:["Semgrep: custom rules theo codebase yummy (thêm rule nội bộ)","CodeQL: deep vulnerability analysis cho Java/JS/Python/Go","Taint analysis: trace data flow từ user input tới sensitive operations","Custom rules từ security team nội bộ (Rego/YAML)","Sarif output → tích hợp GitHub Advanced Security"],tags:["Semgrep","CodeQL","Taint analysis","SARIF","Custom rules"]},
+  pipeline:{title:"🔧 yummy-pipeline — CI/CD Intelligence Agent",conn:"GitHub Actions / GitLab CI → yummy-pipeline monitors + optimizes",items:["Phân tích CI failures → suggest fix tự động (error message → code suggestion)","Flaky test detection: mark test flaky sau 3 lần fail không nhất quán","Pipeline optimization: suggest cache keys, parallel job split","Build time tracking per commit author (không blame, chỉ inform)","DORA metrics: deployment frequency, lead time for changes"],tags:["CI/CD","Flaky tests","Cache optimization","DORA","Auto-fix suggestion"]},
+  deploy:{title:"🚀 yummy-deploy — Deployment Agent",conn:"yummy-pipeline (green) → yummy-deploy → K8s / Docker / Cloud",items:["Canary deployment: 5% → 20% → 100% tự động nếu error rate OK","Automatic rollback nếu error rate tăng sau deploy","Blue/Green deployment management","Post-deploy smoke tests tự động","Deployment diary: mọi deploy ai làm, lúc nào, kết quả gì","Notify yummy-scrum khi user story deployed (tự close ticket)"],tags:["Canary","Blue/Green","Rollback","Smoke tests","K8s","Auto-close ticket"]},
+  obs:{title:"📡 yummy-obs — Observability Agent",conn:"Metrics + Logs + Traces → yummy-obs → correlate với code changes",items:["Correlate deployment với production metrics (latency, error rate, RPS)","Anomaly detection: ML-based → alert khi bất thường sau deploy","Auto-create incident ticket trong yummy-scrum khi SLA breach","Root cause analysis: blame đúng commit gây ra regression","Cost anomaly: cloud spend spike → alert + suggest cause"],tags:["Metrics","Traces","Anomaly","Incident auto-create","RCA","Cost anomaly"]},
+  infra:{title:"☁️ yummy-infra — Infrastructure Agent",conn:"Reads Terraform/Helm/K8s manifests → analyze + suggest",items:["IaC PR review: Terraform plan analysis trước khi apply","Security group / RBAC review: least privilege enforcement","Cost optimization: idle resources, over-provisioned instances","Drift detection: infra thực tế vs code (Terraform state mismatch)","Disaster recovery readiness check"],tags:["Terraform","IaC review","RBAC","Cost optimization","Drift","DR readiness"]},
+  github:{title:"🐙 GitHub / GitLab Integration",conn:"Webhooks → yummy-bus → dispatch to relevant agents automatically",items:["PR opened → yummy-review + yummy-guard (parallel, ~2 phút)","Issue created với label 'feature' → yummy-ba tự phân tích","Push to main → yummy-pipeline + yummy-deploy","PR merged → yummy-docs update + yummy-scrum close ticket","GitHub Actions: yummy-code agent chạy trực tiếp trong CI workflow"],tags:["Webhooks","PR events","Issue events","GitHub Actions","Dispatch"]},
+  jira:{title:"📌 Jira / Linear Integration",conn:"yummy-scrum ↔ Jira/Linear 2-way real-time sync",items:["User stories từ yummy-po → auto-create Jira tickets với description, acceptance criteria","Sprint board sync: Jira sprint → yummy-scrum dashboard","Time tracking: estimate từ yummy-scrum → Jira logged hours","Status auto-update: PR merged → Jira ticket In Review → Done","Velocity import từ Jira historical data → yummy-scrum calibration"],tags:["Jira","Linear","2-way sync","Sprint","Velocity import","Auto-status"]},
+  confluence:{title:"📚 Confluence / Notion Integration",conn:"yummy-docs → push → Confluence/Notion tự động",items:["API docs publish tự động sau mỗi release","Meeting notes (retro, sprint review) → structured Notion page","ADR library: mỗi architecture decision → Confluence page","Architecture diagrams embedded và auto-refresh","Onboarding wiki: yummy-docs generate và update"],tags:["Confluence","Notion","Auto-publish","ADR","Diagrams","Onboarding wiki"]},
+  slack:{title:"💬 Slack / Microsoft Teams Integration",conn:"All agents → notifications → đúng Slack channel",items:["yummy-scrum bot: daily standup summary mỗi 9am (#standup channel)","yummy-guard: immediate alert khi CRITICAL CVE (#security channel)","yummy-deploy: deploy notification + smoke test result (#deployments)","Interactive slash commands: /yummy review PR 42, /yummy sprint-status","Approve/Reject từ Slack: agent request confirmation → dev click button"],tags:["Slack bot","Teams","Daily standup","Slash commands","Interactive approval"]},
+  llm:{title:"🤖 LLM Providers — Model Strategy",conn:"yummy-brain → route đúng model theo task type + cost policy",items:["Ollama local: qwen2.5-coder:32b, devstral → code tasks, zero egress, ưu tiên","Claude Sonnet: complex reasoning, PRD/BA tasks, long document","GPT-4o: fallback khi Claude unavailable","Gemini 2.5 Pro: multimodal tasks (diagram analysis, screenshot review)","Cost routing: simple tasks → small model; complex → large model","Fallback chain: Ollama down → Claude API via proxy"],tags:["Ollama","Claude","GPT-4o","Gemini","Cost routing","Fallback chain","Model selection"]}
+};
+
+let cur = null;
+function show(id) {
+  const d = D[id];
+  if (!d) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+  event.target.closest('.chip').classList.add('sel');
+  if (cur === id) { closePanel(); return; }
+  cur = id;
+  document.getElementById('p-title').textContent = d.title;
+  document.getElementById('p-conn').textContent = d.conn;
+  const ul = document.getElementById('p-list');
+  ul.innerHTML = d.items.map(i => `<li>${i}</li>`).join('');
+  const tags = document.getElementById('p-tags');
+  tags.innerHTML = d.tags.map(t => `<span class="tag">${t}</span>`).join('');
+  const mbox = document.getElementById('p-mcp');
+  if (d.mcp) {
+    mbox.style.display = 'block';
+    mbox.innerHTML = `<strong>🔌 Backend → MCP Mapping (REST → MCP Tool)</strong><pre style="font-size:11px;line-height:1.8;white-space:pre-wrap">${d.mcp}</pre>`;
+  } else {
+    mbox.style.display = 'none';
+  }
+  const panel = document.getElementById('panel');
+  panel.classList.add('open');
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+  cur = null;
+}
+</script>
+</body>
+</html>

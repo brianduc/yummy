@@ -1,0 +1,29 @@
+# Local / server: backend + frontend (build on machine or in CI)
+# Set NEXT_PUBLIC_API_URL to the URL browsers will use to reach the API (public URL).
+#
+# Example (split domains):
+#   NEXT_PUBLIC_API_URL=https://api.example.com
+#   CORS_ORIGINS=https://app.example.com
+#
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend

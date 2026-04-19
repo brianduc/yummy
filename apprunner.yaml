@@ -1,0 +1,34 @@
+# AWS App Runner config — backend (FastAPI) deploy from GitHub source.
+# Docs: https://docs.aws.amazon.com/apprunner/latest/dg/config-file-ref.html
+#
+# How to use:
+#   1. In AWS Console -> App Runner -> Create service -> Source: GitHub (connect this repo).
+#   2. Deployment trigger: Automatic on push to main.
+#   3. Configure service -> Configuration source: "Use a configuration file" (this file).
+#   4. Scaling: set Min instances = 1, Max instances = 1 (in-memory state lives in a single container).
+#   5. Environment variables / secrets (set in the App Runner console, NOT in this file):
+#        - GEMINI_API_KEY         (Secrets Manager reference recommended)
+#        - CORS_ORIGINS=https://app.yourdomain.com
+#        - (optional) OPENAI_API_KEY, COPILOT_GITHUB_TOKEN, AWS_*, etc.
+#
+# Notes:
+#   - App Runner populates the PORT env var. Uvicorn binds to it, falling back to 8080 locally.
+#   - The managed Python 3.11 runtime is used here; all deps in backend/requirements.txt are 3.11-compatible.
+
+version: 1.0
+runtime: python311
+
+build:
+  commands:
+    build:
+      - pip install --no-cache-dir -r backend/requirements.txt
+
+run:
+  runtime-version: 3.11
+  command: bash -c "cd backend && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"
+  network:
+    port: 8080
+    env: PORT
+  env:
+    - name: AI_PROVIDER
+      value: gemini
