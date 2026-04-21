@@ -8,8 +8,14 @@ Run:
 Docs:
     http://localhost:8000/docs     (Swagger UI)
     http://localhost:8000/redoc    (ReDoc)
+
+Production:
+    Set CORS_ORIGINS to your frontend origin(s), comma-separated, e.g.
+    https://app.example.com,https://www.example.com
+    Use CORS_ORIGINS=* only for quick tests (credentials disabled for browser CORS rules).
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -41,14 +47,29 @@ app = FastAPI(
 
 # ============================================================
 # CORS MIDDLEWARE
-# Note: In production, replace allow_origins=["*"] with specific domains
+# CORS_ORIGINS: comma-separated list, e.g. http://localhost:3000,https://app.example.com
+# Wildcard * is allowed for local experimentation only (allow_credentials=False).
 # ============================================================
 
-# TODO: replace with ["http://localhost:3000", "https://yourdomain.com"]
+def _cors_settings() -> tuple[list[str], bool]:
+    raw = os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).strip()
+    if not raw:
+        return ["http://localhost:3000", "http://127.0.0.1:3000"], True
+    parts = [p.strip() for p in raw.split(",") if p.strip()]
+    if parts == ["*"]:
+        return ["*"], False
+    return parts, True
+
+
+_cors_origins, _cors_credentials = _cors_settings()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],    
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_cors_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

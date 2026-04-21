@@ -1,6 +1,6 @@
 """
 YUMMY Backend - GitHub Service
-Wrapper cho GitHub REST API và raw content fetching.
+Wrapper around the GitHub REST API and raw content fetching.
 """
 
 import httpx
@@ -13,7 +13,7 @@ from config import DB
 # ============================================================
 
 def _get_headers() -> dict:
-    """Trả về auth header nếu có GitHub token."""
+    """Return an auth header if a GitHub token is configured."""
     token = DB.get("github_token", "")
     if token:
         return {"Authorization": f"token {token}"}
@@ -26,13 +26,13 @@ def _get_headers() -> dict:
 
 async def github_fetch(path: str) -> httpx.Response:
     """
-    Gọi GitHub REST API.
-    
+    Call the GitHub REST API.
+
     Args:
-        path: Đường dẫn API, ví dụ "/repos/owner/repo"
-    
+        path: API path, e.g. "/repos/owner/repo"
+
     Returns:
-        httpx.Response object (caller tự xử lý .json())
+        httpx.Response object (caller handles .json()).
     """
     headers = _get_headers()
     async with httpx.AsyncClient(timeout=30) as client:
@@ -41,19 +41,19 @@ async def github_fetch(path: str) -> httpx.Response:
 
 async def github_raw(owner: str, repo: str, branch: str, file_path: str) -> str:
     """
-    Lấy nội dung raw của một file từ GitHub.
-    
+    Fetch a file's raw content from GitHub.
+
     Args:
-        owner:     GitHub username hoặc org name
-        repo:      Tên repo
+        owner:     GitHub username or org name
+        repo:      Repository name
         branch:    Branch name (main, master, develop, ...)
-        file_path: Đường dẫn file trong repo (ví dụ: "src/index.ts")
-    
+        file_path: File path in the repo (e.g. "src/index.ts")
+
     Returns:
-        Nội dung file dưới dạng string.
-    
+        File content as a string.
+
     Raises:
-        HTTPException 404 nếu file không tồn tại hoặc không thể đọc.
+        HTTPException 404 if the file doesn't exist or cannot be read.
     """
     headers = _get_headers()
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}"
@@ -63,38 +63,38 @@ async def github_raw(owner: str, repo: str, branch: str, file_path: str) -> str:
         if r.status_code != 200:
             raise HTTPException(
                 status_code=404,
-                detail=f"Không thể đọc file '{file_path}' từ GitHub (status: {r.status_code})."
+                detail=f"Unable to read file '{file_path}' from GitHub (status: {r.status_code})."
             )
         return r.text
 
 
 async def get_repo_info(owner: str, repo: str) -> dict:
     """
-    Lấy metadata của repo (default_branch, description, v.v.).
-    
+    Fetch repository metadata (default_branch, description, etc.).
+
     Returns:
-        dict repo data từ GitHub API.
-    
+        Repo data dict from the GitHub API.
+
     Raises:
-        Exception nếu repo không tồn tại hoặc không có quyền truy cập.
+        Exception if the repo does not exist or is not accessible.
     """
     resp = await github_fetch(f"/repos/{owner}/{repo}")
     if resp.status_code != 200:
-        error_msg = resp.json().get("message", "Lỗi không xác định")
+        error_msg = resp.json().get("message", "Unknown error")
         raise Exception(f"GitHub API: {error_msg} (status: {resp.status_code})")
     return resp.json()
 
 
 async def get_repo_tree(owner: str, repo: str, branch: str) -> list:
     """
-    Lấy toàn bộ file tree của repo (recursive).
-    
+    Fetch the repository file tree (recursive).
+
     Returns:
-        List các file objects: [{"path": "...", "type": "blob|tree", "size": int}, ...]
+        List of file objects: [{"path": "...", "type": "blob|tree", "size": int}, ...]
     """
     resp = await github_fetch(
         f"/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
     )
     if resp.status_code != 200:
-        raise Exception(f"Không thể lấy file tree: {resp.status_code}")
+        raise Exception(f"Unable to fetch file tree: {resp.status_code}")
     return resp.json().get("tree", [])

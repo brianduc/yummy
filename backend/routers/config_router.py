@@ -24,21 +24,21 @@ def set_api_key(cfg: GeminiConfig):
 @router.post("/ollama")
 def set_ollama_config(cfg: OllamaConfig):
     """
-    Cấu hình Ollama local server.
-    
-    Để dùng Ollama:
-    1. Cài Ollama: https://ollama.ai/download
-    2. Chạy: ollama serve
-    3. Pull model: ollama pull llama3  (hoặc codellama, mistral, deepseek-coder)
-    4. Gọi endpoint này với base_url và model
-    5. Gọi POST /config/provider với {"provider": "ollama"}
+    Configure a local Ollama server.
+
+    How to use Ollama:
+    1) Install Ollama: https://ollama.ai/download
+    2) Run: ollama serve
+    3) Pull a model: ollama pull llama3  (or codellama, mistral, deepseek-coder)
+    4) Call this endpoint with base_url + model
+    5) Switch provider: POST /config/provider with {"provider": "ollama"}
     """
     API_CONFIG["ollama_base_url"] = cfg.base_url
     API_CONFIG["ollama_model"] = cfg.model
     return {
         "status": "ok",
-        "message": f"Ollama config đã set: {cfg.base_url} / model={cfg.model}",
-        "note": "Gọi POST /config/provider với {'provider': 'ollama'} để switch sang Ollama."
+        "message": f"Ollama config set: {cfg.base_url} / model={cfg.model}",
+        "note": "Call POST /config/provider with {'provider': 'ollama'} to switch to Ollama."
     }
 
 
@@ -93,9 +93,9 @@ def set_copilot_config(cfg: CopilotConfig):
 @router.post("/setup")
 async def setup_repo(req: SetupRequest):
     """
-    Parse GitHub URL và lưu repo info + token.
-    
-    Ví dụ URL hợp lệ:
+    Parse the GitHub URL and store repo info + token.
+
+    Valid examples:
     - https://github.com/owner/repo
     - https://github.com/owner/repo.git
     - https://github.com/owner/repo/tree/main
@@ -107,7 +107,7 @@ async def setup_repo(req: SetupRequest):
     if not match:
         raise HTTPException(
             400,
-            "URL GitHub không hợp lệ. Ví dụ: https://github.com/owner/repo"
+            "Invalid GitHub URL. Example: https://github.com/owner/repo"
         )
 
     owner, repo = match.group(1), match.group(2)
@@ -123,7 +123,7 @@ async def setup_repo(req: SetupRequest):
         "owner": owner,
         "repo": repo,
         "max_scan_limit": req.max_scan_limit,
-        "note": "Tiếp theo: POST /kb/scan để index codebase."
+        "note": "Next: POST /kb/scan to index the codebase."
     }
 
 
@@ -145,7 +145,7 @@ def get_status():
 
     return {
         "repo": DB.get("repo_info"),
-        "ai_provider": API_CONFIG.get("provider", "gemini"),
+        "ai_provider": API_CONFIG.get("provider", "openai"),
         # Gemini
         "has_gemini_key": bool(API_CONFIG.get("gemini_key")),
         "gemini_key_source": _key_source("GEMINI_API_KEY", "gemini_key"),

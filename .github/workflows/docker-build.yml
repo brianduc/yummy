@@ -1,0 +1,50 @@
+# Build Docker images on GitHub-hosted runners (Docker preinstalled).
+# Use when your machine has no Docker: push to main or open a PR → CI validates images build.
+#
+# To point the frontend build at your real API URL, set repository Variable
+# NEXT_PUBLIC_API_URL or run workflow_dispatch with a custom value.
+
+name: Docker build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      next_public_api_url:
+        description: NEXT_PUBLIC_API_URL baked into the frontend image
+        required: false
+        default: http://localhost:8000
+
+jobs:
+  compose-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Minimal .env for compose (keys not used during image build)
+        run: |
+          echo "GEMINI_API_KEY=dummy-ci" >> .env
+          echo "AI_PROVIDER=gemini" >> .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Resolve NEXT_PUBLIC_API_URL
+        id: fe
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "url=${{ github.event.inputs.next_public_api_url }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ vars.NEXT_PUBLIC_API_URL }}" ]; then
+            echo "url=${{ vars.NEXT_PUBLIC_API_URL }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=http://localhost:8000" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build images
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.fe.outputs.url }}
+          CORS_ORIGINS: http://localhost:3000
+        run: docker compose build
