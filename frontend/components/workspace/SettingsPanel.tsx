@@ -145,6 +145,7 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
             <option value="gpt-5">gpt-5 — Stable</option>
             <option value="gpt-5-mini">gpt-5-mini — Fast · Budget</option>
             <option value="gpt-5-nano">gpt-5-nano — Cheapest</option>
+            <option value="gpt-5.4-nano-2026-03-17">gpt-5.4-nano-2026-03-17 — Cheapest</option>
           </optgroup>
           <optgroup label="GPT-4.1 (long context)">
             <option value="gpt-4.1">gpt-4.1 — 1M ctx</option>

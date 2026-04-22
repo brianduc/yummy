@@ -25,8 +25,9 @@ import DbPanel from '@/components/workspace/DbPanel'
 
 import type {
   Session, SystemStatus, KnowledgeBase,
-  ScanStatus, MetricsData, ChatMessage,
+  ScanStatus, MetricsData, ChatMessage, WorkflowState,
 } from '@/lib/types'
+import type { SdlcEvent } from '@/lib/api'
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
@@ -59,6 +60,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   ])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
   const [busy, setBusy] = useState(false)
+  const [btwBusy, setBtwBusy] = useState(false)
 
   // ── IDE ──────────────────────────────────────────────────────────────────────
   const [ideFile,    setIdeFile]    = useState('')
@@ -69,6 +71,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [editBA,      setEditBA]      = useState('')
   const [editSA,      setEditSA]      = useState('')
   const [editDevLead, setEditDevLead] = useState('')
+
+  // ── SDLC streaming state ─────────────────────────────────────────────────────
+  // Which agent is currently streaming tokens ('ba', 'sa', 'dev_lead', 'dev', etc.)
+  const [streamingAgent, setStreamingAgent] = useState<string | null>(null)
+  // Accumulated text for the currently streaming agent (flushed ~60ms)
+  const [streamingText,  setStreamingText]  = useState('')
 
   // ── UI helpers ───────────────────────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
@@ -193,22 +201,127 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     } catch { }
   }
 
-  const handleApproveBA = async () => {
+  /**
+   * Consume an SDLC SSE stream, updating UI state as events arrive.
+   * Returns true if the pipeline was stopped, false if it completed normally.
+   */
+  const runSdlcStream = async (gen: AsyncGenerator<SdlcEvent>): Promise<boolean> => {
     setBusy(true)
-    try { await api.sdlc.approveBa(sessionId, editBA); print('📧 BA approved. Activating SA...'); await refreshSDLC() }
-    catch (e: any) { print(`❌ ${e.message}`) } finally { setBusy(false) }
+    setStreamingAgent(null)
+    setStreamingText('')
+
+    let currentAgent: string | null = null
+    let accumulated = ''
+    let wasStopped = false
+    let flushTimer: ReturnType<typeof setTimeout> | null = null
+
+    const flushText = () => setStreamingText(accumulated)
+    const scheduleFlush = () => {
+      if (flushTimer) return
+      flushTimer = setTimeout(() => { flushTimer = null; flushText() }, 60)
+    }
+
+    try {
+      for await (const event of gen) {
+        if (event.t === 'start') {
+          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+          currentAgent = event.agent
+          accumulated = ''
+          setStreamingAgent(event.agent)
+          setStreamingText('')
+        } else if (event.t === 'c') {
+          accumulated += event.text
+          scheduleFlush()
+        } else if (event.t === 'agent_done') {
+          // One of DEV/SEC/QA finished — save its output to session state
+          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+          const key = currentAgent
+          const text = accumulated
+          if (key) {
+            setSession(prev => prev
+              ? { ...prev, agent_outputs: { ...prev.agent_outputs, [key]: text } }
+              : prev)
+          }
+          accumulated = ''
+          setStreamingText('')
+        } else if (event.t === 'done') {
+          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+          const ao = event.agent_outputs as Record<string, string>
+          setSession(prev => prev ? {
+            ...prev,
+            workflow_state: event.state as WorkflowState,
+            agent_outputs: ao as any,
+            jira_backlog: event.jira_backlog as any,
+          } : prev)
+          if (ao?.ba)       setEditBA(ao.ba)
+          if (ao?.sa)       setEditSA(ao.sa)
+          if (ao?.dev_lead) setEditDevLead(ao.dev_lead)
+        } else if (event.t === 'stopped') {
+          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+          wasStopped = true
+          await refreshSDLC()
+        } else if (event.t === 'error') {
+          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+          print(`❌ ${event.message}`)
+        }
+      }
+    } catch (e: any) {
+      print(`❌ ${e.message}`)
+    } finally {
+      if (flushTimer) clearTimeout(flushTimer)
+      setStreamingAgent(null)
+      setStreamingText('')
+      setBusy(false)
+    }
+    return wasStopped
+  }
+
+  const handleApproveBA = async () => {
+    // Optimistic update: mark session as running_sa so the SA card is visible
+    // immediately instead of waiting for the first SSE 'start' event.
+    setSession(prev => prev ? { ...prev, workflow_state: 'running_sa' } : prev)
+    print('📧 BA approved. Running SA...')
+    const stopped = await runSdlcStream(api.sdlc.approveBaStream(sessionId, editBA))
+    if (!stopped) print('⚠️ SA done. Waiting for approval...')
   }
 
   const handleApproveSA = async () => {
-    setBusy(true)
-    try { await api.sdlc.approveSa(sessionId, editSA); print('📧 SA approved. Activating Dev Lead...'); await refreshSDLC() }
-    catch (e: any) { print(`❌ ${e.message}`) } finally { setBusy(false) }
+    setSession(prev => prev ? { ...prev, workflow_state: 'running_dev_lead' } : prev)
+    print('📧 SA approved. Running Dev Lead...')
+    const stopped = await runSdlcStream(api.sdlc.approveSaStream(sessionId, editSA))
+    if (!stopped) print('⚠️ Dev Lead done. Waiting for approval...')
   }
 
   const handleApproveDevLead = async () => {
+    setSession(prev => prev ? { ...prev, workflow_state: 'running_rest' } : prev)
+    print('📧 Dev Lead approved. Running DEV/SEC/QA/SRE...')
+    const stopped = await runSdlcStream(api.sdlc.approveDevLeadStream(sessionId, editDevLead))
+    if (!stopped) print('🎉 Pipeline complete!')
+  }
+
+  const handleStop = async () => {
+    try {
+      await api.sdlc.stop(sessionId)
+      print('⏹ Pipeline stopped.')
+      setBusy(false)
+      await refreshSDLC()
+    } catch (e: any) {
+      print(`❌ Stop failed: ${e.message}`)
+    }
+  }
+
+  const handleRestore = async (checkpoint: 'ba' | 'sa' | 'dev_lead') => {
+    const labels: Record<string, string> = { ba: 'BA', sa: 'SA', dev_lead: 'Dev Lead' }
     setBusy(true)
-    try { await api.sdlc.approveDevLead(sessionId, editDevLead); print('📧 Dev Lead approved. Activating DEV/SEC/QA/SRE...'); await refreshSDLC() }
-    catch (e: any) { print(`❌ ${e.message}`) } finally { setBusy(false) }
+    try {
+      await api.sdlc.restore(sessionId, checkpoint)
+      print(`↩ Restored to ${labels[checkpoint]} checkpoint. Review and approve to continue.`)
+      await refreshSDLC()
+    } catch (e: any) {
+      print(`❌ Restore failed: ${e.message}`)
+    } finally {
+      setBusy(false)
+    }
   }
 
   // ─── RAG ask (streaming) ─────────────────────────────────────────────────────
@@ -285,6 +398,60 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
+  // ─── /btw during SDLC — uses btwBusy so SDLC polling (busy) is unaffected ────
+
+  const sendBtw = async (question: string) => {
+    setChatHistory(prev => [...prev, { role: 'user', text: question }])
+    setChatHistory(prev => [...prev, { role: 'assistant', text: '' }])
+    setBtwBusy(true)
+    // Do NOT switch rightTab — avoid clobbering the SDLC panel while pipeline runs
+
+    let accumulated = ''
+    let lastFlushed = ''
+    let flushTimer: ReturnType<typeof setTimeout> | null = null
+
+    const flushAssistant = (force = false) => {
+      if (!force && accumulated === lastFlushed) return
+      lastFlushed = accumulated
+      setChatHistory(prev => {
+        const next = [...prev]
+        next[next.length - 1] = { role: 'assistant', text: accumulated }
+        return next
+      })
+    }
+
+    const scheduleFlush = () => {
+      if (flushTimer) return
+      flushTimer = setTimeout(() => { flushTimer = null; flushAssistant() }, 60)
+    }
+
+    try {
+      for await (const chunk of api.askStream(sessionId, question, undefined, undefined, true)) {
+        if (chunk === '[DONE]') break
+        if (chunk.startsWith('[ERROR]')) {
+          setChatHistory(prev => {
+            const next = [...prev]
+            next[next.length - 1] = { role: 'system', text: `❌ ${chunk.slice(8)}` }
+            return next
+          })
+          return
+        }
+        accumulated += chunk
+        scheduleFlush()
+      }
+    } catch (e: any) {
+      setChatHistory(prev => {
+        const next = [...prev]
+        next[next.length - 1] = { role: 'system', text: `❌ ${e.message}` }
+        return next
+      })
+    } finally {
+      if (flushTimer) clearTimeout(flushTimer)
+      flushAssistant(true)
+      setBtwBusy(false)
+    }
+  }
+
   // ─── Session delete (direct — not routed through terminal) ──────────────────
 
   const deleteSession = async (targetId: string) => {
@@ -306,10 +473,20 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
 
   const handleCmd = async (rawInput: string) => {
     const raw = rawInput.trim()
-    if (!raw || busy) return
-    print(`> ${raw}`, 'user')
+    if (!raw) return
     const args    = raw.split(' ')
     const command = args[0].toLowerCase()
+
+    // While SDLC pipeline is running (busy=true), only /btw and /stop are allowed through.
+    // For any other command, print an inline hint and bail.
+    if (busy && command !== '/btw' && command !== '/stop') {
+      if (session?.workflow_state?.includes('running')) {
+        print('⟳ Pipeline is running — use /btw <question> to chat, or /stop to abort.')
+      }
+      return
+    }
+
+    print(`> ${raw}`, 'user')
 
     try {
       switch (command) {
@@ -321,6 +498,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             '  /ask <question>          — RAG chat with AI (requires scan)\n' +
             '  /btw <question>          — Chat with AI freely (no scan needed)\n' +
             '  /cr <requirement>        — Start SDLC brainstorm\n' +
+            '  /stop                    — Stop running SDLC pipeline\n' +
             '  /provider                — Show current AI provider\n' +
             '  /provider <name>         — Switch provider (gemini/openai/ollama/copilot/bedrock)\n' +
             '  /provider <name> <key>   — Switch provider and set API key in one step\n' +
@@ -364,7 +542,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           const q = args.slice(1).join(' ')
           if (!q) throw new Error('Question required. Example: /btw What is a JWT token?')
           setLeftTab('chat')
-          await sendAsk(q, true)
+          if (busy) {
+            // SDLC pipeline is running — use btwBusy so SDLC tracking (busy) is unaffected
+            await sendBtw(q)
+          } else {
+            await sendAsk(q, true)
+          }
           break
         }
 
@@ -372,20 +555,28 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           const req = args.slice(1).join(' ')
           if (!req) throw new Error('Requirement required. Example: /cr Add PDF export module')
           if (!status?.kb_has_summary) throw new Error('KB not scanned yet. Run /scan first.')
-          setBusy(true)
-          await api.sdlc.start(sessionId, req)
-          print('[BA] Analyzing requirement...')
           setRightTab('sdlc'); setLeftTab('tracing')
           await fetchMetrics()
-          const poll = setInterval(async () => {
-            const s = await api.sdlc.state(sessionId) as any
-            if (s.workflow_state !== 'running_ba') {
-              clearInterval(poll)
-              await refreshSDLC()
-              print('⚠️ BA done. Waiting for approval...')
-              setBusy(false)
-            }
-          }, 2000)
+          // Optimistic update: show the BA card immediately without waiting for the
+          // 4-second session poll. SdlcPanel's early-return guard checks outputs.requirement,
+          // so we must set it here before the stream opens.
+          setSession(prev => prev ? {
+            ...prev,
+            workflow_state: 'running_ba',
+            agent_outputs: { ...prev.agent_outputs, requirement: req },
+          } : prev)
+          print('[BA] Analyzing requirement...')
+          const stopped = await runSdlcStream(api.sdlc.startStream(sessionId, req))
+          if (!stopped) print('⚠️ BA done. Waiting for approval...')
+          break
+        }
+
+        case '/stop': {
+          if (!session?.workflow_state?.includes('running')) {
+            throw new Error('No pipeline is running.')
+          }
+          print('⏹ Stopping pipeline...')
+          await handleStop()
           break
         }
 
@@ -461,13 +652,23 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         }
 
         case '/info': {
-          if (status) print(
-            `System Info:\n` +
-            `- Repo     : ${status.repo ? `${status.repo.owner}/${status.repo.repo}` : 'not set'}\n` +
-            `- AI       : ${status.ai_provider}\n` +
-            `- KB       : ${status.kb_files} files, ${status.kb_insights} chunks\n` +
-            `- Sessions : ${status.total_sessions}  Cost: $${status.total_cost_usd.toFixed(5)}`
-          )
+          if (status) {
+            const modelMap: Record<string, string | undefined> = {
+              gemini:  status.gemini_model,
+              openai:  status.openai_model,
+              ollama:  status.ollama_model,
+              copilot: status.copilot_model,
+              bedrock: status.bedrock_model,
+            }
+            const currentModel = modelMap[status.ai_provider] || '—'
+            print(
+              `System Info:\n` +
+              `- Repo     : ${status.repo ? `${status.repo.owner}/${status.repo.repo}` : 'not set'}\n` +
+              `- AI       : ${status.ai_provider}  (${currentModel})\n` +
+              `- KB       : ${status.kb_files} files, ${status.kb_insights} chunks\n` +
+              `- Sessions : ${status.total_sessions}  Cost: $${status.total_cost_usd.toFixed(5)}`
+            )
+          }
           break
         }
 
@@ -567,6 +768,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
               chatHistory={chatHistory}
               scanStatus={scanStatus}
               busy={busy}
+              btwBusy={btwBusy}
+              workflowRunning={!!session.workflow_state?.includes('running')}
               termRef={termRef}
               currentProvider={(status?.ai_provider ?? 'gemini') as any}
               onSubmit={handleCmd}
@@ -635,8 +838,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
               session={session}
               editBA={editBA} editSA={editSA} editDevLead={editDevLead}
               busy={busy}
+              workflowRunning={!!session.workflow_state?.includes('running')}
+              streamingAgent={streamingAgent}
+              streamingText={streamingText}
               onEditBA={setEditBA} onEditSA={setEditSA} onEditDevLead={setEditDevLead}
               onApproveBA={handleApproveBA} onApproveSA={handleApproveSA} onApproveDevLead={handleApproveDevLead}
+              onStop={handleStop}
+              onRestore={handleRestore}
             />
           )}
           {rightTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}

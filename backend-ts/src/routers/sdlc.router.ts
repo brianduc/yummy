@@ -11,31 +11,73 @@
  *        -> running_dev_lead -> waiting_dev_lead_approval
  *        -> running_rest -> done
  *
- * agent_outputs is Record<string, unknown> — stores raw strings keyed by
- * agent name (ba, sa, dev_lead, dev, security, qa, sre) plus a 'requirement'
- * string for the original CR.
+ * All four pipeline endpoints (start, approve-ba, approve-sa, approve-dev-lead)
+ * use Server-Sent Events (SSE) so the frontend can display each agent's output
+ * in real time as tokens arrive.
+ *
+ * SSE event protocol (one JSON object per data: line):
+ *   {"t":"start","agent":"ba"}                            — agent beginning to stream
+ *   {"t":"c","text":"..."}                                — text chunk for current agent
+ *   {"t":"agent_done","agent":"dev"}                      — agent complete, next is about to start
+ *   {"t":"done","state":"...","agent_outputs":{...},"jira_backlog":[...]}  — all done
+ *   {"t":"stopped"}                                       — pipeline was aborted
+ *   {"t":"error","message":"..."}                         — unexpected failure
+ *
+ * STOP / CHECKPOINT:
+ *   POST /sdlc/{id}/stop    — aborts any in-flight streamAI(), sets state=idle
+ *   POST /sdlc/{id}/restore — rolls back to a named checkpoint stage
  */
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { stream } from 'hono/streaming';
 import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import {
   requireKnowledgeBase,
   requireSession,
   requireWorkflowState,
 } from '../lib/guards.js';
-import { callAI } from '../services/ai/dispatcher.js';
+import { callAI, streamAI } from '../services/ai/dispatcher.js';
 import {
   ApproveRequestSchema,
   CRRequestSchema,
+  RestoreRequestSchema,
   SDLCStateResponseSchema,
 } from '../schemas/sdlc.schema.js';
 import { ChatMessageSchema } from '../schemas/sessions.schema.js';
 import { ErrorSchema } from '../schemas/common.schema.js';
+import {
+  registerAbort,
+  abortSession,
+  clearAbort,
+} from '../lib/abortRegistry.js';
 
 export const sdlcRouter = new OpenAPIHono();
 
 const json = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
 });
+
+// ─── SSE helpers ─────────────────────────────────────────
+
+function sseHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'X-Accel-Buffering': 'no',
+    Connection: 'keep-alive',
+  };
+}
+
+type SdlcEvent =
+  | { t: 'start'; agent: string }
+  | { t: 'c'; text: string }
+  | { t: 'agent_done'; agent: string }
+  | { t: 'done'; state: string; agent_outputs: Record<string, unknown>; jira_backlog: unknown[] }
+  | { t: 'stopped' }
+  | { t: 'error'; message: string };
+
+function sse(event: SdlcEvent): string {
+  return `data: ${JSON.stringify(event)}\n\n`;
+}
 
 // ─── Agent system instructions (verbatim from sdlc_router.py) ─
 const AGENT_INSTRUCTIONS = {
@@ -129,312 +171,450 @@ const AGENT_INSTRUCTIONS = {
     '"subtasks": ["Subtask 1", "Subtask 2"]}]}]}',
 } as const;
 
-// ─── POST /sdlc/start ────────────────────────────────────
-sdlcRouter.openapi(
-  createRoute({
-    method: 'post',
-    path: '/sdlc/start',
-    tags: ['SDLC Agents'],
-    request: { body: { content: json(CRRequestSchema) } },
-    responses: {
-      200: {
-        content: json(
-          z.object({
-            status: z.string(),
-            message: z.string(),
-            ba_output: z.string(),
-            next_step: z.string(),
-          }),
-        ),
-        description: 'BA done — waiting approval',
-      },
-      400: { content: json(ErrorSchema), description: 'KB empty' },
-      404: { content: json(ErrorSchema), description: 'Session not found' },
-    },
-  }),
-  async (c) => {
-    const req = c.req.valid('json');
-    requireSession(req.session_id);
-    const kb = requireKnowledgeBase();
+// ─── POST /sdlc/start  (SSE) ──────────────────────────────
+// Streams BA output in real time.
+sdlcRouter.post('/sdlc/start', async (c) => {
+  const body = (await c.req.json()) as { session_id?: string; requirement?: string };
+  const req = CRRequestSchema.parse(body);
 
-    sessionsRepo.update(req.session_id, {
-      workflowState: 'running_ba',
-      agentOutputs: { requirement: req.requirement },
-      jiraBacklog: [],
-      name: `CR: ${req.requirement.slice(0, 40)}...`,
-    });
+  requireSession(req.session_id);
+  const kb = requireKnowledgeBase();
 
-    const baResult = await callAI(
-      'BA',
-      `CHANGE REQUEST:\n${req.requirement}\n\n` +
-        `CURRENT ARCHITECTURE (Project Context):\n${kb.project_summary}`,
-      AGENT_INSTRUCTIONS.BA,
-    );
+  sessionsRepo.update(req.session_id, {
+    workflowState: 'running_ba',
+    agentOutputs: { requirement: req.requirement },
+    jiraBacklog: [],
+    name: `CR: ${req.requirement.slice(0, 40)}...`,
+  });
 
-    sessionsRepo.update(req.session_id, {
-      agentOutputs: { requirement: req.requirement, ba: baResult },
-      workflowState: 'waiting_ba_approval',
-    });
+  for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
 
-    return c.json(
-      {
-        status: 'waiting_ba_approval',
-        message:
-          'BA has written the BRD. Review and call POST /sdlc/approve-ba to continue.',
-        ba_output: baResult,
-        next_step: 'POST /sdlc/approve-ba',
-      },
-      200,
-    );
-  },
-);
-
-// ─── POST /sdlc/approve-ba ───────────────────────────────
-sdlcRouter.openapi(
-  createRoute({
-    method: 'post',
-    path: '/sdlc/approve-ba',
-    tags: ['SDLC Agents'],
-    request: { body: { content: json(ApproveRequestSchema) } },
-    responses: {
-      200: {
-        content: json(
-          z.object({
-            status: z.string(),
-            message: z.string(),
-            sa_output: z.string(),
-            jira_backlog: z.array(z.unknown()),
-            next_step: z.string(),
-          }),
-        ),
-        description: 'SA + PM done',
-      },
-      400: { content: json(ErrorSchema), description: 'Wrong workflow state' },
-      404: { content: json(ErrorSchema), description: 'Session not found' },
-    },
-  }),
-  async (c) => {
-    const req = c.req.valid('json');
-    const session = requireSession(req.session_id);
-    requireWorkflowState(session, 'waiting_ba_approval');
-
-    const outputs = { ...session.agentOutputs };
-    if (req.edited_content) outputs.ba = req.edited_content;
-    const baContent = String(outputs.ba ?? '');
-
-    const kb = requireKnowledgeBase();
-
-    sessionsRepo.update(req.session_id, {
-      workflowState: 'running_sa',
-      agentOutputs: outputs,
-    });
-
-    const saResult = await callAI(
-      'SA',
-      `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\n` +
-        `CURRENT ARCHITECTURE:\n${kb.project_summary}`,
-      AGENT_INSTRUCTIONS.SA,
-    );
-    outputs.sa = saResult;
-
-    const pmResult = await callAI(
-      'PM',
-      `SA PLAN:\n${saResult}`,
-      AGENT_INSTRUCTIONS.PM,
-    );
-
-    let backlog: unknown[] = [];
+  return stream(c, async (s) => {
+    const controller = registerAbort(req.session_id);
     try {
-      const cleaned = pmResult.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleaned) as { epics?: unknown[] };
-      backlog = parsed.epics ?? [];
-    } catch {
-      backlog = [];
+      await s.write(sse({ t: 'start', agent: 'ba' }));
+
+      const chunks: string[] = [];
+      for await (const chunk of streamAI(
+        `CHANGE REQUEST:\n${req.requirement}\n\nCURRENT ARCHITECTURE (Project Context):\n${kb.project_summary}`,
+        AGENT_INSTRUCTIONS.BA,
+        controller.signal,
+      )) {
+        chunks.push(chunk);
+        await s.write(sse({ t: 'c', text: chunk }));
+      }
+
+      if (controller.signal.aborted) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+
+      const baResult = chunks.join('');
+      const outputs = { requirement: req.requirement, ba: baResult };
+      sessionsRepo.update(req.session_id, {
+        agentOutputs: outputs,
+        workflowState: 'waiting_ba_approval',
+      });
+
+      await s.write(sse({
+        t: 'done',
+        state: 'waiting_ba_approval',
+        agent_outputs: outputs,
+        jira_backlog: [],
+      }));
+    } catch (e) {
+      await s.write(sse({ t: 'error', message: (e as Error).message }));
+    } finally {
+      clearAbort(req.session_id);
+    }
+  });
+});
+
+// ─── POST /sdlc/approve-ba  (SSE) ───────────────────────
+// Streams SA output. PM (backlog JSON) runs blocking after SA stream completes.
+sdlcRouter.post('/sdlc/approve-ba', async (c) => {
+  const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
+  const req = ApproveRequestSchema.parse(body);
+
+  const session = requireSession(req.session_id);
+  requireWorkflowState(session, 'waiting_ba_approval');
+
+  const outputs = { ...session.agentOutputs } as Record<string, unknown>;
+  if (req.edited_content) outputs.ba = req.edited_content;
+  const baContent = String(outputs.ba ?? '');
+  const kb = requireKnowledgeBase();
+
+  sessionsRepo.update(req.session_id, {
+    workflowState: 'running_sa',
+    agentOutputs: outputs,
+  });
+
+  for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
+
+  return stream(c, async (s) => {
+    const controller = registerAbort(req.session_id);
+    try {
+      // ── SA (streamed) ──
+      await s.write(sse({ t: 'start', agent: 'sa' }));
+
+      const saChunks: string[] = [];
+      for await (const chunk of streamAI(
+        `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\nCURRENT ARCHITECTURE:\n${kb.project_summary}`,
+        AGENT_INSTRUCTIONS.SA,
+        controller.signal,
+      )) {
+        saChunks.push(chunk);
+        await s.write(sse({ t: 'c', text: chunk }));
+      }
+
+      if (controller.signal.aborted) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+
+      const saResult = saChunks.join('');
+      outputs.sa = saResult;
+
+      // ── PM (blocking — JSON parsing, not streamed) ──
+      const pmResult = await callAI(
+        'PM',
+        `SA PLAN:\n${saResult}`,
+        AGENT_INSTRUCTIONS.PM,
+        controller.signal,
+      );
+
+      if (controller.signal.aborted) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+
+      let backlog: unknown[] = [];
+      try {
+        const cleaned = pmResult.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleaned) as { epics?: unknown[] };
+        backlog = parsed.epics ?? [];
+      } catch {
+        backlog = [];
+      }
+
+      sessionsRepo.update(req.session_id, {
+        agentOutputs: outputs,
+        jiraBacklog: backlog,
+        workflowState: 'waiting_sa_approval',
+      });
+
+      await s.write(sse({
+        t: 'done',
+        state: 'waiting_sa_approval',
+        agent_outputs: outputs,
+        jira_backlog: backlog,
+      }));
+    } catch (e) {
+      await s.write(sse({ t: 'error', message: (e as Error).message }));
+    } finally {
+      clearAbort(req.session_id);
+    }
+  });
+});
+
+// ─── POST /sdlc/approve-sa  (SSE) ───────────────────────
+// Streams Dev Lead output.
+sdlcRouter.post('/sdlc/approve-sa', async (c) => {
+  const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
+  const req = ApproveRequestSchema.parse(body);
+
+  const session = requireSession(req.session_id);
+  requireWorkflowState(session, 'waiting_sa_approval');
+
+  const outputs = { ...session.agentOutputs } as Record<string, unknown>;
+  if (req.edited_content) outputs.sa = req.edited_content;
+  const saContent = String(outputs.sa ?? '');
+  const baContent = String(outputs.ba ?? '');
+
+  sessionsRepo.update(req.session_id, {
+    workflowState: 'running_dev_lead',
+    agentOutputs: outputs,
+  });
+
+  for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
+
+  return stream(c, async (s) => {
+    const controller = registerAbort(req.session_id);
+    try {
+      await s.write(sse({ t: 'start', agent: 'dev_lead' }));
+
+      const chunks: string[] = [];
+      for await (const chunk of streamAI(
+        `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\nSYSTEM ARCHITECTURE DOCUMENT:\n${saContent}`,
+        AGENT_INSTRUCTIONS.DEV_LEAD,
+        controller.signal,
+      )) {
+        chunks.push(chunk);
+        await s.write(sse({ t: 'c', text: chunk }));
+      }
+
+      if (controller.signal.aborted) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+
+      const devLeadResult = chunks.join('');
+      outputs.dev_lead = devLeadResult;
+
+      sessionsRepo.update(req.session_id, {
+        agentOutputs: outputs,
+        workflowState: 'waiting_dev_lead_approval',
+      });
+
+      await s.write(sse({
+        t: 'done',
+        state: 'waiting_dev_lead_approval',
+        agent_outputs: outputs,
+        jira_backlog: session.jiraBacklog,
+      }));
+    } catch (e) {
+      await s.write(sse({ t: 'error', message: (e as Error).message }));
+    } finally {
+      clearAbort(req.session_id);
+    }
+  });
+});
+
+// ─── POST /sdlc/approve-dev-lead  (SSE) ─────────────────
+// Streams DEV → SECURITY → QA → SRE sequentially.
+// agent_done events are emitted between agents; DB is saved after each.
+sdlcRouter.post('/sdlc/approve-dev-lead', async (c) => {
+  const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
+  const req = ApproveRequestSchema.parse(body);
+
+  const session = requireSession(req.session_id);
+  requireWorkflowState(session, 'waiting_dev_lead_approval');
+
+  const outputs = { ...session.agentOutputs } as Record<string, unknown>;
+  if (req.edited_content) outputs.dev_lead = req.edited_content;
+
+  const devLeadContent = String(outputs.dev_lead ?? '');
+  const saContent = String(outputs.sa ?? '');
+  const baContent = String(outputs.ba ?? '');
+
+  sessionsRepo.update(req.session_id, {
+    workflowState: 'running_rest',
+    agentOutputs: outputs,
+  });
+
+  for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
+
+  return stream(c, async (s) => {
+    const controller = registerAbort(req.session_id);
+
+    /** Stream a single agent. Returns the full output, or null if aborted. */
+    async function streamAgent(
+      agentKey: string,
+      prompt: string,
+      instruction: string,
+    ): Promise<string | null> {
+      await s.write(sse({ t: 'start', agent: agentKey }));
+      const chunks: string[] = [];
+      for await (const chunk of streamAI(prompt, instruction, controller.signal)) {
+        chunks.push(chunk);
+        await s.write(sse({ t: 'c', text: chunk }));
+      }
+      if (controller.signal.aborted) return null;
+      return chunks.join('');
     }
 
-    sessionsRepo.update(req.session_id, {
-      agentOutputs: outputs,
-      jiraBacklog: backlog,
-      workflowState: 'waiting_sa_approval',
-    });
+    try {
+      // ── DEV ──
+      const devResult = await streamAgent(
+        'dev',
+        `SA PLAN:\n${saContent}\n\nDEV LEAD IMPLEMENTATION PLAN:\n${devLeadContent}`,
+        AGENT_INSTRUCTIONS.DEV,
+      );
+      if (devResult === null) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+      outputs.dev = devResult;
+      sessionsRepo.update(req.session_id, { agentOutputs: { ...outputs } });
+      await s.write(sse({ t: 'agent_done', agent: 'dev' }));
 
-    return c.json(
-      {
-        status: 'waiting_sa_approval',
-        message:
-          'SA has designed the architecture + JIRA backlog. Review and call POST /sdlc/approve-sa.',
-        sa_output: saResult,
-        jira_backlog: backlog,
-        next_step: 'POST /sdlc/approve-sa',
-      },
-      200,
-    );
-  },
-);
+      // ── SECURITY ──
+      const securityResult = await streamAgent(
+        'security',
+        `BUSINESS REQUIREMENTS:\n${baContent}\n\nSYSTEM ARCHITECTURE:\n${saContent}\n\nIMPLEMENTATION CODE/PLAN:\n${devResult}`,
+        AGENT_INSTRUCTIONS.SECURITY,
+      );
+      if (securityResult === null) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+      outputs.security = securityResult;
+      sessionsRepo.update(req.session_id, { agentOutputs: { ...outputs } });
+      await s.write(sse({ t: 'agent_done', agent: 'security' }));
 
-// ─── POST /sdlc/approve-sa ───────────────────────────────
+      // ── QA ──
+      const qaResult = await streamAgent(
+        'qa',
+        `BRD:\n${baContent}\n\nSA PLAN:\n${saContent}\n\nCODE PLAN:\n${devResult}\n\nSECURITY CONCERNS:\n${securityResult}`,
+        AGENT_INSTRUCTIONS.QA,
+      );
+      if (qaResult === null) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+      outputs.qa = qaResult;
+      sessionsRepo.update(req.session_id, { agentOutputs: { ...outputs } });
+      await s.write(sse({ t: 'agent_done', agent: 'qa' }));
+
+      // ── SRE ──
+      const sreResult = await streamAgent(
+        'sre',
+        `DEV CODE PLAN:\n${devResult}\n\nSECURITY REVIEW:\n${securityResult}\n\nQA TEST PLAN:\n${qaResult}`,
+        AGENT_INSTRUCTIONS.SRE,
+      );
+      if (sreResult === null) {
+        sessionsRepo.update(req.session_id, { workflowState: 'idle' });
+        await s.write(sse({ t: 'stopped' }));
+        return;
+      }
+      outputs.sre = sreResult;
+
+      sessionsRepo.update(req.session_id, {
+        agentOutputs: outputs,
+        workflowState: 'done',
+      });
+
+      await s.write(sse({
+        t: 'done',
+        state: 'done',
+        agent_outputs: outputs,
+        jira_backlog: session.jiraBacklog,
+      }));
+    } catch (e) {
+      await s.write(sse({ t: 'error', message: (e as Error).message }));
+    } finally {
+      clearAbort(req.session_id);
+    }
+  });
+});
+
+// ─── POST /sdlc/{session_id}/stop ────────────────────────
 sdlcRouter.openapi(
   createRoute({
     method: 'post',
-    path: '/sdlc/approve-sa',
+    path: '/sdlc/{session_id}/stop',
     tags: ['SDLC Agents'],
-    request: { body: { content: json(ApproveRequestSchema) } },
+    request: { params: z.object({ session_id: z.string() }) },
     responses: {
       200: {
         content: json(
           z.object({
             status: z.string(),
             message: z.string(),
-            dev_lead_output: z.string(),
-            next_step: z.string(),
+            agent_outputs: z.record(z.string(), z.unknown()),
           }),
         ),
-        description: 'Dev Lead done',
+        description: 'Pipeline stopped',
       },
-      400: { content: json(ErrorSchema), description: 'Wrong workflow state' },
       404: { content: json(ErrorSchema), description: 'Session not found' },
     },
   }),
-  async (c) => {
-    const req = c.req.valid('json');
-    const session = requireSession(req.session_id);
-    requireWorkflowState(session, 'waiting_sa_approval');
+  (c) => {
+    const { session_id } = c.req.valid('param');
+    const session = requireSession(session_id);
 
-    const outputs = { ...session.agentOutputs };
-    if (req.edited_content) outputs.sa = req.edited_content;
-    const saContent = String(outputs.sa ?? '');
-    const baContent = String(outputs.ba ?? '');
+    abortSession(session_id);
+    sessionsRepo.update(session_id, { workflowState: 'idle' });
 
-    sessionsRepo.update(req.session_id, {
-      workflowState: 'running_dev_lead',
-      agentOutputs: outputs,
-    });
-
-    const devLeadResult = await callAI(
-      'DEV_LEAD',
-      `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\n` +
-        `SYSTEM ARCHITECTURE DOCUMENT:\n${saContent}`,
-      AGENT_INSTRUCTIONS.DEV_LEAD,
-    );
-
-    outputs.dev_lead = devLeadResult;
-
-    sessionsRepo.update(req.session_id, {
-      agentOutputs: outputs,
-      workflowState: 'waiting_dev_lead_approval',
-    });
-
+    const updated = sessionsRepo.get(session_id);
     return c.json(
       {
-        status: 'waiting_dev_lead_approval',
-        message:
-          'Dev Lead has reviewed SA and created an Implementation Plan. Call POST /sdlc/approve-dev-lead.',
-        dev_lead_output: devLeadResult,
-        next_step: 'POST /sdlc/approve-dev-lead',
+        status: 'stopped',
+        message: 'Pipeline stopped.',
+        agent_outputs: (updated?.agentOutputs ?? session.agentOutputs) as Record<string, unknown>,
       },
       200,
     );
   },
 );
 
-// ─── POST /sdlc/approve-dev-lead ─────────────────────────
+// ─── POST /sdlc/{session_id}/restore ─────────────────────
 sdlcRouter.openapi(
   createRoute({
     method: 'post',
-    path: '/sdlc/approve-dev-lead',
+    path: '/sdlc/{session_id}/restore',
     tags: ['SDLC Agents'],
-    request: { body: { content: json(ApproveRequestSchema) } },
+    request: {
+      params: z.object({ session_id: z.string() }),
+      body: { content: json(RestoreRequestSchema) },
+    },
     responses: {
-      200: {
-        content: json(
-          z.object({
-            status: z.string(),
-            message: z.string(),
-            pipeline: z.record(z.string(), z.string()),
-            dev_output: z.string(),
-            security_output: z.string(),
-            qa_output: z.string(),
-            sre_output: z.string(),
-            full_state_url: z.string(),
-          }),
-        ),
-        description: 'Pipeline complete',
-      },
-      400: { content: json(ErrorSchema), description: 'Wrong workflow state' },
+      200: { content: json(SDLCStateResponseSchema), description: 'Checkpoint restored' },
+      400: { content: json(ErrorSchema), description: 'Bad checkpoint or session not found' },
       404: { content: json(ErrorSchema), description: 'Session not found' },
     },
   }),
-  async (c) => {
-    const req = c.req.valid('json');
-    const session = requireSession(req.session_id);
-    requireWorkflowState(session, 'waiting_dev_lead_approval');
+  (c) => {
+    const { session_id } = c.req.valid('param');
+    const { checkpoint } = c.req.valid('json');
+    const session = requireSession(session_id);
 
-    const outputs = { ...session.agentOutputs };
-    if (req.edited_content) outputs.dev_lead = req.edited_content;
+    const existing = { ...session.agentOutputs } as Record<string, unknown>;
 
-    const devLeadContent = String(outputs.dev_lead ?? '');
-    const saContent = String(outputs.sa ?? '');
-    const baContent = String(outputs.ba ?? '');
+    let keptOutputs: Record<string, unknown>;
+    let restoredState: string;
+    let clearBacklog: boolean;
 
-    sessionsRepo.update(req.session_id, {
-      workflowState: 'running_rest',
-      agentOutputs: outputs,
-    });
+    switch (checkpoint) {
+      case 'ba':
+        keptOutputs = { requirement: existing.requirement, ba: existing.ba };
+        restoredState = 'waiting_ba_approval';
+        clearBacklog = true;
+        break;
+      case 'sa':
+        keptOutputs = {
+          requirement: existing.requirement,
+          ba: existing.ba,
+          sa: existing.sa,
+        };
+        restoredState = 'waiting_sa_approval';
+        clearBacklog = true;
+        break;
+      case 'dev_lead':
+        keptOutputs = {
+          requirement: existing.requirement,
+          ba: existing.ba,
+          sa: existing.sa,
+          dev_lead: existing.dev_lead,
+        };
+        restoredState = 'waiting_dev_lead_approval';
+        clearBacklog = false;
+        break;
+    }
 
-    // ---- DEV ----
-    const devResult = await callAI(
-      'DEV',
-      `SA PLAN:\n${saContent}\n\nDEV LEAD IMPLEMENTATION PLAN:\n${devLeadContent}`,
-      AGENT_INSTRUCTIONS.DEV,
-    );
-    outputs.dev = devResult;
+    for (const key of Object.keys(keptOutputs)) {
+      if (keptOutputs[key] === undefined) delete keptOutputs[key];
+    }
 
-    // ---- SECURITY ----
-    const securityResult = await callAI(
-      'SECURITY',
-      `BUSINESS REQUIREMENTS:\n${baContent}\n\n` +
-        `SYSTEM ARCHITECTURE:\n${saContent}\n\n` +
-        `IMPLEMENTATION CODE/PLAN:\n${devResult}`,
-      AGENT_INSTRUCTIONS.SECURITY,
-    );
-    outputs.security = securityResult;
-
-    // ---- QA ----
-    const qaResult = await callAI(
-      'QA',
-      `BRD:\n${baContent}\n\n` +
-        `SA PLAN:\n${saContent}\n\n` +
-        `CODE PLAN:\n${devResult}\n\n` +
-        `SECURITY CONCERNS:\n${securityResult}`,
-      AGENT_INSTRUCTIONS.QA,
-    );
-    outputs.qa = qaResult;
-
-    // ---- SRE ----
-    const sreResult = await callAI(
-      'SRE',
-      `DEV CODE PLAN:\n${devResult}\n\n` +
-        `SECURITY REVIEW:\n${securityResult}\n\n` +
-        `QA TEST PLAN:\n${qaResult}`,
-      AGENT_INSTRUCTIONS.SRE,
-    );
-    outputs.sre = sreResult;
-
-    sessionsRepo.update(req.session_id, {
-      agentOutputs: outputs,
-      workflowState: 'done',
+    const updated = sessionsRepo.update(session_id, {
+      agentOutputs: keptOutputs,
+      workflowState: restoredState,
+      ...(clearBacklog ? { jiraBacklog: [] } : {}),
     });
 
     return c.json(
       {
-        status: 'done',
-        message: 'SDLC Pipeline complete! All agents have finished.',
-        pipeline: { dev: 'Done', security: 'Done', qa: 'Done', sre: 'Done' },
-        dev_output: devResult,
-        security_output: securityResult,
-        qa_output: qaResult,
-        sre_output: sreResult,
-        full_state_url: `/sdlc/${req.session_id}/state`,
+        session_id,
+        workflow_state: updated?.workflowState ?? restoredState,
+        agent_outputs: (updated?.agentOutputs ?? keptOutputs) as Record<string, unknown>,
+        jira_backlog: updated?.jiraBacklog ?? [],
       },
       200,
     );

@@ -21,6 +21,7 @@ export const PRICING: Record<string, PriceEntry> = {
   'gpt-5': { in: 1.25, out: 10.0 },
   'gpt-5-mini': { in: 0.25, out: 2.0 },
   'gpt-5-nano': { in: 0.05, out: 0.4 },
+  'gpt-5.4-nano-2026-03-17': { in: 0.2, out: 1.25 },
   // OpenAI GPT-4.1 family
   'gpt-4.1': { in: 2.0, out: 8.0 },
   'gpt-4.1-mini': { in: 0.4, out: 1.6 },

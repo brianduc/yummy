@@ -15,6 +15,50 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
+// ── SDLC SSE event types ───────────────────────────────────
+export type SdlcEvent =
+  | { t: 'start'; agent: string }
+  | { t: 'c'; text: string }
+  | { t: 'agent_done'; agent: string }
+  | { t: 'done'; state: string; agent_outputs: Record<string, unknown>; jira_backlog: unknown[] }
+  | { t: 'stopped' }
+  | { t: 'error'; message: string }
+
+/**
+ * Private helper: opens an SSE connection to an SDLC endpoint and yields
+ * SdlcEvent objects as they arrive (one JSON object per `data:` line).
+ */
+async function* sdlcStream(
+  path: string,
+  body: Record<string, unknown>,
+): AsyncGenerator<SdlcEvent> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify(body),
+  })
+  if (!res.ok || !res.body) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    throw new Error(err.detail || `API Error ${res.status}`)
+  }
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buf = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += decoder.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() ?? ''
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try { yield JSON.parse(line.slice(6)) as SdlcEvent } catch { /* skip malformed */ }
+      }
+    }
+  }
+}
+
 // ── Config ─────────────────────────────────────────────────
 export const api = {
   config: {
@@ -114,28 +158,41 @@ export const api = {
 
   // ── SDLC ──────────────────────────────────────────────────
   sdlc: {
-    start: (session_id: string, requirement: string) =>
-      request('/sdlc/start', { method: 'POST', body: JSON.stringify({ session_id, requirement }) }),
+    /**
+     * Start SDLC pipeline (BA agent) — SSE stream.
+     * Yields SdlcEvent objects as they arrive from the server.
+     */
+    startStream: (session_id: string, requirement: string) =>
+      sdlcStream('/sdlc/start', { session_id, requirement }),
 
-    approveBa: (session_id: string, edited_content?: string) =>
-      request('/sdlc/approve-ba', {
-        method: 'POST',
-        body: JSON.stringify({ session_id, edited_content }),
-      }),
+    /**
+     * Approve BA output and run SA agent — SSE stream.
+     */
+    approveBaStream: (session_id: string, edited_content?: string) =>
+      sdlcStream('/sdlc/approve-ba', { session_id, edited_content }),
 
-    approveSa: (session_id: string, edited_content?: string) =>
-      request('/sdlc/approve-sa', {
-        method: 'POST',
-        body: JSON.stringify({ session_id, edited_content }),
-      }),
+    /**
+     * Approve SA output and run Dev Lead agent — SSE stream.
+     */
+    approveSaStream: (session_id: string, edited_content?: string) =>
+      sdlcStream('/sdlc/approve-sa', { session_id, edited_content }),
 
-    approveDevLead: (session_id: string, edited_content?: string) =>
-      request('/sdlc/approve-dev-lead', {
-        method: 'POST',
-        body: JSON.stringify({ session_id, edited_content }),
-      }),
+    /**
+     * Approve Dev Lead output and run DEV/SEC/QA/SRE agents — SSE stream.
+     */
+    approveDevLeadStream: (session_id: string, edited_content?: string) =>
+      sdlcStream('/sdlc/approve-dev-lead', { session_id, edited_content }),
 
     state: (session_id: string) => request(`/sdlc/${session_id}/state`),
+
+    stop: (session_id: string) =>
+      request(`/sdlc/${session_id}/stop`, { method: 'POST' }),
+
+    restore: (session_id: string, checkpoint: 'ba' | 'sa' | 'dev_lead') =>
+      request(`/sdlc/${session_id}/restore`, {
+        method: 'POST',
+        body: JSON.stringify({ session_id, checkpoint }),
+      }),
   },
 
   // ── Metrics ───────────────────────────────────────────────

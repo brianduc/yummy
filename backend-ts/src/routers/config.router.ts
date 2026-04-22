@@ -13,6 +13,7 @@ import { kbRepo } from '../db/repositories/kb.repo.js';
 import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import { scanStatusRepo } from '../db/repositories/scan-status.repo.js';
 import { logsRepo } from '../db/repositories/logs.repo.js';
+import { providerConfigRepo } from '../db/repositories/provider-config.repo.js';
 import { badRequest } from '../lib/errors.js';
 import {
   BedrockConfigSchema,
@@ -48,6 +49,7 @@ configRouter.openapi(
     const cfg = c.req.valid('json');
     if (cfg.api_key) runtimeConfig.gemini_key = cfg.api_key;
     if (cfg.model) runtimeConfig.gemini_model = cfg.model;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({ status: 'ok', model: runtimeConfig.gemini_model });
   },
 );
@@ -70,6 +72,7 @@ configRouter.openapi(
     const cfg = c.req.valid('json');
     runtimeConfig.ollama_base_url = cfg.base_url;
     runtimeConfig.ollama_model = cfg.model;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({
       status: 'ok',
       message: `Ollama config đã set: ${cfg.base_url} / model=${cfg.model}`,
@@ -96,6 +99,7 @@ configRouter.openapi(
       throw badRequest('Provider must be one of: gemini, ollama, copilot, openai, bedrock.');
     }
     runtimeConfig.provider = provider as Provider;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({ status: 'ok', provider }, 200);
   },
 );
@@ -115,6 +119,7 @@ configRouter.openapi(
     const cfg = c.req.valid('json');
     if (cfg.api_key) runtimeConfig.openai_key = cfg.api_key;
     if (cfg.model) runtimeConfig.openai_model = cfg.model;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({ status: 'ok', model: runtimeConfig.openai_model });
   },
 );
@@ -139,6 +144,7 @@ configRouter.openapi(
     if (cfg.secret_key) runtimeConfig.bedrock_secret_key = cfg.secret_key;
     if (cfg.region) runtimeConfig.bedrock_region = cfg.region;
     if (cfg.model) runtimeConfig.bedrock_model = cfg.model;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({
       status: 'ok',
       region: runtimeConfig.bedrock_region,
@@ -162,6 +168,7 @@ configRouter.openapi(
     const cfg = c.req.valid('json');
     if (cfg.token) runtimeConfig.copilot_token = cfg.token;
     if (cfg.model) runtimeConfig.copilot_model = cfg.model;
+    providerConfigRepo.upsert(runtimeConfig);
     return c.json({ status: 'ok', model: runtimeConfig.copilot_model });
   },
 );

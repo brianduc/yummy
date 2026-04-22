@@ -100,6 +100,8 @@ interface ChatPanelProps {
   chatHistory: ChatMessage[]
   scanStatus: ScanStatus | null
   busy: boolean
+  btwBusy: boolean
+  workflowRunning: boolean
   termRef: React.RefObject<HTMLDivElement | null>
   currentProvider: Provider
   onSubmit: (raw: string) => void
@@ -108,6 +110,7 @@ interface ChatPanelProps {
 
 export default function ChatPanel({
   sessionName, termLogs, chatHistory, scanStatus, busy,
+  btwBusy, workflowRunning,
   termRef,
   currentProvider,
   onSubmit, onProviderSaved,
@@ -124,13 +127,18 @@ export default function ChatPanel({
   const [keyError, setKeyError] = useState('')
   const [keySuccess, setKeySuccess] = useState(false)
 
-  const isScanning = !!scanStatus?.running
-  const isBlocked  = busy || isScanning
+  const isScanning    = !!scanStatus?.running
+  // isBtwOnlyMode: SDLC pipeline is running — input stays enabled but only /btw is allowed
+  const isBtwOnlyMode = workflowRunning && busy && !isScanning
+  // isBlocked: fully disables input — during scan OR while a /btw response is streaming
+  const isBlocked     = btwBusy || isScanning
 
   const activeSuggestions = React.useMemo(() => {
     if (!cmd.startsWith('/')) return []
-    return COMMANDS.filter(c => c.cmd.startsWith(cmd.split(' ')[0]))
-  }, [cmd])
+    const matches = COMMANDS.filter(c => c.cmd.startsWith(cmd.split(' ')[0]))
+    // During pipeline execution only /btw is available — filter suggestions accordingly
+    return isBtwOnlyMode ? matches.filter(c => c.cmd === '/btw') : matches
+  }, [cmd, isBtwOnlyMode])
 
   const submitCmd = (raw: string) => {
     const trimmed = raw.trim()
@@ -251,10 +259,16 @@ export default function ChatPanel({
         {chatHistory.map((m, i) => <ChatMessageRow key={`c${i}`} message={m} />)}
 
         {/* Busy / scan progress */}
-        {busy && (
+        {busy && !isBtwOnlyMode && (
           <div className="flex gap-2 items-center text-sm border rounded px-3 py-2"
             style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
             <span>⟳</span> {scanStatus?.text || 'AI is processing...'}
+          </div>
+        )}
+        {btwBusy && (
+          <div className="flex gap-2 items-center text-sm border rounded px-3 py-2"
+            style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
+            <span>⟳</span> AI is responding to your /btw...
           </div>
         )}
         {scanStatus?.running && !busy && (
@@ -277,13 +291,23 @@ export default function ChatPanel({
 
       {/* Quick command chips */}
       <div className="px-3 flex gap-1 overflow-x-auto pb-1.5 flex-shrink-0">
-        {['/scan', '/ask Explain the auth flow?', '/btw', '/provider', '/help'].map((h, i) => (
-          <button key={i} onClick={() => !isBlocked && submitCmd(h)} disabled={isBlocked}
-            className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0"
-            style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '3px 10px', opacity: isBlocked ? .4 : 1 }}>
-            ⚡ {h}
-          </button>
-        ))}
+        {['/scan', '/ask Explain the auth flow?', '/btw', '/provider', '/help'].map((h, i) => {
+          const isBtwChip   = h === '/btw'
+          const chipBlocked = isBlocked || (isBtwOnlyMode && !isBtwChip)
+          return (
+            <button key={i} onClick={() => !chipBlocked && submitCmd(h)} disabled={chipBlocked}
+              className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0"
+              style={{
+                background: isBtwOnlyMode && isBtwChip ? 'rgba(255,179,0,.1)' : 'var(--bg)',
+                borderColor: isBtwOnlyMode && isBtwChip ? 'var(--amber)' : 'var(--border)',
+                color: isBtwOnlyMode && isBtwChip ? 'var(--amber)' : 'var(--text-3)',
+                padding: '3px 10px',
+                opacity: chipBlocked ? .3 : 1,
+              }}>
+              ⚡ {h}
+            </button>
+          )
+        })}
       </div>
 
       {/* Autocomplete suggestions */}
@@ -333,13 +357,23 @@ export default function ChatPanel({
             ⟳ Scanning in progress — input disabled until complete
           </div>
         )}
+        {isBtwOnlyMode && (
+          <div className="mb-2 px-3 py-1.5 rounded text-xs text-center"
+            style={{ background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', color: 'var(--amber)' }}>
+            ⟳ Pipeline running — type <strong>/btw &lt;question&gt;</strong> to chat with AI
+          </div>
+        )}
         <div className="flex gap-1.5">
           <input
             ref={inputRef}
             value={cmd}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={isScanning ? 'Scanning codebase, please wait...' : 'Type / for commands, or ask anything...'}
+            placeholder={
+              isScanning    ? 'Scanning codebase, please wait...' :
+              isBtwOnlyMode ? '/btw <question>  — pipeline running, /btw only' :
+                              'Type / for commands, or ask anything...'
+            }
             disabled={isBlocked}
             autoFocus
             className="flex-1 border rounded font-mono text-base outline-none"

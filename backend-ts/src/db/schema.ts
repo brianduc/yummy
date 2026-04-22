@@ -108,6 +108,24 @@ export const requestLogs = sqliteTable('request_logs', {
   cost: real('cost').notNull(),
 });
 
+// ─── Provider config — singleton row id=1 ────────────────
+export const providerConfig = sqliteTable('provider_config', {
+  id: integer('id').primaryKey().default(1),
+  provider: text('provider').notNull().default('gemini'),
+  geminiKey: text('gemini_key').notNull().default(''),
+  geminiModel: text('gemini_model').notNull().default(''),
+  ollamaBaseUrl: text('ollama_base_url').notNull().default(''),
+  ollamaModel: text('ollama_model').notNull().default(''),
+  copilotToken: text('copilot_token').notNull().default(''),
+  copilotModel: text('copilot_model').notNull().default(''),
+  openaiKey: text('openai_key').notNull().default(''),
+  openaiModel: text('openai_model').notNull().default(''),
+  bedrockAccessKey: text('bedrock_access_key').notNull().default(''),
+  bedrockSecretKey: text('bedrock_secret_key').notNull().default(''),
+  bedrockRegion: text('bedrock_region').notNull().default(''),
+  bedrockModel: text('bedrock_model').notNull().default(''),
+});
+
 // ─── Inferred row types ──────────────────────────────────
 export type SessionRow = typeof sessions.$inferSelect;
 export type SessionInsert = typeof sessions.$inferInsert;
@@ -117,3 +135,4 @@ export type RepoInfoRow = typeof repoInfo.$inferSelect;
 export type ScanStatusRow = typeof scanStatus.$inferSelect;
 export type RequestLogRow = typeof requestLogs.$inferSelect;
 export type RequestLogInsert = typeof requestLogs.$inferInsert;
+export type ProviderConfigRow = typeof providerConfig.$inferSelect;

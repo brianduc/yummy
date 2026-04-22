@@ -19,7 +19,7 @@ const EnvSchema = z.object({
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
   OPENAI_API_KEY: z.string().default(''),
-  OPENAI_MODEL: z.string().default('gpt-5-nano'),
+  OPENAI_MODEL: z.string().default('gpt-5.4-nano-2026-03-17'),
 
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
   OLLAMA_MODEL: z.string().default('llama3'),
