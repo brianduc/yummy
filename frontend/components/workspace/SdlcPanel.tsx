@@ -1,9 +1,25 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import AgentCard from './AgentCard'
 import { mdToHtml } from '@/lib/mdToHtml'
 import type { Session, AgentOutputs } from '@/lib/types'
+
+/** Renders HTML and auto-scrolls to the bottom whenever the content changes. */
+function AutoScrollDiv({ html, maxHeight }: { html: string; maxHeight: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight
+  }, [html])
+  return (
+    <div
+      ref={ref}
+      className="prose overflow-auto"
+      style={{ maxHeight }}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+}
 
 interface SdlcPanelProps {
   session: Session
@@ -36,6 +52,14 @@ export default function SdlcPanel({
   const outputs: AgentOutputs = session.agent_outputs || {}
   const state = session.workflow_state
 
+  // Auto-scroll the outer panel to the bottom whenever streaming text updates
+  const containerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight
+    }
+  }, [streamingText])
+
   // Determine which checkpoints are available for restore
   // (only shown when pipeline is idle after having run at least once)
   const canRestore =
@@ -53,7 +77,7 @@ export default function SdlcPanel({
   }
 
   return (
-    <div className="h-full overflow-auto p-6">
+    <div ref={containerRef} className="h-full overflow-auto p-6">
       {/* Header row with title + stop button */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-display font-extrabold text-xl" style={{ color: 'var(--amber)' }}>
@@ -127,11 +151,9 @@ export default function SdlcPanel({
                     style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
                     <div className="text-xs font-bold mb-2" style={{ color }}>{label}</div>
                     {(outputs as any)[key] ? (
-                      <div className="prose overflow-auto" style={{ maxHeight: 280 }}
-                        dangerouslySetInnerHTML={{ __html: mdToHtml((outputs as any)[key]) }} />
+                      <AutoScrollDiv html={mdToHtml((outputs as any)[key])} maxHeight={280} />
                     ) : streamingAgent === key ? (
-                      <div className="prose overflow-auto" style={{ maxHeight: 280 }}
-                        dangerouslySetInnerHTML={{ __html: mdToHtml(streamingText) }} />
+                      <AutoScrollDiv html={mdToHtml(streamingText)} maxHeight={280} />
                     ) : (
                       <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                         {state === 'running_rest' ? '⟳ Processing...' : '—'}

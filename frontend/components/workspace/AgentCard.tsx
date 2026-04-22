@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import { mdToHtml } from '@/lib/mdToHtml'
 
 interface AgentCardProps {
@@ -22,6 +22,13 @@ export default function AgentCard({
   editable, editValue, onEditChange,
   onApprove, approveLabel, approveColor, busy,
 }: AgentCardProps) {
+  // Auto-scroll the content box to the bottom as streaming text grows
+  const contentRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight
+    }
+  }, [content])
   return (
     <div className="relative">
       {/* Timeline dot */}
@@ -44,7 +51,7 @@ export default function AgentCard({
             />
           ) : (
             content && (
-              <div className="prose overflow-auto" style={{ maxHeight: 400 }} dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
+              <div ref={contentRef} className="prose overflow-auto" style={{ maxHeight: 400 }} dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
             )
           )}
 
