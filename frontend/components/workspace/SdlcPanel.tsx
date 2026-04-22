@@ -1,9 +1,127 @@
 'use client'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import AgentCard from './AgentCard'
 import { mdToHtml } from '@/lib/mdToHtml'
 import type { Session, AgentOutputs } from '@/lib/types'
+
+// ─── Skill builder ────────────────────────────────────────────────────────────
+
+/** Converts a free-text requirement into a valid SKILL.md `name` slug. */
+function slugifySkillName(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 64) || 'sdlc-skill'
+}
+
+/** Builds a complete SKILL.md string from SDLC pipeline outputs. */
+function buildSkillMd(outputs: AgentOutputs): string {
+  const requirement = outputs.requirement ?? 'project'
+  const name = slugifySkillName(requirement)
+  const descBase = requirement.length > 200 ? requirement.slice(0, 200).trim() + '...' : requirement
+  const description =
+    `Use this skill when working on: ${descBase}. Covers BRD, architecture, ` +
+    `technical plan, implementation, security, QA, and DevOps guidelines.`
+
+  const parts: string[] = [
+    `---\nname: ${name}\ndescription: >\n  ${description.replace(/\n/g, '\n  ')}\n---`,
+    `# ${requirement}`,
+  ]
+
+  if (outputs.ba)       parts.push(`## Business Requirements (BRD)\n\n${outputs.ba}`)
+  if (outputs.sa)       parts.push(`## Solution Architecture\n\n${outputs.sa}`)
+  if (outputs.dev_lead) parts.push(`## Technical Plan\n\n${outputs.dev_lead}`)
+  if (outputs.dev)      parts.push(`## Implementation Guidelines\n\n${outputs.dev}`)
+  if (outputs.security) parts.push(`## Security Guidelines\n\n${outputs.security}`)
+  if (outputs.qa)       parts.push(`## QA Guidelines\n\n${outputs.qa}`)
+  if (outputs.sre)      parts.push(`## DevOps / SRE Guidelines\n\n${outputs.sre}`)
+
+  return parts.join('\n\n')
+}
+
+// ─── Skill exporter card ──────────────────────────────────────────────────────
+
+function SkillExporter({ outputs }: { outputs: AgentOutputs }) {
+  const skillMd = buildSkillMd(outputs)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(skillMd).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  const handleDownload = () => {
+    const blob = new Blob([skillMd], { type: 'text/markdown' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'SKILL.md'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
+  return (
+    <div className="border rounded-lg overflow-hidden"
+      style={{ background: 'var(--bg)', borderColor: 'rgba(170,136,255,.35)' }}>
+      {/* Card header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b"
+        style={{ background: 'rgba(170,136,255,.08)', borderColor: 'rgba(170,136,255,.25)' }}>
+        <span className="text-sm font-bold" style={{ color: '#aa88ff' }}>
+          ✦ Export as Agent Skill
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={handleCopy}
+            className="border rounded font-mono text-xs font-bold cursor-pointer transition-colors"
+            style={{
+              padding: '.3rem .85rem',
+              background: copied ? 'rgba(80,230,120,.15)' : 'rgba(170,136,255,.12)',
+              borderColor: copied ? 'rgba(80,230,120,.4)' : 'rgba(170,136,255,.35)',
+              color: copied ? 'var(--green)' : '#aa88ff',
+            }}
+          >
+            {copied ? '✓ Copied!' : '⧉ Copy prompt'}
+          </button>
+          <button
+            onClick={handleDownload}
+            className="border rounded font-mono text-xs font-bold cursor-pointer transition-colors"
+            style={{
+              padding: '.3rem .85rem',
+              background: 'rgba(170,136,255,.12)',
+              borderColor: 'rgba(170,136,255,.35)',
+              color: '#aa88ff',
+            }}
+          >
+            ↓ Download SKILL.md
+          </button>
+        </div>
+      </div>
+      {/* SKILL.md preview */}
+      <pre
+        className="overflow-auto font-mono text-xs leading-relaxed"
+        style={{
+          maxHeight: 320,
+          margin: 0,
+          padding: '1rem 1.25rem',
+          background: 'var(--bg-1)',
+          color: 'var(--text-2)',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
+        {skillMd}
+      </pre>
+    </div>
+  )
+}
+
+// ─── AutoScrollDiv ────────────────────────────────────────────────────────────
 
 /** Renders HTML and auto-scrolls to the bottom whenever the content changes. */
 function AutoScrollDiv({ html, maxHeight }: { html: string; maxHeight: number }) {
@@ -167,9 +285,12 @@ export default function SdlcPanel({
         )}
 
         {state === 'done' && (
-          <div className="border rounded-lg px-6 py-4 font-bold text-center"
-            style={{ background: 'var(--green-mute)', borderColor: 'var(--green-dim)', color: 'var(--green)' }}>
-            🎉 SDLC Pipeline complete! Check the JIRA Kanban for the backlog.
+          <div className="flex flex-col gap-4">
+            <div className="border rounded-lg px-6 py-4 font-bold text-center"
+              style={{ background: 'var(--green-mute)', borderColor: 'var(--green-dim)', color: 'var(--green)' }}>
+              🎉 SDLC Pipeline complete! Check the JIRA Kanban for the backlog.
+            </div>
+            <SkillExporter outputs={outputs} />
           </div>
         )}
 
