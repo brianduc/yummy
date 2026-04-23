@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { Trash2 } from 'lucide-react'
 import type { Session } from '@/lib/types'
 
 interface SessionsPanelProps {
@@ -45,9 +46,9 @@ export default function SessionsPanel({ sessions, currentSessionId, onNew, onDel
           <button
             onClick={e => { e.stopPropagation(); onDeleteRequest(s) }}
             title="Delete session"
-            className="absolute top-1/2 -translate-y-1/2 right-2 bg-transparent border-none cursor-pointer leading-none rounded hover:text-red-500 transition-colors"
-            style={{ color: 'var(--text-3)', fontSize: '.75rem', padding: '2px 4px' }}
-          >✕</button>
+            className="absolute top-1/2 -translate-y-1/2 right-2 bg-transparent border-none cursor-pointer leading-none rounded hover:text-red-500 transition-colors flex items-center justify-center"
+            style={{ color: 'var(--text-3)', padding: '3px' }}
+          ><Trash2 size={13} /></button>
         </div>
       ))}
     </div>

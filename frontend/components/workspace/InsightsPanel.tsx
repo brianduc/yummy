@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Zap } from 'lucide-react'
 import { mdToHtml } from '@/lib/mdToHtml'
 import type { KnowledgeBase } from '@/lib/types'
 
@@ -20,8 +21,8 @@ export default function InsightsPanel({ kb }: InsightsPanelProps) {
 
   return (
     <div className="h-full overflow-auto p-6">
-      <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--amber)' }}>
-        ⚡ AI Project Insights
+      <h2 className="font-display font-extrabold text-xl mb-4 flex items-center gap-2" style={{ color: 'var(--amber)' }}>
+        <Zap size={18} /> AI Project Insights
       </h2>
       <div className="grid gap-4 pb-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))' }}>
         {kb.insights.map((ins, i) => (

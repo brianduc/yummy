@@ -40,6 +40,26 @@ export const RestoreRequestSchema = z
   })
   .openapi('RestoreRequest');
 
+export const ExportPromptRequestSchema = z
+  .object({
+    session_id: z.string().min(1),
+    format: z.enum(['chat']).openapi({
+      description: 'Output format for the exported prompt. "chat" = plain markdown for Claude/ChatGPT/Cursor.',
+    }),
+  })
+  .openapi('ExportPromptRequest');
+
+export const ExportPromptResponseSchema = z
+  .object({
+    session_id: z.string(),
+    format: z.string(),
+    prompt: z.string().openapi({
+      description: 'AI-distilled implementation prompt ready to paste into a coding assistant.',
+    }),
+  })
+  .openapi('ExportPromptResponse');
+
 export type CRRequest = z.infer<typeof CRRequestSchema>;
 export type ApproveRequest = z.infer<typeof ApproveRequestSchema>;
 export type RestoreRequest = z.infer<typeof RestoreRequestSchema>;
+export type ExportPromptRequest = z.infer<typeof ExportPromptRequestSchema>;

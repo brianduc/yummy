@@ -39,6 +39,8 @@ import { callAI, streamAI } from '../services/ai/dispatcher.js';
 import {
   ApproveRequestSchema,
   CRRequestSchema,
+  ExportPromptRequestSchema,
+  ExportPromptResponseSchema,
   RestoreRequestSchema,
   SDLCStateResponseSchema,
 } from '../schemas/sdlc.schema.js';
@@ -676,6 +678,81 @@ sdlcRouter.openapi(
         session_id,
         chat_history: session.chatHistory,
       },
+      200,
+    );
+  },
+);
+
+// ─── POST /sdlc/{session_id}/export-prompt ───────────────
+/**
+ * Distills the completed SDLC pipeline outputs into a concise implementation
+ * prompt suitable for pasting into a coding assistant (Claude, ChatGPT, Cursor).
+ *
+ * Uses callAI() (blocking) with an EXPERT role to summarise sa + dev_lead + dev
+ * into: feature context, tech decisions, numbered task list, acceptance criteria.
+ *
+ * Only available once the pipeline has produced at least a dev_lead output.
+ */
+sdlcRouter.openapi(
+  createRoute({
+    method: 'post',
+    path: '/sdlc/{session_id}/export-prompt',
+    tags: ['SDLC Agents'],
+    request: {
+      params: z.object({ session_id: z.string() }),
+      body: { content: json(ExportPromptRequestSchema) },
+    },
+    responses: {
+      200: { content: json(ExportPromptResponseSchema), description: 'Distilled prompt' },
+      400: { content: json(ErrorSchema), description: 'Not enough pipeline output to distill' },
+      404: { content: json(ErrorSchema), description: 'Session not found' },
+    },
+  }),
+  async (c) => {
+    const { session_id } = c.req.valid('param');
+    const body = c.req.valid('json');
+    const session = requireSession(session_id);
+
+    const outputs = session.agentOutputs as Record<string, string | undefined>;
+    const { requirement, sa, dev_lead, dev } = outputs;
+
+    if (!dev_lead && !dev) {
+      return c.json(
+        { detail: 'Pipeline has not produced enough output yet. Approve through at least the Dev Lead stage.' },
+        400,
+      );
+    }
+
+    const sections: string[] = [];
+    if (requirement) sections.push(`Requirement:\n${requirement}`);
+    if (sa)          sections.push(`Solution Architecture:\n${sa}`);
+    if (dev_lead)    sections.push(`Technical Plan (Dev Lead):\n${dev_lead}`);
+    if (dev)         sections.push(`Implementation Guidelines (Developer):\n${dev}`);
+
+    const rawContent = sections.join('\n\n---\n\n');
+
+    const instruction =
+      'You are a technical writer. Your job is to distill SDLC pipeline outputs ' +
+      'into a focused, paste-ready implementation prompt for a developer to use in a ' +
+      'coding assistant (Claude, ChatGPT, Cursor, Copilot, etc.).\n\n' +
+      'Rules:\n' +
+      '- Start with: "You are helping me implement the following feature in an existing codebase."\n' +
+      '- Include a "## Feature" section with a one-paragraph description of what to build.\n' +
+      '- Include a "## Architecture & Tech Decisions" section with the key stack choices, ' +
+      'data models, and API contracts. Be specific and concise — bullet points preferred.\n' +
+      '- Include an "## Implementation Plan" section as a numbered list of concrete tasks ' +
+      'in the order a developer should tackle them. Each task should be one actionable sentence.\n' +
+      '- Include an "## Acceptance Criteria" section listing what "done" looks like.\n' +
+      '- Omit business analysis prose, stakeholder discussion, and meeting-style deliberation.\n' +
+      '- Output plain Markdown only — no YAML frontmatter, no code fences around the whole document.';
+
+    const prompt =
+      `Distill the following SDLC pipeline outputs into an implementation prompt:\n\n${rawContent}`;
+
+    const result = await callAI('EXPORT_PROMPT', prompt, instruction);
+
+    return c.json(
+      { session_id, format: body.format, prompt: result },
       200,
     );
   },

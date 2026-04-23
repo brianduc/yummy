@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Loader2, Check, Circle, ChevronDown, ChevronRight, Folder } from 'lucide-react'
 import type { FileNode } from '@/lib/types'
 
 // ─── Tree builder ────────────────────────────────────────────────────────────
@@ -63,8 +64,12 @@ export function TreeNode({ node, level = 0, onFile, selected }: TreeNodeProps) {
           color: active ? 'var(--green)' : 'var(--text-2)',
         }}
       >
-        <span className="flex-shrink-0 text-2xs opacity-70">
-          {node.status === 'processing' ? '⟳' : node.status === 'done' ? '✓' : '⬡'}
+        <span className="flex-shrink-0 opacity-70">
+          {node.status === 'processing'
+            ? <Loader2 size={10} className="animate-spin" />
+            : node.status === 'done'
+              ? <Check size={10} />
+              : <Circle size={10} />}
         </span>
         <span className="truncate">{node.name}</span>
       </div>
@@ -78,8 +83,8 @@ export function TreeNode({ node, level = 0, onFile, selected }: TreeNodeProps) {
         className="flex items-center gap-1 cursor-pointer text-sm"
         style={{ paddingLeft: level * 14, paddingTop: 5, paddingBottom: 5, paddingRight: 8, color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}
       >
-        <span className="text-2xs">{open ? '▾' : '▸'}</span>
-        <span className="text-2xs" style={{ color: level === 0 ? 'var(--green)' : 'var(--amber)' }}>📁</span>
+        <span className="text-2xs">{open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}</span>
+        <span className="text-2xs" style={{ color: level === 0 ? 'var(--green)' : 'var(--amber)' }}><Folder size={13} /></span>
         <span className="font-semibold" style={{ color: 'var(--text)' }}>{node.name}</span>
       </div>
       {open && (

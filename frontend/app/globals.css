@@ -45,7 +45,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: 14px; }
+html { font-size: 16px; }
 
 body {
   background: var(--bg);
@@ -67,7 +67,7 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-1); }
 ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--green-mute); }
@@ -79,15 +79,15 @@ body {
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
 
 /* Markdown inside agent outputs */
-.prose { font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; color: var(--text); }
+.prose { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; color: var(--text); }
 .prose h1, .prose h2, .prose h3, .prose h4 {
   font-family: var(--font-display);
   color: var(--green);
   margin: 1.2em 0 0.4em;
 }
-.prose h1 { font-size: 1.3rem; }
-.prose h2 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
-.prose h3 { font-size: 0.95rem; color: var(--green-dim); }
+.prose h1 { font-size: 1.35rem; }
+.prose h2 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+.prose h3 { font-size: 1rem; color: var(--green-dim); }
 .prose p { margin: 0.6em 0; }
 .prose ul, .prose ol { padding-left: 1.5em; margin: 0.4em 0; }
 .prose li { margin: 0.2em 0; }
@@ -96,7 +96,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   border: 1px solid var(--border);
   padding: 0.1em 0.4em;
   border-radius: var(--radius);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: var(--amber);
 }
 .prose pre {
@@ -109,9 +109,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   margin: 0.6em 0;
 }
 .prose pre code { background: none; border: none; padding: 0; color: var(--text); }
-.prose table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 0.8rem; }
-.prose th { background: var(--bg-3); color: var(--green); padding: 0.4em 0.6em; text-align: left; border: 1px solid var(--border); }
-.prose td { padding: 0.3em 0.6em; border: 1px solid var(--border); }
+.prose table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 0.85rem; }
+.prose th { background: var(--bg-3); color: var(--green); padding: 0.45em 0.7em; text-align: left; border: 1px solid var(--border); }
+.prose td { padding: 0.35em 0.7em; border: 1px solid var(--border); }
 .prose tr:nth-child(even) { background: var(--bg-1); }
 .prose blockquote {
   border-left: 3px solid var(--amber-dim);
@@ -156,9 +156,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  padding: 0.4em 0.9em;
+  padding: 0.5em 1em;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 500;
   border-radius: var(--radius);
   cursor: pointer;
@@ -215,9 +215,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   background: var(--bg-1);
   border: 1px solid var(--border-2);
   border-radius: var(--radius);
-  padding: 0.45em 0.7em;
+  padding: 0.5em 0.8em;
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--text);
   outline: none;
   transition: border-color 0.15s;
@@ -235,9 +235,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 /* Tag / Badge */
 .tag {
   display: inline-block;
-  padding: 0.1em 0.5em;
+  padding: 0.15em 0.55em;
   border-radius: var(--radius);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Download } from 'lucide-react'
 import { mdToHtml } from '@/lib/mdToHtml'
 import type { KnowledgeBase } from '@/lib/types'
 
@@ -29,9 +30,9 @@ export default function WikiPanel({ kb }: WikiPanelProps) {
           </span>
           {kb?.project_summary && (
             <button onClick={exportMarkdown}
-              className="border-none rounded cursor-pointer font-bold text-xs"
+              className="border-none rounded cursor-pointer font-bold text-xs flex items-center gap-1"
               style={{ background: 'var(--green)', color: 'var(--bg)', padding: '.3rem .8rem' }}>
-              ↓ Export
+              <Download size={13} /> Export
             </button>
           )}
         </div>

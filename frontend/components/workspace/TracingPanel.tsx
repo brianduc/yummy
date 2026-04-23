@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Loader2, Zap, ArrowUp, ArrowDown } from 'lucide-react'
 import type { MetricsData } from '@/lib/types'
 
 interface TracingPanelProps {
@@ -14,9 +15,9 @@ export default function TracingPanel({ metrics, onLoad }: TracingPanelProps) {
       <div className="flex items-center justify-center flex-1 h-full">
         <button
           onClick={onLoad}
-          className="border rounded cursor-pointer font-mono"
+          className="border rounded cursor-pointer font-mono flex items-center gap-1.5"
           style={{ background: 'none', borderColor: 'var(--border)', color: 'var(--text-3)', padding: '.5rem 1rem' }}>
-          ⟳ Load Metrics
+          <Loader2 size={13} className="animate-spin" /> Load Metrics
         </button>
       </div>
     )
@@ -44,12 +45,12 @@ export default function TracingPanel({ metrics, onLoad }: TracingPanelProps) {
         <div key={log.id} className="border rounded-lg"
           style={{ background: 'var(--bg)', borderColor: 'var(--border)', padding: '.5rem .65rem' }}>
           <div className="flex justify-between mb-1">
-            <span className="text-xs font-bold" style={{ color: 'var(--green)' }}>⚡ {log.agent}</span>
+            <span className="text-xs font-bold flex items-center gap-1" style={{ color: 'var(--green)' }}><Zap size={12} /> {log.agent}</span>
             <span className="text-2xs" style={{ color: 'var(--text-3)' }}>{log.time}</span>
           </div>
           <div className="flex justify-between text-2xs" style={{ color: 'var(--text-3)' }}>
             <span>{log.provider}{(log as any).model ? ` · ${(log as any).model}` : ''}</span>
-            <span>↑{log.in_tokens} ↓{log.out_tokens}</span>
+            <span className="flex items-center gap-0.5"><ArrowUp size={10} />{log.in_tokens} <ArrowDown size={10} />{log.out_tokens}</span>
             <span>{log.latency}s</span>
             <span style={{ color: 'var(--amber)' }}>${log.cost.toFixed(5)}</span>
           </div>

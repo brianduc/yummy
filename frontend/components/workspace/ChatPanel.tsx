@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
+import { Zap, Loader2, Send, X, Check } from 'lucide-react'
 import { mdToHtml } from '@/lib/mdToHtml'
 import { api } from '@/lib/api'
 import type { ChatMessage, ScanStatus } from '@/lib/types'
@@ -8,7 +9,7 @@ import type { ChatMessage, ScanStatus } from '@/lib/types'
 const TermLogRow = React.memo(function TermLogRow({ role, text }: { role: string; text: string }) {
   return (
     <div className="flex gap-2" style={{ color: role === 'user' ? 'var(--green)' : 'var(--text-2)' }}>
-      <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{role === 'user' ? '❯' : '⚡'}</span>
+      <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{role === 'user' ? '❯' : <Zap size={13} />}</span>
       <span className="whitespace-pre-wrap">{text}</span>
     </div>
   )
@@ -262,20 +263,20 @@ export default function ChatPanel({
         {busy && !isBtwOnlyMode && (
           <div className="flex gap-2 items-center text-sm border rounded px-3 py-2"
             style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
-            <span>⟳</span> {scanStatus?.text || 'AI is processing...'}
+            <Loader2 size={13} className="animate-spin" /> {scanStatus?.text || 'AI is processing...'}
           </div>
         )}
         {btwBusy && (
           <div className="flex gap-2 items-center text-sm border rounded px-3 py-2"
             style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
-            <span>⟳</span> AI is responding to your /btw...
+            <Loader2 size={13} className="animate-spin" /> AI is responding to your /btw...
           </div>
         )}
         {scanStatus?.running && !busy && (
           <div className="flex flex-col gap-1.5 border rounded px-3 py-2.5"
             style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.05)', borderColor: 'rgba(255,179,0,.15)' }}>
             <div className="flex items-center gap-2 text-sm">
-              <span>⟳</span>
+              <Loader2 size={13} className="animate-spin" />
               <span className="flex-1 truncate">{scanStatus.text}</span>
               <span className="text-2xs flex-shrink-0" style={{ color: 'var(--text-3)' }}>{scanStatus.progress}%</span>
             </div>
@@ -296,15 +297,14 @@ export default function ChatPanel({
           const chipBlocked = isBlocked || (isBtwOnlyMode && !isBtwChip)
           return (
             <button key={i} onClick={() => !chipBlocked && submitCmd(h)} disabled={chipBlocked}
-              className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0"
+              className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0 flex items-center gap-1"
               style={{
                 background: isBtwOnlyMode && isBtwChip ? 'rgba(255,179,0,.1)' : 'var(--bg)',
                 borderColor: isBtwOnlyMode && isBtwChip ? 'var(--amber)' : 'var(--border)',
                 color: isBtwOnlyMode && isBtwChip ? 'var(--amber)' : 'var(--text-3)',
                 padding: '3px 10px',
                 opacity: chipBlocked ? .3 : 1,
-              }}>
-              ⚡ {h}
+              }}              ><Zap size={10} /> {h}
             </button>
           )
         })}
@@ -354,13 +354,13 @@ export default function ChatPanel({
         {isScanning && (
           <div className="mb-2 px-3 py-1.5 rounded text-xs text-center"
             style={{ background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', color: 'var(--amber)' }}>
-            ⟳ Scanning in progress — input disabled until complete
+            <Loader2 size={12} className="animate-spin" /> Scanning in progress — input disabled until complete
           </div>
         )}
         {isBtwOnlyMode && (
           <div className="mb-2 px-3 py-1.5 rounded text-xs text-center"
             style={{ background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', color: 'var(--amber)' }}>
-            ⟳ Pipeline running — type <strong>/btw &lt;question&gt;</strong> to chat with AI
+            <Loader2 size={12} className="animate-spin" /> Pipeline running — type <strong>/btw &lt;question&gt;</strong> to chat with AI
           </div>
         )}
         <div className="flex gap-1.5">
@@ -382,18 +382,17 @@ export default function ChatPanel({
               borderColor: 'var(--border)',
               color: isBlocked ? 'var(--text-3)' : 'var(--text)',
               padding: '.5rem .75rem',
-              fontSize: '.82rem',
               cursor: isBlocked ? 'not-allowed' : 'text',
             }}
           />
           <button onClick={() => submitCmd(cmd)} disabled={isBlocked || !cmd.trim()}
-            className="border-none rounded cursor-pointer font-bold text-md"
+            className="border-none rounded cursor-pointer font-bold text-md flex items-center justify-center"
             style={{
               background: 'var(--green)', color: 'var(--bg)', padding: '.5rem .9rem',
               opacity: (isBlocked || !cmd.trim()) ? .4 : 1,
               cursor: isBlocked ? 'not-allowed' : 'pointer',
             }}>
-            ↑
+            <Send size={15} />
           </button>
         </div>
       </div>
@@ -445,15 +444,15 @@ export default function ChatPanel({
               </label>
 
               {keyError && (
-                <p className="text-xs px-3 py-2 rounded border"
+                <p className="text-xs px-3 py-2 rounded border flex items-center gap-1.5"
                   style={{ color: 'var(--red)', background: 'rgba(255,68,68,.08)', borderColor: 'rgba(255,68,68,.2)' }}>
-                  ✕ {keyError}
+                  <X size={12} /> {keyError}
                 </p>
               )}
               {keySuccess && (
-                <p className="text-xs px-3 py-2 rounded border"
+                <p className="text-xs px-3 py-2 rounded border flex items-center gap-1.5"
                   style={{ color: 'var(--green)', background: 'var(--green-mute)', borderColor: 'var(--green-dim)' }}>
-                  ✓ Saved and activated!
+                  <Check size={12} /> Saved and activated!
                 </p>
               )}
 
@@ -467,13 +466,13 @@ export default function ChatPanel({
                 <button
                   onClick={saveKey}
                   disabled={keySaving || !keyValue.trim()}
-                  className="flex-1 rounded-lg cursor-pointer font-bold text-sm py-2"
+                  className="flex-1 rounded-lg cursor-pointer font-bold text-sm py-2 flex items-center justify-center gap-1.5"
                   style={{
                     background: 'var(--green-mute)', color: 'var(--green)',
                     border: '1px solid var(--green-dim)',
                     opacity: (keySaving || !keyValue.trim()) ? .5 : 1,
                   }}>
-                  {keySaving ? '⟳ Saving...' : '✓ Save & Activate'}
+                  {keySaving ? <><Loader2 size={13} className="animate-spin" /> Saving...</> : <><Check size={13} /> Save & Activate</>}
                 </button>
               </div>
             </div>

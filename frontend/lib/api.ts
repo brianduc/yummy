@@ -193,6 +193,20 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ session_id, checkpoint }),
       }),
+
+    /**
+     * AI-distills the completed SDLC pipeline outputs into a concise
+     * implementation prompt for pasting into a coding assistant.
+     * Blocking JSON call (non-streaming). Requires at least dev_lead output.
+     */
+    exportPrompt: (session_id: string, format: 'chat' = 'chat') =>
+      request<{ session_id: string; format: string; prompt: string }>(
+        `/sdlc/${session_id}/export-prompt`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ session_id, format }),
+        },
+      ),
   },
 
   // ── Metrics ───────────────────────────────────────────────

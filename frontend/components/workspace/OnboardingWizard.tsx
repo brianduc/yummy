@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Check, X, ArrowLeft, ArrowRight, Loader2, Search, ExternalLink } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { SystemStatus } from '@/lib/types'
 
@@ -275,7 +276,7 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
                       color: i < stepIdx ? 'var(--bg)' : i === stepIdx ? meta.color : 'var(--text-3)',
                       border: `1px solid ${i === stepIdx ? meta.border : 'var(--border)'}`,
                     }}>
-                    {i < stepIdx ? '✓' : i + 1}
+                    {i < stepIdx ? <Check size={10} /> : i + 1}
                   </div>
                   <span className="text-2xs uppercase tracking-wide"
                     style={{ color: i === stepIdx ? meta.color : 'var(--text-3)' }}>
@@ -326,7 +327,8 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
                     <label className="flex flex-col gap-1">
                       <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                         API Key — <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer"
-                          style={{ color: 'var(--green)' }}>Get one free →</a>
+                          className="inline-flex items-center gap-0.5"
+                          style={{ color: 'var(--green)' }}>Get one free <ExternalLink size={11} /></a>
                       </span>
                       <input type="password" autoComplete="new-password" className={inputCls}
                         style={inputStyle('var(--green)')} value={geminiKey}
@@ -341,7 +343,8 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
                     <label className="flex flex-col gap-1">
                       <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                         API Key — <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
-                          style={{ color: '#10b981' }}>platform.openai.com →</a>
+                          className="inline-flex items-center gap-0.5"
+                          style={{ color: '#10b981' }}>platform.openai.com <ExternalLink size={11} /></a>
                       </span>
                       <input type="password" autoComplete="new-password" className={inputCls}
                         style={inputStyle('#10b981')} value={openaiKey}
@@ -441,7 +444,7 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
           {/* ── Step 3: Scan ── */}
           {step === 'scan' && (
             <div className="flex flex-col items-center gap-3 py-4 text-center">
-              <div className="text-5xl">🔍</div>
+              <Search size={48} style={{ color: 'var(--text-3)', opacity: 0.4 }} />
               <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Ready to scan</p>
               <p className="text-xs max-w-xs" style={{ color: 'var(--text-3)' }}>
                 YUMMY will fetch your repo, read every file, and use AI to build a knowledge base.
@@ -466,9 +469,9 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
 
           {/* Error */}
           {error && (
-            <p className="text-xs px-3 py-2 rounded border"
+            <p className="text-xs px-3 py-2 rounded border flex items-center gap-1.5"
               style={{ color: 'var(--red)', background: 'rgba(255,68,68,.08)', borderColor: 'rgba(255,68,68,.2)' }}>
-              ✕ {error}
+              <X size={12} /> {error}
             </p>
           )}
 
@@ -476,21 +479,26 @@ export default function OnboardingWizard({ onComplete, onScanStart }: Onboarding
           <div className="flex gap-2 pt-1">
             {step !== 'provider' && (
               <button onClick={() => { setStep(step === 'scan' ? 'repo' : 'provider'); setError('') }}
-                className="border rounded-lg cursor-pointer font-mono text-sm px-4 py-2"
+              className="border rounded-lg cursor-pointer font-mono text-sm px-4 py-2 flex items-center gap-1.5"
                 style={{ background: 'none', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
-                ← Back
+                <ArrowLeft size={14} /> Back
               </button>
             )}
             <button
               onClick={step === 'provider' ? saveProvider : step === 'repo' ? saveRepo : startScan}
               disabled={saving}
-              className="flex-1 rounded-lg cursor-pointer font-bold text-sm py-2.5 transition-all"
+              className="flex-1 rounded-lg cursor-pointer font-bold text-sm py-2.5 transition-all flex items-center justify-center gap-1.5"
               style={{
                 background: meta.bg, color: meta.color,
                 border: `1px solid ${meta.border}`,
                 opacity: saving ? .6 : 1,
               }}>
-              {saving ? '⟳ Saving...' : step === 'provider' ? 'Continue →' : step === 'repo' ? 'Continue →' : '🔍 Start Scan'}
+              {saving
+                ? <><Loader2 size={14} className="animate-spin" /> Saving...</>
+                : step === 'scan'
+                  ? <><Search size={14} /> Start Scan</>
+                  : <>Continue <ArrowRight size={14} /></>
+              }
             </button>
           </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Folder, Loader2 } from 'lucide-react'
 import { TreeNode, buildFileTree } from './FileTree'
 import type { FileNode } from '@/lib/types'
 
@@ -31,7 +32,7 @@ export default function IdePanel({ tree, ideFile, ideContent, ideLoading, onFile
           {!tree.length ? (
             <div className="flex flex-col items-center justify-center text-sm gap-2 text-center px-4"
               style={{ height: '70%', color: 'var(--text-3)' }}>
-              <div className="text-4xl opacity-15">📁</div>
+              <Folder size={32} style={{ opacity: 0.15 }} />
               <p>Workspace empty.<br />Run /scan to index.</p>
             </div>
           ) : (
@@ -60,7 +61,7 @@ export default function IdePanel({ tree, ideFile, ideContent, ideLoading, onFile
           <div className="flex-1 p-4 font-mono text-base overflow-auto whitespace-pre leading-relaxed"
             style={{ color: 'var(--text)' }}>
             {ideLoading
-              ? <span style={{ color: 'var(--green)' }}>⟳ Loading source code...</span>
+              ? <span className="flex items-center gap-1.5" style={{ color: 'var(--green)' }}><Loader2 size={14} className="animate-spin" /> Loading source code...</span>
               : ideContent
                 ? <code>{ideContent}</code>
                 : <div className="flex flex-col items-center justify-center gap-2 opacity-20"

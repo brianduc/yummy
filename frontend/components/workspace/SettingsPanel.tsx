@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Loader2, Check, X } from 'lucide-react'
 import { api } from '@/lib/api'
+import { applyUiSize, getSavedUiSizeIndex, UI_SIZE_LABELS } from '@/lib/uiSize'
 import type { SystemStatus, KeySource } from '@/lib/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -43,14 +45,14 @@ function KeySourceBadge({ source }: { source: KeySource }) {
   if (source === 'none') return null
   return (
     <span
-      className="text-2xs px-1.5 py-px rounded font-bold"
+      className="text-2xs px-1.5 py-px rounded font-bold inline-flex items-center gap-1"
       style={
         source === 'env'
           ? { background: 'rgba(0,170,255,.12)', color: '#00aaff', border: '1px solid rgba(0,170,255,.3)' }
           : { background: 'var(--green-mute)', color: 'var(--green)', border: '1px solid var(--green-dim)' }
       }
     >
-      {source === 'env' ? '⬡ from ENV' : '✓ saved'}
+      {source === 'env' ? '⬡ from ENV' : <><Check size={10} /> saved</>}
     </span>
   )
 }
@@ -406,11 +408,87 @@ function SaveButton({ color, bg, border, disabled, saving, onClick }: {
     <button
       onClick={onClick}
       disabled={saving || disabled}
-      className="w-full py-2 rounded text-xs font-bold cursor-pointer transition-all"
+      className="w-full py-2 rounded text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
       style={{ background: bg, color, border: `1px solid ${border}`, opacity: (saving || disabled) ? .45 : 1 }}
     >
-      {saving ? '⟳ Saving...' : '✓ Save & Activate'}
+      {saving ? <><Loader2 size={12} className="animate-spin" /> Saving...</> : <><Check size={12} /> Save & Activate</>}
     </button>
+  )
+}
+
+// ─── Preferences section ─────────────────────────────────────────────────────
+
+function PreferencesSection() {
+  const [sizeIndex, setSizeIndex] = useState(getSavedUiSizeIndex)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const idx = Number(e.target.value)
+    setSizeIndex(idx)
+    applyUiSize(idx)
+  }
+
+  return (
+    <section className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold"
+        style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
+        ⬡ Preferences
+      </div>
+      <div className="p-3 flex flex-col gap-3" style={{ background: 'var(--bg-1)' }}>
+        <FieldLabel>UI Size</FieldLabel>
+
+        {/* Slider */}
+        <div className="flex flex-col gap-1.5">
+          <style>{`
+            .ui-size-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+              border-radius: 2px; outline: none; cursor: pointer;
+              background: linear-gradient(
+                to right,
+                var(--green) 0%,
+                var(--green) ${(sizeIndex / 4) * 100}%,
+                var(--border-2) ${(sizeIndex / 4) * 100}%,
+                var(--border-2) 100%
+              );
+            }
+            .ui-size-slider::-webkit-slider-thumb {
+              -webkit-appearance: none; appearance: none;
+              width: 14px; height: 14px; border-radius: 50%;
+              background: var(--green); cursor: pointer;
+              border: 2px solid var(--bg-1);
+              box-shadow: 0 0 0 1px var(--green-dim);
+            }
+            .ui-size-slider::-moz-range-thumb {
+              width: 14px; height: 14px; border-radius: 50%;
+              background: var(--green); cursor: pointer;
+              border: 2px solid var(--bg-1);
+              box-shadow: 0 0 0 1px var(--green-dim);
+            }
+          `}</style>
+          <input
+            type="range" min={0} max={4} step={1}
+            value={sizeIndex}
+            onChange={handleChange}
+            className="ui-size-slider"
+          />
+          {/* Tick labels */}
+          <div className="flex justify-between">
+            {UI_SIZE_LABELS.map((label, i) => (
+              <span
+                key={label}
+                className="text-2xs font-mono font-bold"
+                style={{
+                  color: i === sizeIndex ? 'var(--green)' : 'var(--text-3)',
+                  transition: 'color 0.15s',
+                  minWidth: 0,
+                  textAlign: i === 0 ? 'left' : i === 4 ? 'right' : 'center',
+                  flex: 1,
+                }}>
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -453,13 +531,13 @@ export default function SettingsPanel({ status, onStatusRefresh }: SettingsPanel
           {meta.icon} {status?.ai_provider?.toUpperCase() ?? '—'}
         </span>
         {msg && (
-          <span className="text-2xs px-2 py-0.5 rounded"
+          <span className="text-2xs px-2 py-0.5 rounded inline-flex items-center gap-1"
             style={{
               color: msg.ok ? 'var(--green)' : 'var(--red)',
               background: msg.ok ? 'var(--green-mute)' : 'rgba(255,68,68,.1)',
               border: `1px solid ${msg.ok ? 'var(--green-dim)' : 'var(--red-dim)'}`,
             }}>
-            {msg.ok ? '✓' : '✕'} {msg.text}
+            {msg.ok ? <Check size={10} /> : <X size={10} />} {msg.text}
           </span>
         )}
       </div>
@@ -518,6 +596,9 @@ export default function SettingsPanel({ status, onStatusRefresh }: SettingsPanel
             <GitHubForm status={status} onSave={handleSave} saving={saving} />
           </div>
         </section>
+
+        {/* ── Preferences ── */}
+        <PreferencesSection />
 
       </div>
     </div>

@@ -96,7 +96,7 @@ export default function NodeGraph({ tree, repoInfo }: NodeGraphProps) {
             <g key={`e${i}`}>
               <line x1={c.x} y1={c.y} x2={n.x} y2={n.y} stroke="#1e2e24" strokeWidth="1.5" markerEnd="url(#arr)" />
               <rect x={(c.x + n.x) / 2 - 28} y={(c.y + n.y) / 2 - 9} width="56" height="18" rx="3" fill="#0d1210" stroke="#1e2e24" strokeWidth="1" />
-              <text x={(c.x + n.x) / 2} y={(c.y + n.y) / 2 + 4} textAnchor="middle" fill="#3a5a48" fontSize="8" fontFamily="monospace">
+              <text x={(c.x + n.x) / 2} y={(c.y + n.y) / 2 + 4} textAnchor="middle" fill="#3a5a48" fontSize="10" fontFamily="monospace">
                 {n.type.includes('Presentation') ? 'IMPORTS' : 'REST/gRPC'}
               </text>
             </g>
@@ -112,8 +112,8 @@ export default function NodeGraph({ tree, repoInfo }: NodeGraphProps) {
           >
             <circle cx={n.x} cy={n.y} r="38" fill={`url(#g${n.id})`} stroke={n.color} strokeWidth="2" />
             <circle cx={n.x} cy={n.y} r="32" fill="#0d1210" />
-            <text x={n.x} y={n.y - 5} textAnchor="middle" fill={n.color} fontSize="9.5" fontWeight="bold" fontFamily="monospace">{n.label}</text>
-            <text x={n.x} y={n.y + 9} textAnchor="middle" fill="#3a5a48" fontSize="8" fontFamily="monospace">{n.count} files</text>
+            <text x={n.x} y={n.y - 5} textAnchor="middle" fill={n.color} fontSize="12" fontWeight="bold" fontFamily="monospace">{n.label}</text>
+            <text x={n.x} y={n.y + 9} textAnchor="middle" fill="#3a5a48" fontSize="10" fontFamily="monospace">{n.count} files</text>
           </g>
         ))}
       </svg>

@@ -2,9 +2,11 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { Settings, Trash2, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useScanPoll } from '@/hooks/useScanPoll'
 import { applyTheme, loadSavedTheme, THEMES, type ThemeId } from '@/lib/theme'
+import { loadSavedUiSize } from '@/lib/uiSize'
 
 // Left-panel tabs
 import ChatPanel from '@/components/workspace/ChatPanel'
@@ -116,6 +118,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   useEffect(() => {
     fetchSession(); fetchStatus(); fetchKb(); fetchSessions()
     loadSavedTheme()
+    loadSavedUiSize()
     const iv = setInterval(() => { fetchSession(); fetchStatus() }, 4000)
     return () => clearInterval(iv)
   }, [sessionId, fetchSession, fetchStatus, fetchKb, fetchSessions])
@@ -693,14 +696,14 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
 
   // ─── Tab button helpers ───────────────────────────────────────────────────────
 
-  const LTAB = (key: LeftTab, label: string) => (
+  const LTAB = (key: LeftTab, label: React.ReactNode) => (
     <button key={key} onClick={() => setLeftTab(key)}
-      className="flex-1 cursor-pointer bg-transparent border-none uppercase tracking-wide font-mono"
+      className="flex-1 cursor-pointer bg-transparent border-none uppercase tracking-wide font-mono flex items-center justify-center gap-1"
       style={{
         padding: '.5rem .3rem',
         borderBottom: leftTab === key ? '2px solid var(--green)' : '2px solid transparent',
         color: leftTab === key ? 'var(--green)' : 'var(--text-3)',
-        fontSize: '.7rem', letterSpacing: '.05em',
+        letterSpacing: '.05em',
       }}>
       {label}
     </button>
@@ -746,8 +749,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             YUMMY <span className="text-2xs font-normal" style={{ color: 'var(--text-3)' }}>.better than your ex</span>
           </span>
           {(isRunning || scanStatus) && (
-            <span className="text-2xs" style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', padding: '2px 8px', borderRadius: 20 }}>
-              ⟳ {scanStatus?.text?.slice(0, 26) || 'running...'}
+            <span className="text-2xs flex items-center gap-1" style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', padding: '2px 8px', borderRadius: 20 }}>
+              <Loader2 size={10} className="animate-spin" />{scanStatus?.text?.slice(0, 26) || 'running...'}
             </span>
           )}
         </div>
@@ -757,7 +760,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           {LTAB('chat',     '⬡ Chat')}
           {LTAB('sessions', '⬡ Session')}
           {LTAB('tracing',  '⬡ Tracing')}
-          {LTAB('settings', '⚙ Settings')}
+          {LTAB('settings', <><Settings size={12}/> Settings</>)}
         </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
@@ -908,7 +911,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           <div className="border rounded-xl" onClick={e => e.stopPropagation()}
             style={{ background: 'var(--bg-1)', borderColor: '#ff664455', padding: '1.75rem 2rem', width: 360, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
             <div className="flex items-center gap-2.5 mb-4">
-              <span className="text-2xl">🗑</span>
+              <Trash2 size={22} style={{ color: '#ff6644' }} />
               <span className="font-display font-extrabold text-lg" style={{ color: '#ff6644' }}>Delete Session</span>
             </div>
             <p className="text-base leading-relaxed mb-2" style={{ color: 'var(--text-2)' }}>

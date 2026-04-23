@@ -1,8 +1,13 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
+import {
+  Sparkles, Copy, Check, Download, Zap, CheckCircle2,
+  Loader2, RotateCcw, Square,
+} from 'lucide-react'
 import AgentCard from './AgentCard'
 import { mdToHtml } from '@/lib/mdToHtml'
+import { api } from '@/lib/api'
 import type { Session, AgentOutputs } from '@/lib/types'
 
 // ─── Skill builder ────────────────────────────────────────────────────────────
@@ -46,77 +51,198 @@ function buildSkillMd(outputs: AgentOutputs): string {
 
 // ─── Skill exporter card ──────────────────────────────────────────────────────
 
-function SkillExporter({ outputs }: { outputs: AgentOutputs }) {
+type ExportFormat = 'chat' | 'skill'
+
+function SkillExporter({ sessionId, outputs }: { sessionId: string; outputs: AgentOutputs }) {
   const skillMd = buildSkillMd(outputs)
+
+  // ── format tab state ──────────────────────────────────────────────────────
+  const [format, setFormat] = useState<ExportFormat>('chat')
+
+  // ── chat-prompt state ─────────────────────────────────────────────────────
+  const [chatPrompt, setChatPrompt] = useState<string | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState<string | null>(null)
+
+  // ── shared copy/download state ────────────────────────────────────────────
   const [copied, setCopied] = useState(false)
 
+  // ── helpers ───────────────────────────────────────────────────────────────
+  const activeContent = format === 'chat' ? chatPrompt : skillMd
+  const downloadName  = format === 'chat' ? 'prompt.md'  : 'SKILL.md'
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    setGenError(null)
+    try {
+      const res = await api.sdlc.exportPrompt(sessionId, 'chat')
+      setChatPrompt(res.prompt)
+    } catch (e) {
+      setGenError((e as Error).message || 'Failed to generate prompt.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(skillMd).then(() => {
+    if (!activeContent) return
+    navigator.clipboard.writeText(activeContent).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
   }
 
   const handleDownload = () => {
-    const blob = new Blob([skillMd], { type: 'text/markdown' })
+    if (!activeContent) return
+    const blob = new Blob([activeContent], { type: 'text/markdown' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = 'SKILL.md'
+    a.download = downloadName
     a.click()
     URL.revokeObjectURL(a.href)
+  }
+
+  // ── shared button styles ──────────────────────────────────────────────────
+  const btnBase: React.CSSProperties = {
+    padding: '.4rem 1rem',
+    borderRadius: '4px',
+    border: '1px solid rgba(170,136,255,.35)',
+    background: 'rgba(170,136,255,.12)',
+    color: '#aa88ff',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4rem',
   }
 
   return (
     <div className="border rounded-lg overflow-hidden"
       style={{ background: 'var(--bg)', borderColor: 'rgba(170,136,255,.35)' }}>
-      {/* Card header */}
+
+      {/* ── Card header ───────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 py-3 border-b"
         style={{ background: 'rgba(170,136,255,.08)', borderColor: 'rgba(170,136,255,.25)' }}>
-        <span className="text-sm font-bold" style={{ color: '#aa88ff' }}>
-          ✦ Export as Agent Skill
+        <span className="text-sm font-bold flex items-center gap-1.5" style={{ color: '#aa88ff' }}>
+          <Sparkles size={14} /> Export as Agent Skill
         </span>
+
+        {/* Copy + Download buttons — only active when there is content */}
         <div className="flex gap-2">
           <button
             onClick={handleCopy}
-            className="border rounded font-mono text-xs font-bold cursor-pointer transition-colors"
+            disabled={!activeContent}
             style={{
-              padding: '.3rem .85rem',
-              background: copied ? 'rgba(80,230,120,.15)' : 'rgba(170,136,255,.12)',
+              ...btnBase,
+              background: copied ? 'rgba(80,230,120,.15)' : btnBase.background,
               borderColor: copied ? 'rgba(80,230,120,.4)' : 'rgba(170,136,255,.35)',
               color: copied ? 'var(--green)' : '#aa88ff',
+              opacity: activeContent ? 1 : 0.4,
+              cursor: activeContent ? 'pointer' : 'not-allowed',
             }}
           >
-            {copied ? '✓ Copied!' : '⧉ Copy prompt'}
+            {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy</>}
           </button>
           <button
             onClick={handleDownload}
-            className="border rounded font-mono text-xs font-bold cursor-pointer transition-colors"
+            disabled={!activeContent}
             style={{
-              padding: '.3rem .85rem',
-              background: 'rgba(170,136,255,.12)',
-              borderColor: 'rgba(170,136,255,.35)',
-              color: '#aa88ff',
+              ...btnBase,
+              opacity: activeContent ? 1 : 0.4,
+              cursor: activeContent ? 'pointer' : 'not-allowed',
             }}
           >
-            ↓ Download SKILL.md
+            <Download size={13} /> Download {downloadName}
           </button>
         </div>
       </div>
-      {/* SKILL.md preview */}
-      <pre
-        className="overflow-auto font-mono text-xs leading-relaxed"
-        style={{
-          maxHeight: 320,
-          margin: 0,
-          padding: '1rem 1.25rem',
-          background: 'var(--bg-1)',
-          color: 'var(--text-2)',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {skillMd}
-      </pre>
+
+      {/* ── Format tabs ───────────────────────────────────────────────────── */}
+      <div className="flex border-b" style={{ borderColor: 'rgba(170,136,255,.15)' }}>
+        {(['chat', 'skill'] as ExportFormat[]).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFormat(f)}
+            className="px-5 py-3 font-mono text-xs font-bold transition-colors"
+            style={{
+              background: format === f ? 'rgba(170,136,255,.12)' : 'transparent',
+              color: format === f ? '#aa88ff' : 'var(--text-3)',
+              borderBottom: format === f ? '2px solid #aa88ff' : '2px solid transparent',
+              cursor: 'pointer',
+            }}
+          >
+            {f === 'chat' ? 'Chat Prompt' : 'SKILL.md'}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Chat Prompt tab ───────────────────────────────────────────────── */}
+      {format === 'chat' && (
+        <>
+          {/* Not yet generated */}
+          {!chatPrompt && !generating && (
+            <div className="flex flex-col items-center gap-3 py-8 px-5">
+              <p className="text-xs text-center" style={{ color: 'var(--text-3)', maxWidth: 360 }}>
+                Generate a distilled implementation prompt — ready to paste into Claude, ChatGPT, Cursor, or any coding assistant.
+              </p>
+              {genError && (
+                <p className="text-xs font-mono" style={{ color: 'var(--red)' }}>{genError}</p>
+              )}
+               <button onClick={handleGenerate} style={{ ...btnBase, padding: '.45rem 1.4rem' }}>
+                 <Sparkles size={14} /> Generate implementation prompt
+               </button>
+            </div>
+          )}
+
+          {/* Loading */}
+          {generating && (
+            <div className="flex items-center justify-center gap-2 py-8 px-5">
+              <Loader2 size={14} className="animate-spin" style={{ color: 'var(--text-3)' }} />
+              <span className="text-xs font-mono" style={{ color: 'var(--text-3)' }}>
+                Distilling pipeline outputs…
+              </span>
+            </div>
+          )}
+
+          {/* Result */}
+          {chatPrompt && !generating && (
+            <pre
+              className="overflow-auto font-mono text-xs leading-relaxed"
+              style={{
+                maxHeight: 320,
+                margin: 0,
+                padding: '1rem 1.25rem',
+                background: 'var(--bg-1)',
+                color: 'var(--text-2)',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {chatPrompt}
+            </pre>
+          )}
+        </>
+      )}
+
+      {/* ── SKILL.md tab ──────────────────────────────────────────────────── */}
+      {format === 'skill' && (
+        <pre
+          className="overflow-auto font-mono text-xs leading-relaxed"
+          style={{
+            maxHeight: 320,
+            margin: 0,
+            padding: '1rem 1.25rem',
+            background: 'var(--bg-1)',
+            color: 'var(--text-2)',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {skillMd}
+        </pre>
+      )}
     </div>
   )
 }
@@ -198,8 +324,8 @@ export default function SdlcPanel({
     <div ref={containerRef} className="h-full overflow-auto p-6">
       {/* Header row with title + stop button */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-display font-extrabold text-xl" style={{ color: 'var(--amber)' }}>
-          ⚡ Multi-Agent SDLC Brainstorm
+        <h2 className="font-display font-extrabold text-xl flex items-center gap-2" style={{ color: 'var(--amber)' }}>
+          <Zap size={18} /> Multi-Agent SDLC Brainstorm
         </h2>
         {workflowRunning && (
           <button
@@ -214,7 +340,7 @@ export default function SdlcPanel({
             }}
             title="Stop the running pipeline (type /stop in terminal)"
           >
-            ⏹ Stop Pipeline
+            <Square size={12} /> Stop Pipeline
           </button>
         )}
       </div>
@@ -273,8 +399,8 @@ export default function SdlcPanel({
                     ) : streamingAgent === key ? (
                       <AutoScrollDiv html={mdToHtml(streamingText)} maxHeight={280} />
                     ) : (
-                      <span className="text-xs" style={{ color: 'var(--text-3)' }}>
-                        {state === 'running_rest' ? '⟳ Processing...' : '—'}
+                      <span className="text-xs flex items-center gap-1" style={{ color: 'var(--text-3)' }}>
+                        {state === 'running_rest' ? <><Loader2 size={11} className="animate-spin" /> Processing...</> : '—'}
                       </span>
                     )}
                   </div>
@@ -290,7 +416,7 @@ export default function SdlcPanel({
               style={{ background: 'var(--green-mute)', borderColor: 'var(--green-dim)', color: 'var(--green)' }}>
               🎉 SDLC Pipeline complete! Check the JIRA Kanban for the backlog.
             </div>
-            <SkillExporter outputs={outputs} />
+            <SkillExporter sessionId={session.id} outputs={outputs} />
           </div>
         )}
 
@@ -298,8 +424,8 @@ export default function SdlcPanel({
         {canRestore && (
           <div className="border rounded-lg px-5 py-4"
             style={{ background: 'rgba(255,179,0,.04)', borderColor: 'rgba(255,179,0,.25)' }}>
-            <div className="text-xs font-bold mb-3" style={{ color: 'var(--amber)' }}>
-              ↩ Restore checkpoint
+            <div className="text-xs font-bold mb-3 flex items-center gap-1.5" style={{ color: 'var(--amber)' }}>
+              <RotateCcw size={12} /> Restore checkpoint
             </div>
             <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>
               Roll back to a completed stage and resume from there.
@@ -318,7 +444,7 @@ export default function SdlcPanel({
                     color: 'var(--green)',
                   }}
                 >
-                  ✓ BA
+                  <Check size={11} /> BA
                 </button>
               )}
               {outputs.sa && (
@@ -333,7 +459,7 @@ export default function SdlcPanel({
                     color: '#00aaff',
                   }}
                 >
-                  ✓ SA
+                  <Check size={11} /> SA
                 </button>
               )}
               {outputs.dev_lead && (
@@ -348,7 +474,7 @@ export default function SdlcPanel({
                     color: 'var(--amber)',
                   }}
                 >
-                  ✓ Dev Lead
+                  <Check size={11} /> Dev Lead
                 </button>
               )}
             </div>

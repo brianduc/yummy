@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
+import { Loader2, Check } from 'lucide-react'
 import { mdToHtml } from '@/lib/mdToHtml'
 
 interface AgentCardProps {
@@ -41,13 +42,15 @@ export default function AgentCard({
 
         <div className="p-5">
           {loading ? (
-            <span className="text-sm" style={{ color: 'var(--amber)' }}>⟳ AI is processing...</span>
+            <span className="text-sm flex items-center gap-1.5" style={{ color: 'var(--amber)' }}>
+              <Loader2 size={14} className="animate-spin" /> AI is processing...
+            </span>
           ) : editable ? (
             <textarea
               value={editValue}
               onChange={e => onEditChange(e.target.value)}
               className="w-full font-mono text-base resize-y rounded"
-              style={{ minHeight: 280, background: 'var(--bg-1)', border: '1px solid var(--border)', color: 'var(--text)', padding: '.75rem', borderRadius: 6, fontSize: '.82rem', lineHeight: 1.7 }}
+              style={{ minHeight: 280, background: 'var(--bg-1)', border: '1px solid var(--border)', color: 'var(--text)', padding: '.75rem', borderRadius: 6, lineHeight: 1.7 }}
             />
           ) : (
             content && (
@@ -60,10 +63,10 @@ export default function AgentCard({
               <button
                 onClick={onApprove}
                 disabled={busy}
-                className="font-bold text-base cursor-pointer rounded"
-                style={{ background: approveColor, color: 'var(--bg)', border: 'none', padding: '.45rem 1.2rem', borderRadius: 6, fontSize: '.82rem', opacity: busy ? .6 : 1 }}
+                className="font-bold text-base cursor-pointer rounded flex items-center gap-1.5"
+                style={{ background: approveColor, color: 'var(--bg)', border: 'none', padding: '.45rem 1.2rem', borderRadius: 6, opacity: busy ? .6 : 1 }}
               >
-                ✓ {approveLabel}
+                <Check size={14} /> {approveLabel}
               </button>
             </div>
           )}
