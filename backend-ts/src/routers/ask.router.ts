@@ -112,7 +112,16 @@ async function buildRagPrompt(
       retrieved = result.chunks;
       retrievalTrace = result.trace;
       if (retrieved.length > 0) {
-        retrievalMethod = result.trace.lexicalOk ? 'rag-hybrid' : 'rag-vector-only';
+        // Label by which legs actually contributed. The frontend uses this
+        // to colour the badge: rag-hybrid (green) > rag-vector-only / rag-
+        // lexical-only / rag-path-only (amber) > kb-insights-fallback (red).
+        const t = result.trace;
+        const legs = [t.vectorOk && t.vectorHits > 0, t.lexicalOk && t.lexicalHits > 0, t.pathOk && t.pathHits > 0].filter(Boolean).length;
+        if (legs >= 2) retrievalMethod = 'rag-hybrid';
+        else if (t.vectorOk && t.vectorHits > 0) retrievalMethod = 'rag-vector-only';
+        else if (t.lexicalOk && t.lexicalHits > 0) retrievalMethod = 'rag-lexical-only';
+        else if (t.pathOk && t.pathHits > 0) retrievalMethod = 'rag-path-only';
+        else retrievalMethod = 'rag-degraded';
       }
     } catch {
       // Soft-fail; we'll fall through to kb.insights below.

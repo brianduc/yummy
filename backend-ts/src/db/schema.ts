@@ -93,6 +93,11 @@ export const scanStatus = sqliteTable('scan_status', {
   error: integer('error', { mode: 'boolean' }).notNull().default(false),
   // Track whether a status row has been initialized — Python uses None as "no scan".
   initialized: integer('initialized', { mode: 'boolean' }).notNull().default(false),
+  // Code-intel (gitnexus + embeddings) health — separate from the overall scan
+  // error flag because legacy AI-insights can succeed even when RAG is down.
+  // codeIntelOk = NULL means "scan never reached the code-intel phase".
+  codeIntelOk: integer('code_intel_ok', { mode: 'boolean' }),
+  codeIntelMessage: text('code_intel_message').notNull().default(''),
 });
 
 // ─── Request logs (newest-first via id DESC) ─────────────
@@ -124,6 +129,9 @@ export const providerConfig = sqliteTable('provider_config', {
   bedrockSecretKey: text('bedrock_secret_key').notNull().default(''),
   bedrockRegion: text('bedrock_region').notNull().default(''),
   bedrockModel: text('bedrock_model').notNull().default(''),
+  // OpenAI rate-limiter overrides — settable at runtime via /config/rate-limits
+  openaiPerRequestMax: integer('openai_per_request_max').notNull().default(150_000),
+  openaiTpmLimit: integer('openai_tpm_limit').notNull().default(180_000),
 });
 
 // ─── Inferred row types ──────────────────────────────────

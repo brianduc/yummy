@@ -32,14 +32,12 @@ function model(): string {
 }
 
 function limiterFor(modelName: string) {
-  // Apply env-driven defaults to the limiter on first use per model.
-  // configureDefaults() is process-wide; calling it repeatedly with the same
-  // factory is idempotent because the registry rebuilds on each call.
+  // Read rate-limit values from runtimeConfig so changes saved via
+  // /config/rate-limits take effect immediately without a restart.
+  // Fall back to env values when runtimeConfig hasn't been overridden.
   const l = limiters.forChat(modelName);
-  // Mutate cfg in place so subsequent acquires use the right values without
-  // resetting the sliding window (which a full re-construct would do).
-  l.cfg.tpm = env.OPENAI_TPM_LIMIT;
-  l.cfg.perRequestMax = env.OPENAI_PER_REQUEST_MAX;
+  l.cfg.tpm = runtimeConfig.openai_tpm_limit;
+  l.cfg.perRequestMax = runtimeConfig.openai_per_request_max;
   l.cfg.retryMax = env.OPENAI_RETRY_MAX;
   if (l.cfg.perRequestMax > l.cfg.tpm) l.cfg.perRequestMax = l.cfg.tpm;
   return l;

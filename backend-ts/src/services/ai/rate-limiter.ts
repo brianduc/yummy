@@ -92,7 +92,7 @@ export class TpmLimiter {
   ) {
     this.cfg = {
       tpm: cfg.tpm ?? 180_000,
-      perRequestMax: cfg.perRequestMax ?? 150_000,
+      perRequestMax: cfg.perRequestMax ?? 450_000,
       retryMax: cfg.retryMax ?? 5,
       retryBaseMs: cfg.retryBaseMs ?? 1_000,
     };

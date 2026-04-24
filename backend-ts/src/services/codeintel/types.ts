@@ -7,7 +7,7 @@
  * A "Chunk" is the embedding-ready unit produced by the Chunker.
  */
 
-export type ChunkSource = 'code' | 'doc' | 'symbol';
+export type ChunkSource = 'code' | 'doc' | 'symbol' | 'file';
 
 export interface SymbolInput {
   /** Stable gitnexus UID (e.g. "Function:src/foo.ts:bar"). */

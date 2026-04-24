@@ -11,6 +11,17 @@ export interface ScanStatus {
   text: string;
   progress: number;
   error: boolean;
+  /**
+   * Code-intel (gitnexus + embeddings) health.
+   *   - `null`  : scan hasn't reached the code-intel phase yet (or never).
+   *   - `true`  : RAG is fully operational (chunks + graph populated).
+   *   - `false` : code-intel failed — `/ask` is in degraded `kb-insights`-only mode.
+   * Kept distinct from `error` so legacy AI-insights success doesn't mask an
+   * RAG outage (and vice versa).
+   */
+  codeIntelOk?: boolean | null;
+  /** Human-readable explanation when codeIntelOk === false. */
+  codeIntelMessage?: string;
 }
 
 const ROW_ID = 1;
@@ -24,6 +35,8 @@ export const scanStatusRepo = {
       text: row.text,
       progress: row.progress,
       error: row.error,
+      codeIntelOk: row.codeIntelOk ?? null,
+      codeIntelMessage: row.codeIntelMessage ?? '',
     };
   },
 
@@ -35,6 +48,8 @@ export const scanStatusRepo = {
       progress: s.progress,
       error: s.error,
       initialized: true,
+      codeIntelOk: s.codeIntelOk ?? null,
+      codeIntelMessage: s.codeIntelMessage ?? '',
     };
     const existing = db.select().from(scanStatus).where(eq(scanStatus.id, ROW_ID)).get();
     if (existing) {
@@ -51,6 +66,10 @@ export const scanStatusRepo = {
       text: patch.text ?? cur?.text ?? '',
       progress: patch.progress ?? cur?.progress ?? 0,
       error: patch.error ?? cur?.error ?? false,
+      // For nullable codeIntelOk we must distinguish "explicitly null" from
+      // "absent in patch" — `in` keeps an explicit `null` reset working.
+      codeIntelOk: 'codeIntelOk' in patch ? patch.codeIntelOk ?? null : cur?.codeIntelOk ?? null,
+      codeIntelMessage: patch.codeIntelMessage ?? cur?.codeIntelMessage ?? '',
     });
   },
 

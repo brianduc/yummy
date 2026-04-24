@@ -46,6 +46,8 @@ export const providerConfigRepo = {
       bedrockSecretKey: cfg.bedrock_secret_key,
       bedrockRegion: cfg.bedrock_region,
       bedrockModel: cfg.bedrock_model,
+      openaiPerRequestMax: cfg.openai_per_request_max,
+      openaiTpmLimit: cfg.openai_tpm_limit,
     };
 
     try {

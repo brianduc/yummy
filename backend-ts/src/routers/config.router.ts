@@ -23,6 +23,7 @@ import {
   OllamaConfigSchema,
   OpenAIConfigSchema,
   ProviderSwitchSchema,
+  RateLimitsSchema,
   SetupRequestSchema,
   SetupResponseSchema,
 } from '../schemas/config.schema.js';
@@ -215,6 +216,41 @@ configRouter.openapi(
   },
 );
 
+// ─── POST /config/rate-limits ────────────────────────────
+configRouter.openapi(
+  createRoute({
+    method: 'post',
+    path: '/config/rate-limits',
+    tags: ['Config'],
+    request: { body: { content: json(RateLimitsSchema) } },
+    responses: {
+      200: {
+        content: json(z.object({
+          status: z.string(),
+          openai_per_request_max: z.number().int(),
+          openai_tpm_limit: z.number().int(),
+        })),
+        description: 'OK',
+      },
+    },
+  }),
+  (c) => {
+    const cfg = c.req.valid('json');
+    if (cfg.openai_per_request_max != null) {
+      runtimeConfig.openai_per_request_max = cfg.openai_per_request_max;
+    }
+    if (cfg.openai_tpm_limit != null) {
+      runtimeConfig.openai_tpm_limit = cfg.openai_tpm_limit;
+    }
+    providerConfigRepo.upsert(runtimeConfig);
+    return c.json({
+      status: 'ok',
+      openai_per_request_max: runtimeConfig.openai_per_request_max,
+      openai_tpm_limit: runtimeConfig.openai_tpm_limit,
+    });
+  },
+);
+
 // ─── GET /config/status ──────────────────────────────────
 function keySource(envVar: string, configKey: keyof typeof runtimeConfig): 'env' | 'ui' | 'none' {
   const value = runtimeConfig[configKey];
@@ -272,10 +308,19 @@ configRouter.openapi(
       kb_has_summary: hasSummary,
       total_sessions: totalSessions,
       scan_status: scan
-        ? { running: scan.running, text: scan.text, progress: scan.progress, error: scan.error }
+        ? {
+            running: scan.running,
+            text: scan.text,
+            progress: scan.progress,
+            error: scan.error,
+            code_intel_ok: scan.codeIntelOk ?? null,
+            code_intel_message: scan.codeIntelMessage ?? '',
+          }
         : null,
       total_requests: totalRequests,
       total_cost_usd: totalCost,
+      openai_per_request_max: runtimeConfig.openai_per_request_max,
+      openai_tpm_limit: runtimeConfig.openai_tpm_limit,
     });
   },
 );

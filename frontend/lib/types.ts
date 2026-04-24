@@ -32,6 +32,30 @@ export interface RAGTrace {
   intent: string
   retrieval_method: string
   source_chunks: { files: string[]; summary_preview: string }[]
+  /** Confidence on the intent classification, 0..1. */
+  intent_confidence?: number
+  /** Per-leg retrieval stats — present only when hybrid retrieval ran. */
+  retrieval_trace?: RetrievalTrace
+}
+
+/**
+ * Mirrors backend `RetrieveTrace` (see backend-ts/src/services/codeintel/
+ * retrieve.service.ts). Three legs run in parallel and are fused via RRF;
+ * `*Ok` flags reveal which legs actually contributed vs which were
+ * skipped/errored. Used to render the colored RAG-mode badge.
+ */
+export interface RetrievalTrace {
+  candidateCount: number
+  vectorHits: number
+  lexicalHits: number
+  pathHits: number
+  vectorOk: boolean
+  lexicalOk: boolean
+  pathOk: boolean
+  vectorError?: string
+  lexicalError?: string
+  pathError?: string
+  returned: number
 }
 
 export interface AgentOutputs {
@@ -120,6 +144,9 @@ export interface SystemStatus {
   scan_status: ScanStatus | null
   total_requests: number
   total_cost_usd: number
+  // OpenAI rate-limiter settings
+  openai_per_request_max?: number
+  openai_tpm_limit?: number
 }
 
 export interface RequestLog {

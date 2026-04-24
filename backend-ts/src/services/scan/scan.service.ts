@@ -14,11 +14,18 @@
  * Poll status via GET /kb/scan/status (handled by kb router).
  */
 import { extname } from 'node:path';
-import { ALLOWED_EXTENSIONS, SCAN_CHUNK_BYTES } from '../../config/constants.js';
+import {
+  ALLOWED_EXTENSIONS,
+  ARCHITECT_BATCH_TOKENS,
+  ARCHITECT_FINAL_TOKENS,
+  SCAN_CHUNK_TOKENS,
+} from '../../config/constants.js';
+import { currentChatModel } from '../../config/runtime.js';
 import { kbRepo } from '../../db/repositories/kb.repo.js';
 import { repoRepo } from '../../db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../db/repositories/scan-status.repo.js';
 import { callAI } from '../ai/dispatcher.js';
+import { countTokens } from '../ai/token-counter.js';
 import { indexRepo } from '../codeintel/index.service.js';
 import { getRepoInfo, getRepoTree, githubRaw, type TreeEntry } from '../github/github.service.js';
 
@@ -49,6 +56,76 @@ function isAllowedFile(entry: TreeEntry): boolean {
   if (entry.path.includes('.git')) return false;
   const ext = extname(entry.path).toLowerCase();
   return ALLOWED_EXTENSIONS.has(ext);
+}
+
+/**
+ * Two-pass hierarchical summarization to stay within the per-request token cap.
+ *
+ * Pass 1 — Group `summaries` into batches of ≤ ARCHITECT_BATCH_TOKENS tokens.
+ *           Call ARCHITECT on each batch to produce intermediate meta-summaries.
+ * Pass 2 — Join all meta-summaries (expected to fit in ARCHITECT_FINAL_TOKENS)
+ *           and call ARCHITECT once for the final structured project wiki.
+ *
+ * If all summaries already fit within a single batch, only one LLM call is
+ * made and the final synthesis is skipped.
+ *
+ * If meta-summaries somehow still exceed ARCHITECT_FINAL_TOKENS (pathological
+ * case: very large repo with many long summaries), the function recurses once
+ * more to further reduce before the final call.
+ */
+async function hierarchicalSummarize(
+  summaries: string[],
+  repoName: string,
+  onProgress?: (text: string) => void,
+): Promise<string> {
+  const model = currentChatModel();
+
+  const batchInstruction =
+    'You are a senior software architect. ' +
+    'Condense the following technical summaries into a single concise meta-summary. ' +
+    'Preserve all key component names, data flows, and API contracts. ' +
+    'Do NOT wrap the output in a Markdown code block.';
+
+  // ── Pass 1: group insights into ≤ ARCHITECT_BATCH_TOKENS chunks ──
+  const metaSummaries: string[] = [];
+  let batch: string[] = [];
+  let batchTokens = 0;
+
+  for (const summary of summaries) {
+    const summaryTokens = countTokens(model, summary);
+    if (batchTokens + summaryTokens > ARCHITECT_BATCH_TOKENS && batch.length > 0) {
+      onProgress?.(`Hierarchical summarize: condensing batch ${metaSummaries.length + 1}...`);
+      const meta = await callAI('ARCHITECT', batch.join('\n\n'), batchInstruction);
+      metaSummaries.push(meta);
+      batch = [];
+      batchTokens = 0;
+    }
+    batch.push(summary);
+    batchTokens += summaryTokens;
+  }
+  // Flush the last (or only) batch
+  if (batch.length > 0) {
+    onProgress?.(`Hierarchical summarize: condensing batch ${metaSummaries.length + 1}...`);
+    const meta = await callAI('ARCHITECT', batch.join('\n\n'), batchInstruction);
+    metaSummaries.push(meta);
+  }
+
+  // ── Pass 2: final synthesis ──
+  const finalInput = metaSummaries.join('\n\n');
+  const finalTokens = countTokens(model, finalInput);
+
+  // Safety guard: if meta-summaries still exceed the cap, recurse once more.
+  if (finalTokens > ARCHITECT_FINAL_TOKENS) {
+    onProgress?.('Hierarchical summarize: reducing meta-summaries further...');
+    return hierarchicalSummarize(metaSummaries, repoName, onProgress);
+  }
+
+  onProgress?.('Writing Project Wiki (final synthesis)...');
+  return callAI(
+    'ARCHITECT',
+    `Based on these technical summaries:\n${finalInput}`,
+    architectInstruction(repoName),
+  );
 }
 
 /**
@@ -135,8 +212,9 @@ export async function runScan(): Promise<void> {
 
       kbRepo.updateTreeStatus(file.path, 'done');
 
-      // Flush chunk if large enough or last file
-      const chunkReady = currentChunk.length >= SCAN_CHUNK_BYTES || i === total - 1;
+      // Flush chunk when token budget is reached or on the last file.
+      const chunkTokens = countTokens(currentChatModel(), currentChunk);
+      const chunkReady = chunkTokens >= SCAN_CHUNK_TOKENS || i === total - 1;
       if (chunkReady && currentChunk.trim() && filesInChunk.length > 0) {
         scanStatusRepo.patch({
           text:
@@ -163,23 +241,19 @@ export async function runScan(): Promise<void> {
       }
     }
 
-    // ── Step 5: project wiki ──
+    // ── Step 5: project wiki (hierarchical summarization) ──
     scanStatusRepo.set({
       running: true,
-      text: 'Writing Project Wiki (Project Summary)...',
+      text: 'Writing Project Wiki (hierarchical summarize)...',
       progress: 90,
       error: false,
     });
 
-    const allInsightsStr = kbRepo
-      .listInsights()
-      .map((ins) => ins.summary)
-      .join('\n\n');
-
-    const projectSummary = await callAI(
-      'ARCHITECT',
-      `Based on these technical summaries:\n${allInsightsStr}`,
-      architectInstruction(ri.repo),
+    const allSummaries = kbRepo.listInsights().map((ins) => ins.summary);
+    const projectSummary = await hierarchicalSummarize(
+      allSummaries,
+      ri.repo,
+      (text) => scanStatusRepo.patch({ text }),
     );
 
     kbRepo.setProjectSummary(projectSummary);
@@ -187,14 +261,20 @@ export async function runScan(): Promise<void> {
     // ── Step 6: code-intel (gitnexus + embeddings) ──
     // Additive: runs alongside the legacy AI insights pipeline. Failure here
     // does NOT fail the overall scan — `kb.insights` + `projectSummary` are
-    // already persisted and `/ask` continues to work off them.
+    // already persisted and `/ask` continues to work off them — but we now
+    // surface the failure prominently via `codeIntelOk=false` so the UI can
+    // tell the user RAG is in degraded mode (was silently swallowed before).
     let codeIntelNote = '';
+    let codeIntelOk: boolean | null = null;
+    let codeIntelMessage = '';
     try {
       scanStatusRepo.set({
         running: true,
         text: 'Code intel: cloning repo...',
         progress: 95,
         error: false,
+        codeIntelOk: null,
+        codeIntelMessage: '',
       });
 
       const result = await indexRepo({
@@ -221,15 +301,26 @@ export async function runScan(): Promise<void> {
 
       const g = result.graphStats;
       const s = result.symbolStats;
+      const fileFallback = result.fileFallbackChunks ?? 0;
       codeIntelNote =
         ` Code graph: ${g.nodes ?? 0} nodes, ${g.edges ?? 0} edges, ` +
         `${g.processes ?? 0} processes. ` +
         `Symbols: ${s.totalSymbols} indexed (${s.skipped} skipped). ` +
         `Embeddings: ${result.embedStats.inserted} inserted, ` +
-        `${result.embedStats.reused} reused.`;
+        `${result.embedStats.reused} reused` +
+        (fileFallback > 0 ? `, ${fileFallback} file-fallback` : '') +
+        '.';
+      codeIntelOk = true;
+      codeIntelMessage = '';
     } catch (codeIntelErr) {
-      // Surface but don't fail — legacy insights remain valid.
-      codeIntelNote = ` Code-intel skipped: ${(codeIntelErr as Error).message}`;
+      // Surface the failure loudly. Legacy insights remain valid and `/ask`
+      // continues to work in degraded mode — but the user MUST know RAG is
+      // off so they don't blame the LLM for vague answers.
+      const msg = (codeIntelErr as Error).message;
+      codeIntelNote = ` ⚠ RAG disabled — code-intel failed: ${msg}`;
+      codeIntelOk = false;
+      codeIntelMessage = msg;
+      console.error('[scan] Code-intel pipeline failed:', codeIntelErr);
     }
 
     scanStatusRepo.set({
@@ -238,7 +329,12 @@ export async function runScan(): Promise<void> {
         `Scan complete. Indexed ${total} files, generated ${insightsCount} insights.` +
         codeIntelNote,
       progress: 100,
+      // We intentionally do NOT set the top-level `error` flag on code-intel
+      // failure — the AI-insights pipeline succeeded. The UI uses
+      // `codeIntelOk` for the RAG-specific banner.
       error: false,
+      codeIntelOk,
+      codeIntelMessage,
     });
   } catch (e) {
     scanStatusRepo.set({

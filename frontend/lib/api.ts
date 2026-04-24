@@ -86,6 +86,12 @@ export const api = {
     setBedrock: (access_key: string, secret_key: string, region?: string, model?: string) =>
       request('/config/bedrock', { method: 'POST', body: JSON.stringify({ access_key, secret_key, region, model }) }),
 
+    setRateLimits: (openai_per_request_max?: number, openai_tpm_limit?: number) =>
+      request('/config/rate-limits', {
+        method: 'POST',
+        body: JSON.stringify({ openai_per_request_max, openai_tpm_limit }),
+      }),
+
     status: () => request('/config/status'),
   },
 

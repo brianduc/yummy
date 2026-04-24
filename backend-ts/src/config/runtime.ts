@@ -23,6 +23,10 @@ export interface RuntimeConfig {
   bedrock_region: string;
   bedrock_model: string;
   provider: Provider;
+  /** OpenAI rate-limiter: hard ceiling per single request (tokens). */
+  openai_per_request_max: number;
+  /** OpenAI rate-limiter: rolling 60s TPM cap. */
+  openai_tpm_limit: number;
 }
 
 // Step 1: seed from env (same as before — provides defaults / fallback)
@@ -40,6 +44,8 @@ export const runtimeConfig: RuntimeConfig = {
   bedrock_region: env.AWS_REGION,
   bedrock_model: env.BEDROCK_MODEL,
   provider: env.AI_PROVIDER,
+  openai_per_request_max: env.OPENAI_PER_REQUEST_MAX,
+  openai_tpm_limit: env.OPENAI_TPM_LIMIT,
 };
 
 // Step 2: overwrite with DB-persisted values where non-empty (DB wins over env).
@@ -59,9 +65,21 @@ if (_saved) {
   if (_saved.bedrockSecretKey) runtimeConfig.bedrock_secret_key = _saved.bedrockSecretKey;
   if (_saved.bedrockRegion) runtimeConfig.bedrock_region = _saved.bedrockRegion;
   if (_saved.bedrockModel) runtimeConfig.bedrock_model = _saved.bedrockModel;
+  if (_saved.openaiPerRequestMax) runtimeConfig.openai_per_request_max = _saved.openaiPerRequestMax;
+  if (_saved.openaiTpmLimit) runtimeConfig.openai_tpm_limit = _saved.openaiTpmLimit;
 }
 
 /** Snapshot of env-time defaults — used by /config/status `_key_source` detection. */
 export const envDefaults: Readonly<RuntimeConfig> = Object.freeze({
   ...runtimeConfig,
 });
+
+/**
+ * Returns the active OpenAI chat model name.
+ * Used by scan.service.ts for token counting without importing from openai.ts.
+ * Falls back to 'gpt-5' so encodingForModel() selects o200k_base (the correct
+ * tokenizer for all gpt-5* variants).
+ */
+export function currentChatModel(): string {
+  return runtimeConfig.openai_model || 'gpt-5';
+}

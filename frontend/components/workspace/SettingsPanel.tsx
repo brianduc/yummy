@@ -148,6 +148,7 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
             <option value="gpt-5-mini">gpt-5-mini — Fast · Budget</option>
             <option value="gpt-5-nano">gpt-5-nano — Cheapest</option>
             <option value="gpt-5.4-nano-2026-03-17">gpt-5.4-nano-2026-03-17 — Cheapest</option>
+            <option value="gpt-5-mini-2025-08-07">gpt-5-mini-2025-08-07 — Cheapest</option>
           </optgroup>
           <optgroup label="GPT-4.1 (long context)">
             <option value="gpt-4.1">gpt-4.1 — 1M ctx</option>
@@ -171,6 +172,7 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
         disabled={!key && !hasKey} saving={saving}
         onClick={() => onSave(async () => {
           if (key) await api.config.setOpenAI(key, model || undefined)
+          else if (model) await api.config.setOpenAI('', model)
           await api.config.setProvider('openai')
         })}
       />
@@ -313,6 +315,7 @@ function CopilotForm({ status, onSave, saving }: { status: SystemStatus | null; 
         disabled={!token && !hasKey} saving={saving}
         onClick={() => onSave(async () => {
           if (token) await api.config.setCopilot(token, model || undefined)
+          else if (model) await api.config.setCopilot('', model)
           await api.config.setProvider('copilot')
         })}
       />
@@ -413,6 +416,106 @@ function SaveButton({ color, bg, border, disabled, saving, onClick }: {
     >
       {saving ? <><Loader2 size={12} className="animate-spin" /> Saving...</> : <><Check size={12} /> Save & Activate</>}
     </button>
+  )
+}
+
+// ─── Rate Limits section ─────────────────────────────────────────────────────
+
+function RateLimitsSection({ status, onRefresh }: { status: SystemStatus | null; onRefresh: () => Promise<void> }) {
+  const [tpr, setTpr] = useState<string>(String(status?.openai_per_request_max ?? 150000))
+  const [tpm, setTpm] = useState<string>(String(status?.openai_tpm_limit ?? 180000))
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  // Sync when status loads
+  useEffect(() => {
+    if (status?.openai_per_request_max != null) setTpr(String(status.openai_per_request_max))
+    if (status?.openai_tpm_limit != null) setTpm(String(status.openai_tpm_limit))
+  }, [status?.openai_per_request_max, status?.openai_tpm_limit])
+
+  const handleSave = async () => {
+    const tprVal = parseInt(tpr, 10)
+    const tpmVal = parseInt(tpm, 10)
+    if (!Number.isFinite(tprVal) || tprVal <= 0 || !Number.isFinite(tpmVal) || tpmVal <= 0) {
+      setMsg({ ok: false, text: 'Both values must be positive integers.' })
+      return
+    }
+    setSaving(true); setMsg(null)
+    try {
+      await api.config.setRateLimits(tprVal, tpmVal)
+      await onRefresh()
+      setMsg({ ok: true, text: 'Rate limits saved.' })
+    } catch (e: any) {
+      setMsg({ ok: false, text: e.message })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <section className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      <div className="px-3 py-2 border-b text-2xs uppercase tracking-widest font-bold flex items-center gap-2"
+        style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-3)' }}>
+        ⬡ Rate Limits
+      </div>
+      <div className="p-3 flex flex-col gap-3" style={{ background: 'var(--bg-1)' }}>
+        <p className="text-2xs" style={{ color: 'var(--text-3)' }}>
+          Controls the OpenAI provider token budget. Other providers are unaffected.
+        </p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-1">
+            <FieldLabel>Tokens / request</FieldLabel>
+            <input
+              type="number" min={1} step={1000}
+              className={inputCls} style={inputStyle('#10b981')}
+              value={tpr}
+              onChange={e => setTpr(e.target.value)}
+            />
+            <span className="text-2xs" style={{ color: 'var(--text-3)' }}>
+              Hard ceiling per single request
+            </span>
+          </label>
+          <label className="flex flex-col gap-1">
+            <FieldLabel>Tokens / minute</FieldLabel>
+            <input
+              type="number" min={1} step={10000}
+              className={inputCls} style={inputStyle('#10b981')}
+              value={tpm}
+              onChange={e => setTpm(e.target.value)}
+            />
+            <span className="text-2xs" style={{ color: 'var(--text-3)' }}>
+              Rolling 60s TPM cap
+            </span>
+          </label>
+        </div>
+
+        {msg && (
+          <span className="text-2xs px-2 py-0.5 rounded inline-flex items-center gap-1 w-fit"
+            style={{
+              color: msg.ok ? 'var(--green)' : 'var(--red)',
+              background: msg.ok ? 'var(--green-mute)' : 'rgba(255,68,68,.1)',
+              border: `1px solid ${msg.ok ? 'var(--green-dim)' : 'var(--red-dim)'}`,
+            }}>
+            {msg.ok ? <Check size={10} /> : <X size={10} />} {msg.text}
+          </span>
+        )}
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full py-2 rounded text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+          style={{
+            background: 'rgba(16,185,129,.1)',
+            color: '#10b981',
+            border: '1px solid rgba(16,185,129,.35)',
+            opacity: saving ? 0.45 : 1,
+          }}
+        >
+          {saving ? <><Loader2 size={12} className="animate-spin" /> Saving...</> : <><Check size={12} /> Save Rate Limits</>}
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -596,6 +699,9 @@ export default function SettingsPanel({ status, onStatusRefresh }: SettingsPanel
             <GitHubForm status={status} onSave={handleSave} saving={saving} />
           </div>
         </section>
+
+        {/* ── Rate Limits ── */}
+        <RateLimitsSection status={status} onRefresh={onStatusRefresh} />
 
         {/* ── Preferences ── */}
         <PreferencesSection />

@@ -100,7 +100,14 @@ describe('repoRepo + scanStatusRepo + logsRepo', () => {
   it('scanStatusRepo returns undefined until set', () => {
     expect(scanStatusRepo.get()).toBeUndefined();
     scanStatusRepo.set({ running: true, text: 'go', progress: 10, error: false });
-    expect(scanStatusRepo.get()).toEqual({ running: true, text: 'go', progress: 10, error: false });
+    expect(scanStatusRepo.get()).toEqual({
+      running: true,
+      text: 'go',
+      progress: 10,
+      error: false,
+      codeIntelOk: null,
+      codeIntelMessage: '',
+    });
     scanStatusRepo.patch({ progress: 50 });
     expect(scanStatusRepo.get()?.progress).toBe(50);
     scanStatusRepo.clear();

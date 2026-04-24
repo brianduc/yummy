@@ -31,6 +31,30 @@ const EnvSchema = z.object({
   EMBEDDINGS_DIM: z.coerce.number().int().positive().default(1536),
   EMBEDDINGS_BATCH_SIZE: z.coerce.number().int().positive().default(64),
 
+  // ── Embeddings: file fallback (RAG coverage for non-symbol files) ──
+  // The primary chunker only ingests symbols extracted by gitnexus
+  // (Function/Class/Method/Interface). That misses .tsx components, .json
+  // configs, markdown, plain-script files, and anything in a language
+  // gitnexus doesn't parse. Set EMBED_FILE_FALLBACK=true to ALSO chunk
+  // those files whole-file (or in 200-line slices for larger files).
+  //
+  // OFF by default because (a) it can multiply embedding spend on big
+  // repos, and (b) on healthy repos with full symbol coverage it adds
+  // noise rather than recall. Turn on when you see /ask returning
+  // "I don't see this in the code" for things you KNOW are present.
+  EMBED_FILE_FALLBACK: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  // Hard ceiling per file. Files larger than this are skipped entirely
+  // rather than producing a low-signal mega-chunk. 200KB ≈ 50k tokens
+  // on typical TS/JS, well under the 8k embed-input limit when sliced
+  // (default slice = 200 lines).
+  EMBED_FILE_MAX_BYTES: z.coerce.number().int().positive().default(200_000),
+  // Lines per slice for large-but-eligible files. Smaller = better
+  // recall, more chunks, more spend.
+  EMBED_FILE_SLICE_LINES: z.coerce.number().int().positive().default(200),
+
   AI_PROVIDER: z.enum(['gemini', 'openai', 'ollama', 'copilot', 'bedrock']).default('gemini'),
 
   // ── OpenAI rate-limiter (TPM throttle for chat + embeddings) ──
@@ -57,7 +81,7 @@ const EnvSchema = z.object({
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
   OPENAI_API_KEY: z.string().default(''),
-  OPENAI_MODEL: z.string().default('gpt-5.4-nano-2026-03-17'),
+  OPENAI_MODEL: z.string().default('gpt-5-mini-2025-08-07'),
 
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
   OLLAMA_MODEL: z.string().default('llama3'),

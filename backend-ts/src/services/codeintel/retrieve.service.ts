@@ -1,7 +1,7 @@
 /**
  * RetrievalService — hybrid search over the code knowledge base.
  *
- * Two retrieval legs run in parallel and are fused via Reciprocal Rank
+ * Three retrieval legs run in parallel and are fused via Reciprocal Rank
  * Fusion (RRF, K=60):
  *
  *   1. **Vector leg** — pgvector kNN over `chunks.embedding` using
@@ -16,6 +16,15 @@
  *      our chunker UID format may diverge slightly from the gitnexus
  *      `id` field across versions; line ranges are version-stable).
  *
+ *   3. **Path/literal leg** — direct `ILIKE` match against `file_path`
+ *      and `content` for each non-stopword token in the query. Catches
+ *      queries that contain route literals (`/sdlc/start`), filenames
+ *      (`SdlcPanel.tsx`), exact identifiers (`runSdlcStream`) — cases
+ *      where vector embeddings are weak (rare/synthetic tokens) AND the
+ *      LadybugDB FTS isn't available (frontend, configs, doc files).
+ *      Token-match count drives the rank, so a chunk hitting two query
+ *      tokens beats one hitting just one.
+ *
  * RRF formula (Cormack et al. 2009):
  *
  *     score(d) = Σ_leg  1 / (K + rank_leg(d))      with K = 60
@@ -26,8 +35,9 @@
  *
  * Failure model: each leg is independently try/caught. If FTS is
  * unavailable (no LadybugDB at scan-time, or gitnexus not installed)
- * we degrade gracefully to vector-only — the trace records which legs
- * actually contributed.
+ * we degrade gracefully to vector + path. If Postgres is down we
+ * surface that error from all three legs (vector + path) — the trace
+ * records which legs actually contributed.
  *
  * Caller contract:
  *   - Empty result set is a *valid* answer ("we found nothing relevant").
@@ -48,9 +58,72 @@ export const RRF_K = 60;
 /** Per-leg recall budget. Higher = more candidates considered for fusion. */
 const VECTOR_TOP_K = 50;
 const LEXICAL_TOP_K = 50;
+const PATH_TOP_K = 50;
 
 /** HNSW probe width. 40 is a safe default for 1k-100k vectors. */
 const HNSW_EF_SEARCH = 40;
+
+/**
+ * Tokens we never bother matching as path/literal hints — they're either
+ * too generic (would match nearly every chunk) or are pure English
+ * scaffolding around the actual identifier the user cares about. Anything
+ * shorter than PATH_MIN_TOKEN_LEN is also dropped.
+ */
+const PATH_MIN_TOKEN_LEN = 4;
+const PATH_STOPWORDS = new Set([
+  'show',
+  'find',
+  'tell',
+  'give',
+  'list',
+  'what',
+  'when',
+  'where',
+  'which',
+  'who',
+  'why',
+  'how',
+  'this',
+  'that',
+  'with',
+  'from',
+  'into',
+  'about',
+  'function',
+  'functions',
+  'class',
+  'classes',
+  'method',
+  'methods',
+  'call',
+  'calls',
+  'code',
+  'file',
+  'files',
+  'flow',
+  'chain',
+  'please',
+  'explain',
+  'using',
+  'used',
+  'have',
+  'does',
+  'do',
+  'is',
+  'in',
+  'on',
+  'of',
+  'to',
+  'for',
+  'and',
+  'or',
+  'a',
+  'an',
+  'the',
+  'me',
+  'my',
+  'i',
+]);
 
 /** Tables LadybugDB exposes FTS indexes on. Must match gitnexus' indexer. */
 const FTS_TABLES: ReadonlyArray<{ table: string; index: string }> = [
@@ -73,7 +146,7 @@ export interface RetrievedChunk {
   /** Fused RRF score (higher = better). */
   score: number;
   /** Per-leg ranks for trace/debugging. -1 if leg did not surface this chunk. */
-  ranks: { vector: number; lexical: number };
+  ranks: { vector: number; lexical: number; path: number };
 }
 
 export interface RetrieveOptions {
@@ -87,6 +160,8 @@ export interface RetrieveOptions {
   lbug?: { adapter: LbugAdapter; lbugPath: string };
   /** Skip the lexical leg explicitly (vector-only mode). */
   vectorOnly?: boolean;
+  /** Skip the path/literal leg (e.g. test isolation). */
+  skipPathLeg?: boolean;
 }
 
 export interface RetrieveTrace {
@@ -95,12 +170,15 @@ export interface RetrieveTrace {
   /** Hits returned by each leg before fusion. */
   vectorHits: number;
   lexicalHits: number;
+  pathHits: number;
   /** Whether each leg actually ran (false = skipped or errored). */
   vectorOk: boolean;
   lexicalOk: boolean;
+  pathOk: boolean;
   /** First error from each leg (if any) — surfaced for debugging. */
   vectorError?: string;
   lexicalError?: string;
+  pathError?: string;
   /** Final result count after fusion + topK clamp. */
   returned: number;
 }
@@ -283,31 +361,141 @@ function pgQuote(s: string): string {
   return `'${s.replace(/'/g, "''")}'`;
 }
 
+// ─── Path / literal leg ──────────────────────────────────
+
+/**
+ * Tokenize the user query for the path leg. Strategy:
+ *   - Split on whitespace AND on common code separators (`/`, `.`, `:`, `(`,
+ *     `)`, `,`, `;`) so a route literal like `/sdlc/start` yields the
+ *     useful tokens `sdlc` and `start`. The *original* spaces-only split
+ *     terms are also kept so multi-word identifiers (rare, but possible)
+ *     still produce ILIKE candidates.
+ *   - Drop tokens shorter than PATH_MIN_TOKEN_LEN.
+ *   - Drop English stopwords (PATH_STOPWORDS).
+ *   - Lowercase and dedupe.
+ *
+ * We intentionally keep tokens that contain digits or mixed case in the
+ * raw query — the ILIKE in pathLeg() is case-insensitive so casing
+ * doesn't matter, but identifiers like `runSdlcStream` benefit from also
+ * being looked up as the substring `sdlcstream`.
+ */
+function tokenizeForPathLeg(query: string): string[] {
+  const sep = /[^A-Za-z0-9_]+/;
+  const out = new Set<string>();
+  for (const raw of query.split(sep)) {
+    const t = raw.trim().toLowerCase();
+    if (t.length < PATH_MIN_TOKEN_LEN) continue;
+    if (PATH_STOPWORDS.has(t)) continue;
+    out.add(t);
+  }
+  return Array.from(out);
+}
+
+interface PathRow extends VectorRow {
+  /** Number of distinct query tokens this chunk contains. Drives rank. */
+  tokenMatches: number;
+}
+
+/**
+ * Run the path/literal leg. Each token contributes one ILIKE clause OR'd
+ * together; we score chunks by *distinct token-match count* so a chunk
+ * hitting two query tokens beats one hitting just one. Within ties, smaller
+ * chunks win (a small focused match is more relevant than a giant blob).
+ *
+ * Implementation note: we issue ONE SQL statement that ORs every token
+ * pattern, then count matches client-side from `content` + `file_path`.
+ * This is N×M work but N is small (top-k after the SQL LIMIT) and M is
+ * small (token count, capped). Avoids N round-trips OR a complex SQL
+ * `EXISTS` per token.
+ */
+async function pathLeg(
+  repoId: string,
+  query: string,
+  topK: number,
+): Promise<{ rows: PathRow[]; error?: string; tokens: string[] }> {
+  const tokens = tokenizeForPathLeg(query);
+  if (tokens.length === 0) {
+    // Nothing useful to look up — soft-fail (NOT an error).
+    return { rows: [], tokens };
+  }
+  // Cap tokens at 8: more than that and the OR-list explodes the planner
+  // without improving precision. We keep the longest (most specific) ones.
+  const ranked = [...tokens].sort((a, b) => b.length - a.length).slice(0, 8);
+
+  const orClauses = ranked
+    .map((t) => `(c.content ILIKE ${pgQuote(`%${t}%`)} OR c.file_path ILIKE ${pgQuote(`%${t}%`)})`)
+    .join(' OR ');
+
+  const sqlText = `
+    SELECT c.id, c.repo_id, c.source, c.symbol_uid, c.file_path,
+           c.start_line, c.end_line, c.content
+    FROM chunks c
+    WHERE c.repo_id = ${pgQuote(repoId)}
+      AND (${orClauses})
+    LIMIT ${topK * 4}
+  `;
+
+  try {
+    const rows = (await pg.execute(sql.raw(sqlText))) as unknown as VectorRow[];
+    // Score client-side by distinct token-match count.
+    const scored: PathRow[] = rows.map((r) => {
+      const hay = `${r.file_path}\n${r.content}`.toLowerCase();
+      let n = 0;
+      for (const t of ranked) {
+        if (hay.includes(t)) n++;
+      }
+      return {
+        ...r,
+        // We didn't compute distance here; mark unknown so RRF tiebreak
+        // doesn't pretend a path-only hit has a perfect vector score.
+        distance: Number.POSITIVE_INFINITY,
+        tokenMatches: n,
+      };
+    });
+    scored.sort((a, b) => {
+      if (b.tokenMatches !== a.tokenMatches) return b.tokenMatches - a.tokenMatches;
+      // Tiebreak: prefer shorter (more focused) chunks.
+      return a.content.length - b.content.length;
+    });
+    return { rows: scored.slice(0, topK), tokens: ranked };
+  } catch (e) {
+    return { rows: [], error: (e as Error).message, tokens: ranked };
+  }
+}
+
 // ─── Fusion ──────────────────────────────────────────────
 
 interface Candidate {
   row: VectorRow;
   vectorRank: number;
   lexicalRank: number;
+  pathRank: number;
   /** Best (lowest) cosine distance seen — for tiebreaker. */
   bestDistance: number;
 }
 
+type LegName = 'vector' | 'lexical' | 'path';
+
 /**
- * Reciprocal Rank Fusion. Returns sorted top-K with attached per-leg ranks.
+ * Reciprocal Rank Fusion across all three legs. Returns sorted top-K with
+ * attached per-leg ranks for trace/debug. Order of upserts doesn't matter:
+ * scoring is purely positional, and tiebreaks fall through to vector
+ * distance which is leg-independent.
  */
 function rrfFuse(
   vectorRows: VectorRow[],
   lexicalRows: VectorRow[],
+  pathRows: VectorRow[],
   topK: number,
 ): RetrievedChunk[] {
   const byId = new Map<string, Candidate>();
 
-  const upsert = (row: VectorRow, rank: number, leg: 'vector' | 'lexical') => {
+  const upsert = (row: VectorRow, rank: number, leg: LegName) => {
     const existing = byId.get(row.id);
     if (existing) {
       if (leg === 'vector') existing.vectorRank = rank;
-      else existing.lexicalRank = rank;
+      else if (leg === 'lexical') existing.lexicalRank = rank;
+      else existing.pathRank = rank;
       if (row.distance < existing.bestDistance) {
         existing.bestDistance = row.distance;
         existing.row = row; // prefer the row that has a real distance
@@ -317,22 +505,21 @@ function rrfFuse(
         row,
         vectorRank: leg === 'vector' ? rank : -1,
         lexicalRank: leg === 'lexical' ? rank : -1,
+        pathRank: leg === 'path' ? rank : -1,
         bestDistance: row.distance,
       });
     }
   };
 
-  for (let i = 0; i < vectorRows.length; i++) {
-    upsert(vectorRows[i]!, i + 1, 'vector');
-  }
-  for (let i = 0; i < lexicalRows.length; i++) {
-    upsert(lexicalRows[i]!, i + 1, 'lexical');
-  }
+  for (let i = 0; i < vectorRows.length; i++) upsert(vectorRows[i]!, i + 1, 'vector');
+  for (let i = 0; i < lexicalRows.length; i++) upsert(lexicalRows[i]!, i + 1, 'lexical');
+  for (let i = 0; i < pathRows.length; i++) upsert(pathRows[i]!, i + 1, 'path');
 
   const scored = Array.from(byId.values()).map((c) => {
     const vScore = c.vectorRank > 0 ? 1 / (RRF_K + c.vectorRank) : 0;
     const lScore = c.lexicalRank > 0 ? 1 / (RRF_K + c.lexicalRank) : 0;
-    return { c, score: vScore + lScore };
+    const pScore = c.pathRank > 0 ? 1 / (RRF_K + c.pathRank) : 0;
+    return { c, score: vScore + lScore + pScore };
   });
 
   scored.sort((a, b) => {
@@ -351,7 +538,7 @@ function rrfFuse(
     endLine: c.row.end_line,
     content: c.row.content,
     score,
-    ranks: { vector: c.vectorRank, lexical: c.lexicalRank },
+    ranks: { vector: c.vectorRank, lexical: c.lexicalRank, path: c.pathRank },
   }));
 }
 
@@ -372,29 +559,39 @@ export async function retrieve(
   const queryVec = vectors[0]!;
 
   const lexicalEnabled = !options.vectorOnly;
+  const pathEnabled = !options.skipPathLeg;
 
-  const [vec, lex] = await Promise.all([
+  const [vec, lex, path] = await Promise.all([
     vectorLeg(repoId, queryVec, VECTOR_TOP_K, efSearch),
     lexicalEnabled
       ? lexicalLeg(query, LEXICAL_TOP_K, options.lbug ?? null)
       : Promise.resolve({ rows: [] as FtsRow[], error: 'vector-only mode' }),
+    pathEnabled
+      ? pathLeg(repoId, query, PATH_TOP_K)
+      : Promise.resolve({ rows: [] as PathRow[], tokens: [] as string[], error: 'path leg disabled' }),
   ]);
 
   const lexicalChunks = lex.rows.length > 0 ? await resolveLexicalHits(repoId, lex.rows) : [];
 
-  const fused = rrfFuse(vec.rows, lexicalChunks, topK);
+  const fused = rrfFuse(vec.rows, lexicalChunks, path.rows, topK);
 
   return {
     chunks: fused,
     trace: {
-      candidateCount: new Set([...vec.rows.map((r) => r.id), ...lexicalChunks.map((r) => r.id)])
-        .size,
+      candidateCount: new Set([
+        ...vec.rows.map((r) => r.id),
+        ...lexicalChunks.map((r) => r.id),
+        ...path.rows.map((r) => r.id),
+      ]).size,
       vectorHits: vec.rows.length,
       lexicalHits: lexicalChunks.length,
+      pathHits: path.rows.length,
       vectorOk: vec.error === undefined,
       lexicalOk: lex.error === undefined,
+      pathOk: path.error === undefined,
       ...(vec.error ? { vectorError: vec.error } : {}),
       ...(lex.error ? { lexicalError: lex.error } : {}),
+      ...(path.error ? { pathError: path.error } : {}),
       returned: fused.length,
     },
   };
@@ -406,7 +603,10 @@ export const _internal = {
   toPgVector,
   escapeCypherString,
   pgQuote,
+  tokenizeForPathLeg,
+  pathLeg,
   RRF_K,
   VECTOR_TOP_K,
   LEXICAL_TOP_K,
+  PATH_TOP_K,
 };

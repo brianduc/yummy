@@ -87,6 +87,23 @@ export const BedrockConfigSchema = z
   })
   .openapi('BedrockConfig');
 
+export const RateLimitsSchema = z
+  .object({
+    openai_per_request_max: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .openapi({ description: 'Hard token ceiling per single OpenAI request (default 150 000)' }),
+    openai_tpm_limit: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .openapi({ description: 'Sliding 60s TPM cap for OpenAI (default 180 000)' }),
+  })
+  .openapi('RateLimits');
+
 // ─── Responses ───────────────────────────────────────────
 
 export const SetupResponseSchema = z
@@ -135,10 +152,16 @@ export const ConfigStatusSchema = z
         text: z.string(),
         progress: z.number().int(),
         error: z.boolean().optional(),
+        // Code-intel (RAG) health — separate from `error` so the UI can
+        // surface "RAG disabled" without dramatising a successful scan.
+        code_intel_ok: z.boolean().nullable().optional(),
+        code_intel_message: z.string().optional(),
       })
       .nullable(),
     total_requests: z.number().int(),
     total_cost_usd: z.number(),
+    openai_per_request_max: z.number().int(),
+    openai_tpm_limit: z.number().int(),
   })
   .openapi('ConfigStatus');
 
@@ -150,3 +173,4 @@ export type CopilotConfig = z.infer<typeof CopilotConfigSchema>;
 export type ProviderSwitch = z.infer<typeof ProviderSwitchSchema>;
 export type OpenAIConfig = z.infer<typeof OpenAIConfigSchema>;
 export type BedrockConfig = z.infer<typeof BedrockConfigSchema>;
+export type RateLimits = z.infer<typeof RateLimitsSchema>;
