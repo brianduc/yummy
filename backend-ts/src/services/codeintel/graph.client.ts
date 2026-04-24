@@ -74,9 +74,9 @@ export interface AnalyzeResult {
   ok: boolean;
   repoId: string;
   graphDir: string;
-  repoName?: string;
-  alreadyUpToDate?: boolean;
-  stats?: {
+  repoName: string;
+  alreadyUpToDate: boolean;
+  stats: {
     files?: number;
     nodes?: number;
     edges?: number;
@@ -139,6 +139,9 @@ export async function runFullAnalysis(
       ok: false,
       repoId: loc.repoId,
       graphDir: loc.graphDir,
+      repoName: loc.repoId,
+      alreadyUpToDate: false,
+      stats: {},
       warning: 'gitnexus package not installed — run `pnpm install` in backend-ts/',
     };
   }
