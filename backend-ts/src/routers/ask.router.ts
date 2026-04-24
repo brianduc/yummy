@@ -14,20 +14,32 @@
  *
  * track() must be called explicitly here after the stream drains —
  * streamAI() does NOT track (Python parity).
+ *
+ * Retrieval pipeline (PR #4):
+ *   1. classifyIntent(question) → 6-way intent (heuristic + LLM fallback).
+ *   2. retrieve(repoId, question) → hybrid pgvector + LadybugDB FTS,
+ *      RRF-fused, top-K. Soft-fails (returns []) if Postgres or the
+ *      LadybugDB is unavailable.
+ *   3. If retrieved chunks are empty, fall back to `kb.insights.slice(0,2)`
+ *      so the bot still answers when the code-intel pipeline never ran.
+ *   4. Whichever path won is recorded in trace.retrieval_method so the
+ *      UI can show "rag-hybrid" vs "kb-insights".
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, type z } from '@hono/zod-openapi';
 import { stream } from 'hono/streaming';
-import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import { repoRepo } from '../db/repositories/repo.repo.js';
+import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import { requireKnowledgeBase, requireSession } from '../lib/guards.js';
+import { type AskRequest, AskRequestSchema, AskSyncResponseSchema } from '../schemas/ask.schema.js';
+import { ErrorSchema } from '../schemas/common.schema.js';
 import { callAI, streamAI } from '../services/ai/dispatcher.js';
 import { track } from '../services/ai/track.js';
+import { classifyIntent } from '../services/codeintel/intent.classifier.js';
 import {
-  AskRequestSchema,
-  AskSyncResponseSchema,
-  type AskRequest,
-} from '../schemas/ask.schema.js';
-import { ErrorSchema } from '../schemas/common.schema.js';
+  type RetrievedChunk,
+  type RetrieveTrace,
+  retrieve,
+} from '../services/codeintel/retrieve.service.js';
 
 type KbSnapshot = ReturnType<typeof requireKnowledgeBase>;
 
@@ -38,47 +50,109 @@ const json = <T extends z.ZodTypeAny>(schema: T) => ({
 });
 
 // ─── _build_rag_prompt ───────────────────────────────────
+interface SourceChunk {
+  files: string[];
+  summary_preview: string;
+}
+
 interface TraceInfo {
   intent: string;
   retrieval_method: string;
-  source_chunks: Array<{ files: string[]; summary_preview: string }>;
+  source_chunks: SourceChunk[];
+  /** Per-leg retrieval stats — present only when hybrid retrieval ran. */
+  retrieval_trace?: RetrieveTrace;
+  /** Confidence on the intent classification, 0..1. */
+  intent_confidence?: number;
 }
 
 interface SessionLike {
   chatHistory: Array<{ role: string; text: string; trace?: unknown }>;
 }
 
-function buildRagPrompt(
+/** Cap injected chunk text so a single huge function doesn't blow the prompt. */
+const CHUNK_PREVIEW_CHARS = 1_200;
+const MAX_CHUNKS_IN_PROMPT = 6;
+
+function previewChunk(c: RetrievedChunk): SourceChunk {
+  return {
+    files: [`${c.filePath}:${c.startLine}-${c.endLine}`],
+    summary_preview: c.content.length > 200 ? c.content.slice(0, 200) + '...' : c.content,
+  };
+}
+
+function formatChunkForPrompt(c: RetrievedChunk): string {
+  const body =
+    c.content.length > CHUNK_PREVIEW_CHARS
+      ? c.content.slice(0, CHUNK_PREVIEW_CHARS) + '\n... [truncated]'
+      : c.content;
+  return `### ${c.filePath}:${c.startLine}-${c.endLine}\n${body}`;
+}
+
+async function buildRagPrompt(
   session: SessionLike,
   kb: KbSnapshot,
   req: AskRequest,
-): { prompt: string; instruction: string; trace: TraceInfo } {
-  const retrieved = kb.insights.slice(0, 2);
-  const trace: TraceInfo = {
-    intent: 'Code Structure Query',
-    retrieval_method: 'top-k (k=2)',
-    source_chunks: retrieved.map((c) => ({
+): Promise<{ prompt: string; instruction: string; trace: TraceInfo }> {
+  // 1. Classify intent (cheap; heuristic-first).
+  const intentResult = await classifyIntent(req.question);
+
+  // 2. Try hybrid retrieval. Any failure (no Postgres, no LadybugDB,
+  //    no embedder, etc.) is logged and we fall back to kb.insights.
+  const repo = repoRepo.get();
+  const repoId = repo ? `${repo.owner}/${repo.repo}` : '';
+  let retrieved: RetrievedChunk[] = [];
+  let retrievalTrace: RetrieveTrace | undefined;
+  let retrievalMethod = 'kb-insights-fallback';
+
+  if (repoId) {
+    try {
+      const result = await retrieve(repoId, req.question, {
+        topK: MAX_CHUNKS_IN_PROMPT,
+      });
+      retrieved = result.chunks;
+      retrievalTrace = result.trace;
+      if (retrieved.length > 0) {
+        retrievalMethod = result.trace.lexicalOk ? 'rag-hybrid' : 'rag-vector-only';
+      }
+    } catch {
+      // Soft-fail; we'll fall through to kb.insights below.
+    }
+  }
+
+  let kbContext: string;
+  let sourceChunks: SourceChunk[];
+  if (retrieved.length > 0) {
+    kbContext =
+      `${kb.project_summary}\n\n=== RETRIEVED CODE (top ${retrieved.length}) ===\n` +
+      retrieved.map(formatChunkForPrompt).join('\n\n');
+    sourceChunks = retrieved.map(previewChunk);
+  } else {
+    // Legacy path — pre-RAG knowledge base summary.
+    const insights = kb.insights.slice(0, 2);
+    kbContext =
+      kb.project_summary + '\n\n=== TOP INSIGHTS ===\n' + insights.map((c) => c.summary).join('\n');
+    sourceChunks = insights.map((c) => ({
       files: c.files,
       summary_preview: c.summary.slice(0, 200) + '...',
-    })),
-  };
+    }));
+  }
 
-  const kbContext =
-    kb.project_summary +
-    '\n\n=== TOP INSIGHTS ===\n' +
-    retrieved.map((c) => c.summary).join('\n');
+  const trace: TraceInfo = {
+    intent: intentResult.intent,
+    retrieval_method: retrievalMethod,
+    source_chunks: sourceChunks,
+    intent_confidence: intentResult.confidence,
+    ...(retrievalTrace ? { retrieval_trace: retrievalTrace } : {}),
+  };
 
   let fileCtx = '';
   if (req.ide_file && req.ide_content) {
     fileCtx =
-      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` +
-      `${req.ide_content.slice(0, 4000)}\n`;
+      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` + `${req.ide_content.slice(0, 4000)}\n`;
   }
 
   const recent = session.chatHistory.slice(-8);
-  const history = recent
-    .map((m) => `${m.role.toUpperCase()}: ${m.text}`)
-    .join('\n');
+  const history = recent.map((m) => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
 
   const prompt =
     `=== REPO KNOWLEDGE (RAG Context) ===\n${kbContext}` +
@@ -86,10 +160,22 @@ function buildRagPrompt(
     `\n\n=== CHAT HISTORY ===\n${history}` +
     `\n\n=== QUESTION ===\n${req.question}`;
 
-  const repoName = repoRepo.get()?.repo ?? 'project';
+  const repoName = repo?.repo ?? 'project';
+  // Tailor the directive verb so the response style matches what the
+  // user is trying to do. Keeps the underlying expert persona stable.
+  const intentDirective: Record<string, string> = {
+    exploring: 'Help them navigate and understand the code.',
+    debugging: 'Help them isolate the failure and propose a concrete fix.',
+    implementing: 'Help them design and write the new code; show small concrete examples.',
+    reviewing: 'Identify risks, edge cases, and concrete suggestions.',
+    refactoring: 'Suggest a safe step-by-step transformation; flag breaking changes.',
+    learning: 'Explain the underlying concept first, then ground it in this codebase.',
+  };
   const instruction =
     `You are a technical expert on the '${repoName}' project. ` +
+    `Detected intent: ${intentResult.intent}. ${intentDirective[intentResult.intent] ?? ''} ` +
     'Answer the question based on the provided context. ' +
+    'When citing code, reference files as `path:line-line`. ' +
     'If information is insufficient, say so clearly. ' +
     'Reply in natural Markdown, concise and precise.';
 
@@ -117,13 +203,10 @@ askRouter.post('/ask', async (c) => {
 
   const session = requireSession(req.session_id);
   const kb = requireKnowledgeBase();
-  const { prompt, instruction, trace } = buildRagPrompt(session, kb, req);
+  const { prompt, instruction, trace } = await buildRagPrompt(session, kb, req);
 
   // Persist user message immediately (matches Python).
-  const newHistory = [
-    ...session.chatHistory,
-    { role: 'user', text: req.question },
-  ];
+  const newHistory = [...session.chatHistory, { role: 'user', text: req.question }];
   sessionsRepo.update(req.session_id, { chatHistory: newHistory });
 
   // Set SSE headers
@@ -149,10 +232,7 @@ askRouter.post('/ask', async (c) => {
     const fresh = sessionsRepo.get(req.session_id);
     if (fresh) {
       sessionsRepo.update(req.session_id, {
-        chatHistory: [
-          ...fresh.chatHistory,
-          { role: 'assistant', text: answer, trace },
-        ],
+        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer, trace }],
       });
     }
 
@@ -178,21 +258,16 @@ askRouter.post('/ask/free', async (c) => {
   const session = requireSession(req.session_id);
 
   const recent = session.chatHistory.slice(-8);
-  const history = recent
-    .map((m) => `${m.role.toUpperCase()}: ${m.text}`)
-    .join('\n');
+  const history = recent.map((m) => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
 
   let fileCtx = '';
   if (req.ide_file && req.ide_content) {
     fileCtx =
-      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` +
-      `${req.ide_content.slice(0, 4000)}\n`;
+      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` + `${req.ide_content.slice(0, 4000)}\n`;
   }
 
   const prompt =
-    `${fileCtx}` +
-    `\n\n=== CHAT HISTORY ===\n${history}` +
-    `\n\n=== QUESTION ===\n${req.question}`;
+    `${fileCtx}` + `\n\n=== CHAT HISTORY ===\n${history}` + `\n\n=== QUESTION ===\n${req.question}`;
 
   const instruction =
     'You are YUMMY, a helpful AI assistant for software development. ' +
@@ -225,10 +300,7 @@ askRouter.post('/ask/free', async (c) => {
     const fresh = sessionsRepo.get(req.session_id);
     if (fresh) {
       sessionsRepo.update(req.session_id, {
-        chatHistory: [
-          ...fresh.chatHistory,
-          { role: 'assistant', text: answer },
-        ],
+        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer }],
       });
     }
 
@@ -261,7 +333,7 @@ askRouter.openapi(
     const req = c.req.valid('json');
     const session = requireSession(req.session_id);
     const kb = requireKnowledgeBase();
-    const { prompt, instruction, trace } = buildRagPrompt(session, kb, req);
+    const { prompt, instruction, trace } = await buildRagPrompt(session, kb, req);
 
     const answer = await callAI('EXPERT', prompt, instruction);
 
