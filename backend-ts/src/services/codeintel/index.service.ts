@@ -7,20 +7,19 @@
  *   cloneOrUpdate → materialize the repo on disk
  *   runWithLock  → in-proc mutex + proper-lockfile
  *   runFullAnalysis → gitnexus pipeline → ${repoPath}/.gitnexus
+ *   readRepoSymbols → pull Function/Class/Method/Interface from LadybugDB
+ *   chunkSymbol → embedding-ready chunks
  *   embedAndStore → push chunks to Postgres+pgvector
- *
- * For PR #3 the embedding step runs against an *empty* SymbolInput list:
- * the goal is to prove the pipeline end-to-end (clone → graph → embed
- * round-trip) without yet teaching scan how to derive symbol inputs from
- * gitnexus' pipelineResult. PR #4 will replace the empty list.
  *
  * NOTE: runFullAnalysis writes straight into `${repoPath}/.gitnexus/`
  * because gitnexus 1.6 doesn't take an output-dir override. The atomic
- * `.gitnexus.tmp` swap ships unused for now but is exported so PR #4 can
- * wire it once we have the override.
+ * `.gitnexus.tmp` swap ships unused for now but is exported so a future
+ * PR can wire it once we have the override.
  */
+import { chunkSymbol } from './chunker.js';
 import { embedAndStore } from './embedding.service.js';
 import { ensureGitnexusHome, resolveRepo, runFullAnalysis } from './graph.client.js';
+import { readRepoSymbols } from './lbug.reader.js';
 import { runWithLock } from './lock.js';
 import { cloneOrUpdate } from './repo.source.js';
 import type { PreparedChunk } from './types.js';
@@ -65,6 +64,12 @@ export interface IndexRepoResult {
     embedded: number;
     inserted: number;
   };
+  /** Symbol-extraction observability — surfaced in scan status. */
+  symbolStats: {
+    totalSymbols: number;
+    skipped: number;
+    countsByLabel: Record<string, number>;
+  };
 }
 
 /**
@@ -95,10 +100,20 @@ export async function indexRepo(input: IndexRepoInput): Promise<IndexRepoResult>
       onProgress: (p) => input.onProgress?.('analyze', p.message),
     });
 
-    // Phase 3: embed. PR #3 stub — empty SymbolInput list.
-    // PR #4: derive PreparedChunk[] from analyze.pipelineResult.
-    input.onProgress?.('embed', 'Indexing embeddings...');
+    // Phase 3: read symbols from the freshly-written graph and embed.
+    input.onProgress?.('embed', 'Reading symbols from graph...');
+    const symRead = await readRepoSymbols(loc.repoPath);
+
     const prepared: PreparedChunk[] = [];
+    for (const sym of symRead.symbols) {
+      const chunk = chunkSymbol(loc.repoId, sym);
+      if (chunk) prepared.push(chunk);
+    }
+
+    input.onProgress?.(
+      'embed',
+      `Embedding ${prepared.length} chunks (${symRead.symbols.length} symbols)...`,
+    );
     const embed = await embedAndStore(prepared);
 
     input.onProgress?.('done', 'Done.');
@@ -113,6 +128,11 @@ export async function indexRepo(input: IndexRepoInput): Promise<IndexRepoResult>
       alreadyUpToDate: analyze.alreadyUpToDate,
       graphStats: analyze.stats,
       embedStats: embed,
+      symbolStats: {
+        totalSymbols: symRead.symbols.length,
+        skipped: symRead.skipped,
+        countsByLabel: symRead.counts,
+      },
     };
   });
 }

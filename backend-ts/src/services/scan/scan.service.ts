@@ -220,9 +220,11 @@ export async function runScan(): Promise<void> {
       });
 
       const g = result.graphStats;
+      const s = result.symbolStats;
       codeIntelNote =
         ` Code graph: ${g.nodes ?? 0} nodes, ${g.edges ?? 0} edges, ` +
         `${g.processes ?? 0} processes. ` +
+        `Symbols: ${s.totalSymbols} indexed (${s.skipped} skipped). ` +
         `Embeddings: ${result.embedStats.inserted} inserted, ` +
         `${result.embedStats.reused} reused.`;
     } catch (codeIntelErr) {
