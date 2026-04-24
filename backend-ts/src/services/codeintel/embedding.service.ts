@@ -19,6 +19,8 @@ import OpenAI from 'openai';
 import { env } from '../../config/env.js';
 import { pg } from '../../db/pg/client.js';
 import { chunks as chunksTable } from '../../db/pg/schema.js';
+import { limiters, withRetryOn429 } from '../ai/rate-limiter.js';
+import { countTokens } from '../ai/token-counter.js';
 import type { EmbeddedChunk, PreparedChunk } from './types.js';
 
 export interface EmbedStats {
@@ -51,16 +53,86 @@ function openaiClient(): OpenAI {
 
 export const openaiEmbedder: Embedder = {
   async embed(inputs) {
-    const resp = await openaiClient().embeddings.create({
-      model: env.EMBEDDINGS_MODEL,
-      input: inputs,
-    });
-    return {
-      vectors: resp.data.map((d) => d.embedding),
-      totalTokens: resp.usage?.total_tokens ?? 0,
-    };
+    if (inputs.length === 0) return { vectors: [], totalTokens: 0 };
+    const modelName = env.EMBEDDINGS_MODEL;
+    const limiter = limiters.forEmbedding(modelName);
+    // Sync limiter cfg with current env (env-driven defaults; same pattern as
+    // providers/openai.ts so a tier upgrade just needs an env var change).
+    limiter.cfg.tpm = env.OPENAI_TPM_LIMIT;
+    limiter.cfg.perRequestMax = env.OPENAI_PER_REQUEST_MAX;
+    limiter.cfg.retryMax = env.OPENAI_RETRY_MAX;
+    if (limiter.cfg.perRequestMax > limiter.cfg.tpm) {
+      limiter.cfg.perRequestMax = limiter.cfg.tpm;
+    }
+
+    // Pre-count each input so we can bin-pack into sub-batches that each
+    // stay under perRequestMax. Splitting is essential because the caller
+    // (embedAndStore) batches by *count* (EMBEDDINGS_BATCH_SIZE=64) not by
+    // tokens — a dense batch of large symbols can easily exceed 200k tokens
+    // in one request.
+    const tokenCounts = inputs.map((s) => countTokens(modelName, s));
+    const subBatches = packByTokenBudget(inputs, tokenCounts, limiter.cfg.perRequestMax);
+
+    const allVectors: number[][] = [];
+    let totalTokens = 0;
+    for (const sub of subBatches) {
+      const subTokens = sub.tokens;
+      const lease = await limiter.acquire(subTokens);
+      try {
+        const resp = await withRetryOn429(
+          () =>
+            openaiClient().embeddings.create({
+              model: modelName,
+              input: sub.inputs,
+            }),
+          { retryMax: limiter.cfg.retryMax, retryBaseMs: limiter.cfg.retryBaseMs },
+        );
+        const actual = resp.usage?.total_tokens ?? subTokens;
+        lease.commit(actual);
+        totalTokens += actual;
+        for (const d of resp.data) allVectors.push(d.embedding);
+      } catch (e) {
+        lease.release();
+        throw e;
+      }
+    }
+    return { vectors: allVectors, totalTokens };
   },
 };
+
+/**
+ * Bin-pack `inputs` (with their pre-counted `tokens`) into sub-batches that
+ * each stay <= `maxTokens`. Greedy first-fit by index — preserves caller
+ * ordering so the returned vectors line up with the input array after
+ * concatenation.
+ *
+ * Single inputs that exceed `maxTokens` get a sub-batch of their own and
+ * will be rejected by the limiter's per-request guard at `acquire()` time
+ * with HttpError(413). That's the correct behaviour: one chunk shouldn't
+ * blow past the cap, and silently truncating it would corrupt the embedding.
+ */
+function packByTokenBudget(
+  inputs: string[],
+  tokens: number[],
+  maxTokens: number,
+): Array<{ inputs: string[]; tokens: number }> {
+  const out: Array<{ inputs: string[]; tokens: number }> = [];
+  let cur: { inputs: string[]; tokens: number } = { inputs: [], tokens: 0 };
+  for (let i = 0; i < inputs.length; i++) {
+    // biome-ignore lint/style/noNonNullAssertion: i is in range by construction
+    const inp = inputs[i]!;
+    // biome-ignore lint/style/noNonNullAssertion: i is in range by construction
+    const tk = tokens[i]!;
+    if (cur.inputs.length > 0 && cur.tokens + tk > maxTokens) {
+      out.push(cur);
+      cur = { inputs: [], tokens: 0 };
+    }
+    cur.inputs.push(inp);
+    cur.tokens += tk;
+  }
+  if (cur.inputs.length > 0) out.push(cur);
+  return out;
+}
 
 /**
  * Crockford-base32 ULID, 26 chars. Time component (10) + 80 bits randomness.
@@ -198,4 +270,4 @@ export async function embedAndStore(
   return stats;
 }
 
-export const _internal = { ulid, filterAlreadyEmbedded, embedBatch };
+export const _internal = { ulid, filterAlreadyEmbedded, embedBatch, packByTokenBudget };
