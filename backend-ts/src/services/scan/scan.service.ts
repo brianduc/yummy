@@ -19,12 +19,8 @@ import { kbRepo } from '../../db/repositories/kb.repo.js';
 import { repoRepo } from '../../db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../db/repositories/scan-status.repo.js';
 import { callAI } from '../ai/dispatcher.js';
-import {
-  getRepoInfo,
-  getRepoTree,
-  githubRaw,
-  type TreeEntry,
-} from '../github/github.service.js';
+import { indexRepo } from '../codeintel/index.service.js';
+import { getRepoInfo, getRepoTree, githubRaw, type TreeEntry } from '../github/github.service.js';
 
 const INDEXER_INSTRUCTION =
   'You are a code indexer. Briefly summarize the functionality, ' +
@@ -140,8 +136,7 @@ export async function runScan(): Promise<void> {
       kbRepo.updateTreeStatus(file.path, 'done');
 
       // Flush chunk if large enough or last file
-      const chunkReady =
-        currentChunk.length >= SCAN_CHUNK_BYTES || i === total - 1;
+      const chunkReady = currentChunk.length >= SCAN_CHUNK_BYTES || i === total - 1;
       if (chunkReady && currentChunk.trim() && filesInChunk.length > 0) {
         scanStatusRepo.patch({
           text:
@@ -188,9 +183,58 @@ export async function runScan(): Promise<void> {
     );
 
     kbRepo.setProjectSummary(projectSummary);
+
+    // ── Step 6: code-intel (gitnexus + embeddings) ──
+    // Additive: runs alongside the legacy AI insights pipeline. Failure here
+    // does NOT fail the overall scan — `kb.insights` + `projectSummary` are
+    // already persisted and `/ask` continues to work off them.
+    let codeIntelNote = '';
+    try {
+      scanStatusRepo.set({
+        running: true,
+        text: 'Code intel: cloning repo...',
+        progress: 95,
+        error: false,
+      });
+
+      const result = await indexRepo({
+        owner: ri.owner,
+        repo: ri.repo,
+        url: ri.url,
+        branch,
+        token: ri.githubToken ? ri.githubToken : undefined,
+        onProgress: (phase, message) => {
+          // Keep progress monotonic in 95..99 so the final 100 is reserved
+          // for the "scan complete" terminal message.
+          const phaseProgress: Record<typeof phase, number> = {
+            clone: 95,
+            analyze: 97,
+            embed: 99,
+            done: 99,
+          };
+          scanStatusRepo.patch({
+            text: `Code intel: ${message}`,
+            progress: phaseProgress[phase],
+          });
+        },
+      });
+
+      const g = result.graphStats;
+      codeIntelNote =
+        ` Code graph: ${g.nodes ?? 0} nodes, ${g.edges ?? 0} edges, ` +
+        `${g.processes ?? 0} processes. ` +
+        `Embeddings: ${result.embedStats.inserted} inserted, ` +
+        `${result.embedStats.reused} reused.`;
+    } catch (codeIntelErr) {
+      // Surface but don't fail — legacy insights remain valid.
+      codeIntelNote = ` Code-intel skipped: ${(codeIntelErr as Error).message}`;
+    }
+
     scanStatusRepo.set({
       running: false,
-      text: `Scan complete. Indexed ${total} files, generated ${insightsCount} insights.`,
+      text:
+        `Scan complete. Indexed ${total} files, generated ${insightsCount} insights.` +
+        codeIntelNote,
       progress: 100,
       error: false,
     });
