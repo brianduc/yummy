@@ -12,6 +12,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend-ts"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
+# ── Local persistence dirs (MVP: everything under ${HOME}/.yummy) ──
+mkdir -p "$HOME/.yummy/repos" "$HOME/.yummy/gitnexus-home" "$HOME/.yummy/pgdata"
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
 # ── Auto-create .env ───────────────────────────────────────

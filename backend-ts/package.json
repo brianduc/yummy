@@ -14,7 +14,9 @@
     "format": "biome format --write src tests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:pg:generate": "drizzle-kit generate --config=drizzle.pg.config.ts",
+    "db:pg:migrate": "tsx src/db/pg/migrate.ts"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -30,15 +32,21 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "0.38.4",
     "drizzle-zod": "0.6.1",
+    "gitnexus": "^1.6.2",
     "hono": "^4.12.14",
     "ollama": "^0.6.3",
     "openai": "^6.34.0",
+    "pg": "^8.13.1",
+    "postgres": "^3.4.5",
+    "proper-lockfile": "^4.1.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.6.0",
+    "@types/pg": "^8.11.10",
+    "@types/proper-lockfile": "^4.1.4",
     "drizzle-kit": "0.30.6",
     "tsx": "^4.21.0",
     "typescript": "5.7.3",

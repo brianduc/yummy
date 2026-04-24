@@ -5,7 +5,27 @@
 #   NEXT_PUBLIC_API_URL=https://api.example.com
 #   CORS_ORIGINS=https://app.example.com
 #
+# Local persistence (MVP): everything lives under ${HOME}/.yummy/ on the host.
+#   ${HOME}/.yummy/repos/        ← cloned repos + .gitnexus/lbug graphs
+#   ${HOME}/.yummy/gitnexus-home ← gitnexus registry.json
+#   ${HOME}/.yummy/pgdata        ← Postgres (pgvector) data dir
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: yummy
+      POSTGRES_PASSWORD: yummy
+      POSTGRES_DB: yummy
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ${HOME}/.yummy/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yummy -d yummy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: ./backend
@@ -16,6 +36,16 @@ services:
       - .env
     environment:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      POSTGRES_URL: ${POSTGRES_URL:-postgres://yummy:yummy@postgres:5432/yummy}
+      GITNEXUS_REPO_ROOT: /home/yummy/.yummy/repos
+      GITNEXUS_HOME: /home/yummy/.yummy/gitnexus-home
+      HOME: /home/yummy
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ${HOME}/.yummy:/home/yummy/.yummy:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
