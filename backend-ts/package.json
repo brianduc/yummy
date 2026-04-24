@@ -34,6 +34,7 @@
     "drizzle-zod": "0.6.1",
     "gitnexus": "^1.6.2",
     "hono": "^4.12.14",
+    "js-tiktoken": "^1.0.21",
     "ollama": "^0.6.3",
     "openai": "^6.34.0",
     "pg": "^8.13.1",

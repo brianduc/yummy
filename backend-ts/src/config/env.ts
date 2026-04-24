@@ -33,6 +33,26 @@ const EnvSchema = z.object({
 
   AI_PROVIDER: z.enum(['gemini', 'openai', 'ollama', 'copilot', 'bedrock']).default('gemini'),
 
+  // ── OpenAI rate-limiter (TPM throttle for chat + embeddings) ──
+  // Org-level OpenAI TPM limits trigger HTTP 429 on a single oversized
+  // request *or* on cumulative bursts. The limiter sits in front of every
+  // OpenAI call (chat + embeddings) and enforces both.
+  //
+  //   OPENAI_TPM_LIMIT       — sliding 60s ceiling (default 180k = 90% of
+  //                            the Tier 1 200k cap, leaving headroom for
+  //                            shared-org bursts and counter drift).
+  //   OPENAI_PER_REQUEST_MAX — hard cap on a single request (default 150k
+  //                            = 75% of 200k; reserves output tokens for
+  //                            chat replies and prevents instant 429s).
+  //   OPENAI_RETRY_MAX       — number of 429 retries before giving up.
+  //   OPENAI_OUTPUT_RESERVE  — tokens reserved up-front for the assistant's
+  //                            reply on chat calls (refunded post-call from
+  //                            usage.total_tokens).
+  OPENAI_TPM_LIMIT: z.coerce.number().int().positive().default(180_000),
+  OPENAI_PER_REQUEST_MAX: z.coerce.number().int().positive().default(150_000),
+  OPENAI_RETRY_MAX: z.coerce.number().int().nonnegative().default(5),
+  OPENAI_OUTPUT_RESERVE: z.coerce.number().int().nonnegative().default(4_096),
+
   GEMINI_API_KEY: z.string().default(''),
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
