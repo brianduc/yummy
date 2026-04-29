@@ -1,0 +1,7 @@
+Task 5 — guards
+
+- Added requireWorldConfig() and requireMcpServer(serverId) to backend-ts/src/lib/guards.ts.
+- Imported HttpError plus world config/server repo helpers and row types.
+- Added getWorldServer(serverId) to backend-ts/src/db/repositories/world.repo.ts so the guard can resolve MCP servers.
+- Verification: `cd backend-ts && npx tsc --noEmit` ✅
+- LSP diagnostics unavailable because TypeScript language server is not installed in this environment.

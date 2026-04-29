@@ -36,6 +36,8 @@ import {
   requireWorkflowState,
 } from '../lib/guards.js';
 import { callAI, streamAI } from '../services/ai/dispatcher.js';
+import { callTool, listTools } from '../services/world/client.js';
+import { getClient, listConnected } from '../services/world/registry.js';
 import {
   ApproveRequestSchema,
   CRRequestSchema,
@@ -72,6 +74,8 @@ function sseHeaders(): Record<string, string> {
 type SdlcEvent =
   | { t: 'start'; agent: string }
   | { t: 'c'; text: string }
+  | { t: 'tool_call'; server: string; tool: string; args: Record<string, unknown> }
+  | { t: 'tool_result'; server: string; tool: string; content: unknown; is_error: boolean }
   | { t: 'agent_done'; agent: string }
   | { t: 'done'; state: string; agent_outputs: Record<string, unknown>; jira_backlog: unknown[] }
   | { t: 'stopped' }
@@ -79,6 +83,142 @@ type SdlcEvent =
 
 function sse(event: SdlcEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
+}
+
+// ─── MCP tools for SDLC agents ────────────────────────────
+
+const TOOL_CALL_RE = /<tool_call\s+server="([^"]+)"\s+tool="([^"]+)">([\s\S]*?)<\/tool_call>/g;
+const MAX_TOOL_CALL_ROUNDS = 3;
+
+type SdlcEventWriter = (event: SdlcEvent) => Promise<unknown>;
+
+async function buildMcpToolsSection(): Promise<string> {
+  const connected = listConnected();
+  if (connected.length === 0) return '';
+
+  const lines: string[] = [
+    '## Available External Tools (via MCP)',
+    'You have access to the following external tools. To invoke a tool, output:',
+    '<tool_call server="serverId" tool="toolName">',
+    '{"arg1": "value1"}',
+    '</tool_call>',
+    '',
+    'Available tools:',
+  ];
+
+  for (const serverId of connected) {
+    const client = getClient(serverId);
+    if (!client) continue;
+
+    try {
+      const tools = await listTools(client);
+      for (const tool of tools) {
+        lines.push(`- ${serverId}/${tool.name}: ${tool.description ?? ''}`);
+        if (tool.inputSchema) {
+          lines.push(`  Input: ${JSON.stringify(tool.inputSchema)}`);
+        }
+      }
+    } catch {
+      // Skip servers that cannot list tools; other connected tools remain available.
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function withMcpTools(instruction: string, mcpToolsSection: string): string {
+  return mcpToolsSection ? `${instruction}\n\n${mcpToolsSection}` : instruction;
+}
+
+async function appendToolOutputs(output: string, emit: SdlcEventWriter): Promise<{ output: string; hadCalls: boolean }> {
+  const matches = [...output.matchAll(TOOL_CALL_RE)];
+  if (matches.length === 0) return { output, hadCalls: false };
+
+  let augmented = '';
+  let offset = 0;
+
+  for (const match of matches) {
+    const fullMatch = match[0];
+    const serverId = match[1];
+    const toolName = match[2];
+    const argsRaw = match[3];
+    if (!serverId || !toolName || argsRaw === undefined) continue;
+
+    const index = match.index ?? 0;
+    augmented += output.slice(offset, index) + fullMatch;
+    offset = index + fullMatch.length;
+
+    let resultBlock: string;
+
+    try {
+      const args = JSON.parse(argsRaw.trim()) as Record<string, unknown>;
+      await emit({ t: 'tool_call', server: serverId, tool: toolName, args });
+
+      const client = getClient(serverId);
+      if (!client) throw new Error(`Server ${serverId} not connected`);
+
+      const result = await callTool(client, serverId, toolName, args);
+      await emit({
+        t: 'tool_result',
+        server: serverId,
+        tool: toolName,
+        content: result.content,
+        is_error: result.isError ?? false,
+      });
+      resultBlock = `<external_tool_output untrusted="true" server="${serverId}" tool="${toolName}">\n${JSON.stringify(result.content)}\n</external_tool_output>`;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await emit({
+        t: 'tool_result',
+        server: serverId,
+        tool: toolName,
+        content: [{ type: 'text', text: message }],
+        is_error: true,
+      });
+      resultBlock = `<tool_error server="${serverId}" tool="${toolName}">${message}</tool_error>`;
+    }
+
+    augmented += `\n${resultBlock}`;
+  }
+
+  augmented += output.slice(offset);
+  return { output: augmented, hadCalls: true };
+}
+
+function buildToolFollowUpPrompt(originalPrompt: string, outputs: string[]): string {
+  return `${originalPrompt}\n\nExternal tool call context from prior response(s):\n${outputs.join(
+    '\n\n',
+  )}\n\nUse the external tool output above to continue. Do not repeat a tool call unless another external lookup is strictly necessary.`;
+}
+
+async function streamSdlcAgentWithTools(
+  prompt: string,
+  instruction: string,
+  signal: AbortSignal,
+  emit: SdlcEventWriter,
+): Promise<string | null> {
+  const outputs: string[] = [];
+  let nextPrompt = prompt;
+
+  for (let round = 0; ; round += 1) {
+    const chunks: string[] = [];
+    for await (const chunk of streamAI(nextPrompt, instruction, signal)) {
+      chunks.push(chunk);
+      await emit({ t: 'c', text: chunk });
+    }
+
+    if (signal.aborted) return null;
+
+    const streamedOutput = chunks.join('');
+    const toolProcessed = await appendToolOutputs(streamedOutput, emit);
+    outputs.push(toolProcessed.output);
+
+    if (!toolProcessed.hadCalls || round >= MAX_TOOL_CALL_ROUNDS - 1) break;
+
+    nextPrompt = buildToolFollowUpPrompt(prompt, outputs);
+  }
+
+  return outputs.join('\n\n');
 }
 
 // ─── Agent system instructions (verbatim from sdlc_router.py) ─
@@ -194,25 +334,22 @@ sdlcRouter.post('/sdlc/start', async (c) => {
   return stream(c, async (s) => {
     const controller = registerAbort(req.session_id);
     try {
+      const mcpToolsSection = await buildMcpToolsSection();
       await s.write(sse({ t: 'start', agent: 'ba' }));
 
-      const chunks: string[] = [];
-      for await (const chunk of streamAI(
+      const baResult = await streamSdlcAgentWithTools(
         `CHANGE REQUEST:\n${req.requirement}\n\nCURRENT ARCHITECTURE (Project Context):\n${kb.project_summary}`,
-        AGENT_INSTRUCTIONS.BA,
+        withMcpTools(AGENT_INSTRUCTIONS.BA, mcpToolsSection),
         controller.signal,
-      )) {
-        chunks.push(chunk);
-        await s.write(sse({ t: 'c', text: chunk }));
-      }
+        async (event) => s.write(sse(event)),
+      );
 
-      if (controller.signal.aborted) {
+      if (baResult === null) {
         sessionsRepo.update(req.session_id, { workflowState: 'idle' });
         await s.write(sse({ t: 'stopped' }));
         return;
       }
 
-      const baResult = chunks.join('');
       const outputs = { requirement: req.requirement, ba: baResult };
       sessionsRepo.update(req.session_id, {
         agentOutputs: outputs,
@@ -257,26 +394,23 @@ sdlcRouter.post('/sdlc/approve-ba', async (c) => {
   return stream(c, async (s) => {
     const controller = registerAbort(req.session_id);
     try {
+      const mcpToolsSection = await buildMcpToolsSection();
       // ── SA (streamed) ──
       await s.write(sse({ t: 'start', agent: 'sa' }));
 
-      const saChunks: string[] = [];
-      for await (const chunk of streamAI(
+      const saResult = await streamSdlcAgentWithTools(
         `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\nCURRENT ARCHITECTURE:\n${kb.project_summary}`,
-        AGENT_INSTRUCTIONS.SA,
+        withMcpTools(AGENT_INSTRUCTIONS.SA, mcpToolsSection),
         controller.signal,
-      )) {
-        saChunks.push(chunk);
-        await s.write(sse({ t: 'c', text: chunk }));
-      }
+        async (event) => s.write(sse(event)),
+      );
 
-      if (controller.signal.aborted) {
+      if (saResult === null) {
         sessionsRepo.update(req.session_id, { workflowState: 'idle' });
         await s.write(sse({ t: 'stopped' }));
         return;
       }
 
-      const saResult = saChunks.join('');
       outputs.sa = saResult;
 
       // ── PM (blocking — JSON parsing, not streamed) ──
@@ -346,25 +480,22 @@ sdlcRouter.post('/sdlc/approve-sa', async (c) => {
   return stream(c, async (s) => {
     const controller = registerAbort(req.session_id);
     try {
+      const mcpToolsSection = await buildMcpToolsSection();
       await s.write(sse({ t: 'start', agent: 'dev_lead' }));
 
-      const chunks: string[] = [];
-      for await (const chunk of streamAI(
+      const devLeadResult = await streamSdlcAgentWithTools(
         `BUSINESS REQUIREMENTS DOCUMENT:\n${baContent}\n\nSYSTEM ARCHITECTURE DOCUMENT:\n${saContent}`,
-        AGENT_INSTRUCTIONS.DEV_LEAD,
+        withMcpTools(AGENT_INSTRUCTIONS.DEV_LEAD, mcpToolsSection),
         controller.signal,
-      )) {
-        chunks.push(chunk);
-        await s.write(sse({ t: 'c', text: chunk }));
-      }
+        async (event) => s.write(sse(event)),
+      );
 
-      if (controller.signal.aborted) {
+      if (devLeadResult === null) {
         sessionsRepo.update(req.session_id, { workflowState: 'idle' });
         await s.write(sse({ t: 'stopped' }));
         return;
       }
 
-      const devLeadResult = chunks.join('');
       outputs.dev_lead = devLeadResult;
 
       sessionsRepo.update(req.session_id, {
@@ -412,6 +543,7 @@ sdlcRouter.post('/sdlc/approve-dev-lead', async (c) => {
 
   return stream(c, async (s) => {
     const controller = registerAbort(req.session_id);
+    const mcpToolsSection = await buildMcpToolsSection();
 
     /** Stream a single agent. Returns the full output, or null if aborted. */
     async function streamAgent(
@@ -420,13 +552,9 @@ sdlcRouter.post('/sdlc/approve-dev-lead', async (c) => {
       instruction: string,
     ): Promise<string | null> {
       await s.write(sse({ t: 'start', agent: agentKey }));
-      const chunks: string[] = [];
-      for await (const chunk of streamAI(prompt, instruction, controller.signal)) {
-        chunks.push(chunk);
-        await s.write(sse({ t: 'c', text: chunk }));
-      }
-      if (controller.signal.aborted) return null;
-      return chunks.join('');
+      return streamSdlcAgentWithTools(prompt, withMcpTools(instruction, mcpToolsSection), controller.signal, async (event) =>
+        s.write(sse(event)),
+      );
     }
 
     try {

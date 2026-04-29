@@ -23,6 +23,7 @@ export interface RuntimeConfig {
   bedrock_region: string;
   bedrock_model: string;
   provider: Provider;
+  openai_base_url: string;
 }
 
 // Step 1: seed from env (same as before — provides defaults / fallback)
@@ -35,6 +36,7 @@ export const runtimeConfig: RuntimeConfig = {
   copilot_model: env.COPILOT_MODEL,
   openai_key: env.OPENAI_API_KEY,
   openai_model: env.OPENAI_MODEL,
+  openai_base_url: env.OPENAI_BASE_URL,
   bedrock_access_key: env.AWS_ACCESS_KEY_ID,
   bedrock_secret_key: env.AWS_SECRET_ACCESS_KEY,
   bedrock_region: env.AWS_REGION,

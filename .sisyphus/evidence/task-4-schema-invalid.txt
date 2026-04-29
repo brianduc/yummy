@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"name\"\n    ],\n    \"message\": \"Too small: expected string to have >=1 characters\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"url\"\n    ],\n    \"message\": \"url is required for http transport\"\n  }\n]"
+  }
+}

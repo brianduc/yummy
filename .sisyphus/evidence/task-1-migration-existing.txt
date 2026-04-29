@@ -1,0 +1,6 @@
+
+> backend-ts@1.0.0 db:migrate /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> tsx src/db/migrate.ts
+
+[migrate] Applying migrations from /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts/src/db/migrations
+[migrate] ✅ Done

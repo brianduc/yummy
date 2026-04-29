@@ -16,11 +16,19 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { beforeAll, beforeEach, vi } from 'vitest';
 
 import { db } from '../../src/db/client.js';
+import { createWorldServer, updateWorldConfig } from '../../src/db/repositories/world.repo.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../src/db/repositories/scan-status.repo.js';
 import { sessionsRepo } from '../../src/db/repositories/sessions.repo.js';
+import {
+  worldConfig,
+  worldServers,
+  type WorldConfigInsert,
+  type WorldServerInsert,
+  type WorldServerRow,
+} from '../../src/db/schema.js';
 
 // ─── AI dispatcher mock ───────────────────────────────
 const aiResponses = new Map<string, string>();
@@ -63,6 +71,57 @@ vi.mock('../../src/services/github/github.service.js', () => ({
   ]),
 }));
 
+// ─── MCP transport mocks ──────────────────────────────────
+vi.mock('@modelcontextprotocol/sdk/client/index.js', () => {
+  const mockClient = {
+    connect: vi.fn().mockResolvedValue(undefined),
+    listTools: vi.fn().mockResolvedValue({
+      tools: [{ name: 'mock.echo', description: 'Echo tool', inputSchema: { type: 'object', properties: {} } }],
+      nextCursor: undefined,
+    }),
+    callTool: vi.fn().mockResolvedValue({
+      content: [{ type: 'text', text: 'mock-tool-result' }],
+      isError: false,
+    }),
+    close: vi.fn().mockResolvedValue(undefined),
+  };
+  return { Client: vi.fn(() => mockClient) };
+});
+
+vi.mock('@modelcontextprotocol/sdk/client/stdio.js', () => ({
+  StdioClientTransport: vi.fn(() => ({})),
+}));
+
+vi.mock('@modelcontextprotocol/sdk/client/sse.js', () => ({
+  SSEClientTransport: vi.fn(() => ({})),
+}));
+
+export async function seedWorldServer(overrides: Partial<WorldServerInsert> = {}): Promise<WorldServerRow> {
+  const insert: WorldServerInsert = {
+    id: overrides.id ?? `test-srv-${Date.now()}`,
+    name: overrides.name ?? 'Test Server',
+    transport: overrides.transport ?? 'stdio',
+    command: overrides.command ?? 'echo',
+    args: overrides.args ?? '["hello"]',
+    url: overrides.url ?? null,
+    headersJson: overrides.headersJson ?? null,
+    enabled: overrides.enabled ?? true,
+    createdAt: overrides.createdAt ?? new Date().toISOString(),
+    lastStatus: overrides.lastStatus ?? 'unknown',
+  };
+  return createWorldServer(insert);
+}
+
+export async function seedWorldConfig(overrides: Partial<WorldConfigInsert> = {}): Promise<void> {
+  await updateWorldConfig(overrides);
+}
+
+export function resetWorldData(): void {
+  db.delete(worldServers).run();
+  // world_config singleton stays (reset to defaults)
+  db.update(worldConfig).set({ mcpServerToken: '', mcpServerEnabled: false, mcpServerPort: '' }).run();
+}
+
 beforeAll(() => {
   migrate(db, {
     migrationsFolder: resolve(__dirname, '../../src/db/migrations'),
@@ -76,4 +135,5 @@ beforeEach(() => {
   scanStatusRepo.clear();
   logsRepo.clear();
   clearAIResponses();
+  resetWorldData();
 });

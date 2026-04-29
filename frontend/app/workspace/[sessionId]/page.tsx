@@ -24,6 +24,7 @@ import RagPanel from '@/components/workspace/RagPanel'
 import SdlcPanel from '@/components/workspace/SdlcPanel'
 import BacklogPanel from '@/components/workspace/BacklogPanel'
 import DbPanel from '@/components/workspace/DbPanel'
+import WorldPanel from '@/components/workspace/WorldPanel'
 
 import type {
   Session, SystemStatus, KnowledgeBase,
@@ -34,7 +35,7 @@ import type { SdlcEvent } from '@/lib/api'
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
 type LeftTab  = 'chat' | 'sessions' | 'tracing' | 'settings'
-type RightTab = 'ide' | 'graph' | 'wiki' | 'insights' | 'rag' | 'sdlc' | 'backlog' | 'db'
+type RightTab = 'ide' | 'graph' | 'wiki' | 'insights' | 'rag' | 'sdlc' | 'backlog' | 'db' | 'world'
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -79,6 +80,15 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [streamingAgent, setStreamingAgent] = useState<string | null>(null)
   // Accumulated text for the currently streaming agent (flushed ~60ms)
   const [streamingText,  setStreamingText]  = useState('')
+
+  // ── Tool call tracking ───────────────────────────────────────────────────────
+  type ToolCallEntry = {
+    server: string
+    tool: string
+    args: Record<string, unknown>
+    result?: { content: unknown; is_error: boolean }
+  }
+  const [toolCalls, setToolCalls] = useState<Record<string, ToolCallEntry[]>>({})
 
   // ── UI helpers ───────────────────────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
@@ -232,6 +242,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           accumulated = ''
           setStreamingAgent(event.agent)
           setStreamingText('')
+          setToolCalls(prev => ({ ...prev, [event.agent]: [] }))
         } else if (event.t === 'c') {
           accumulated += event.text
           scheduleFlush()
@@ -266,6 +277,20 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         } else if (event.t === 'error') {
           if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
           print(`❌ ${event.message}`)
+        } else if (event.t === 'tool_call') {
+          const agent = streamingAgent ?? 'unknown'
+          setToolCalls(prev => ({
+            ...prev,
+            [agent]: [...(prev[agent] ?? []), { server: event.server, tool: event.tool, args: event.args }],
+          }))
+        } else if (event.t === 'tool_result') {
+          const agent = streamingAgent ?? 'unknown'
+          setToolCalls(prev => {
+            const entries = [...(prev[agent] ?? [])]
+            const last = entries[entries.length - 1]
+            if (last) entries[entries.length - 1] = { ...last, result: { content: event.content, is_error: event.is_error } }
+            return { ...prev, [agent]: entries }
+          })
         }
       }
     } catch (e: any) {
@@ -501,6 +526,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             '  /ask <question>          — RAG chat with AI (requires scan)\n' +
             '  /btw <question>          — Chat with AI freely (no scan needed)\n' +
             '  /cr <requirement>        — Start SDLC brainstorm\n' +
+            '  /tool <srv>.<tool> [args]  — Invoke MCP tool\n' +
             '  /stop                    — Stop running SDLC pipeline\n' +
             '  /provider                — Show current AI provider\n' +
             '  /provider <name>         — Switch provider (gemini/openai/ollama/copilot/bedrock)\n' +
@@ -675,6 +701,39 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           break
         }
 
+        case '/tool': {
+          const target = args[1]
+          if (!target) {
+            print('Usage: /tool <serverId>.<toolName> [json-args]\nExample: /tool srv-1.echo.ping {"message":"hello"}')
+            break
+          }
+          const dotIdx = target.indexOf('.')
+          if (dotIdx === -1) {
+            print('❌ Invalid format. Use: /tool <serverId>.<toolName> [json-args]')
+            break
+          }
+          const serverId = target.slice(0, dotIdx)
+          const toolName = target.slice(dotIdx + 1)
+          const jsonStr = args.slice(2).join(' ') || '{}'
+          let toolArgs: Record<string, unknown>
+          try {
+            toolArgs = JSON.parse(jsonStr)
+          } catch {
+            print(`❌ Invalid JSON args: ${jsonStr}`)
+            break
+          }
+          print(`🔧 Invoking ${serverId}.${toolName}...`, 'system')
+          try {
+            const result = await api.world.invoke(serverId, toolName, toolArgs)
+            const text = result.content.map(c => c.text ?? '').join('\n') || '(no output)'
+            const prefix = result.is_error ? '❌ Tool error:\n' : `✅ ${serverId}.${toolName}:\n`
+            print(prefix + text, result.is_error ? 'error' : 'tool')
+          } catch (e: any) {
+            print(`❌ Tool invocation failed: ${e.message}`)
+          }
+          break
+        }
+
         case '/dark':
         case '/light':
         case '/dracula':
@@ -821,6 +880,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           {RTAB('sdlc',     '⬡ SDLC Brainstorm',    '#ffb300')}
           {RTAB('backlog',  '⬡ JIRA Kanban',        '#aa88ff')}
           {RTAB('db',       '⬡ Local DB',           '#ff6644')}
+          {RTAB('world',    '⬡ World',              '#00ffaa')}
         </div>
 
         <div className="flex-1 overflow-hidden" style={{ background: 'var(--bg-1)' }}>
@@ -844,6 +904,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
               workflowRunning={!!session.workflow_state?.includes('running')}
               streamingAgent={streamingAgent}
               streamingText={streamingText}
+              toolCalls={toolCalls}
               onEditBA={setEditBA} onEditSA={setEditSA} onEditDevLead={setEditDevLead}
               onApproveBA={handleApproveBA} onApproveSA={handleApproveSA} onApproveDevLead={handleApproveDevLead}
               onStop={handleStop}
@@ -852,6 +913,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           )}
           {rightTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}
           {rightTab === 'db'       && <DbPanel sessions={sessions} currentSessionId={sessionId} status={status} />}
+          {rightTab === 'world'    && <WorldPanel />}
         </div>
       </div>
 

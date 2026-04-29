@@ -1,6 +1,14 @@
 // YUMMY Frontend — API Client
 // Connects to yummy-core/yummy-backend (FastAPI on port 8000)
 
+import type {
+  ToolListResponse,
+  ToolInvokeResponse,
+  WorldConfig,
+  WorldServer,
+  WorldServerCreate,
+} from './types'
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -23,6 +31,8 @@ export type SdlcEvent =
   | { t: 'done'; state: string; agent_outputs: Record<string, unknown>; jira_backlog: unknown[] }
   | { t: 'stopped' }
   | { t: 'error'; message: string }
+  | { t: 'tool_call'; server: string; tool: string; args: Record<string, unknown> }
+  | { t: 'tool_result'; server: string; tool: string; content: unknown; is_error: boolean }
 
 /**
  * Private helper: opens an SSE connection to an SDLC endpoint and yields
@@ -211,6 +221,31 @@ export const api = {
 
   // ── Metrics ───────────────────────────────────────────────
   metrics: () => request('/metrics'),
+
+  // ── World / MCP ───────────────────────────────────────────
+  world: {
+    listServers: () => request<WorldServer[]>('/world/servers'),
+    getServer: (id: string) => request<WorldServer>(`/world/servers/${id}`),
+    createServer: (data: WorldServerCreate) =>
+      request<WorldServer>('/world/servers', { method: 'POST', body: JSON.stringify(data) }),
+    updateServer: (id: string, data: Partial<WorldServerCreate>) =>
+      request<WorldServer>(`/world/servers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteServer: (id: string) =>
+      request<void>(`/world/servers/${id}`, { method: 'DELETE' }),
+    connectServer: (id: string) =>
+      request<{ detail: string }>(`/world/servers/${id}/connect`, { method: 'POST' }),
+    disconnectServer: (id: string) =>
+      request<{ detail: string }>(`/world/servers/${id}/disconnect`, { method: 'POST' }),
+    listTools: (serverId: string) => request<ToolListResponse>(`/world/servers/${serverId}/tools`),
+    invoke: (server_id: string, tool_name: string, arguments_: Record<string, unknown>) =>
+      request<ToolInvokeResponse>('/world/invoke', {
+        method: 'POST',
+        body: JSON.stringify({ server_id, tool_name, arguments: arguments_ }),
+      }),
+    getConfig: () => request<WorldConfig>('/world/config'),
+    updateConfig: (data: Partial<{ mcp_server_token: string; mcp_server_enabled: boolean; mcp_server_port: string }>) =>
+      request<WorldConfig>('/world/config', { method: 'PUT', body: JSON.stringify(data) }),
+  },
 
   // ── Health ────────────────────────────────────────────────
   health: {

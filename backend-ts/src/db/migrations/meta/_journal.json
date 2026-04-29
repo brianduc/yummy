@@ -15,6 +15,13 @@
       "when": 1776841602405,
       "tag": "0001_narrow_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1777481245006,
+      "tag": "0002_yummy_world",
+      "breakpoints": true
     }
   ]
 }

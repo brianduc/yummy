@@ -141,6 +141,10 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
         <FieldLabel>Model</FieldLabel>
         <select className="cursor-pointer text-xs rounded px-2 py-1.5 font-mono w-full outline-none" style={selectStyle}
           value={model} onChange={e => setModel(e.target.value)}>
+            <optgroup label="Deepseek via OpenAI">
+              <option value="deepseek-v4-pro">Deepseek V4 Pro — Deepseek's flagship model</option> 
+              <option value="deepseek-v4-flash">Deepseek V4 Flash — Deepseek's budget model</option>
+            </optgroup>
           <optgroup label="GPT-5 family">
             <option value="gpt-5.2">gpt-5.2 — Flagship</option>
             <option value="gpt-5.1">gpt-5.1 — Recommended</option>

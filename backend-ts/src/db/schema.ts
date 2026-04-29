@@ -84,6 +84,20 @@ export const repoInfo = sqliteTable('repo_info', {
   maxScanLimit: integer('max_scan_limit').notNull().default(10000),
 });
 
+// ─── World servers ───────────────────────────────────────
+export const worldServers = sqliteTable('world_servers', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  transport: text('transport').notNull(),
+  command: text('command'),
+  args: text('args'),
+  url: text('url'),
+  headersJson: text('headers_json'),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+  lastStatus: text('last_status').notNull().default('unknown'),
+});
+
 // ─── Scan status — singleton row id=1 (nullable when no scan yet) ─
 export const scanStatus = sqliteTable('scan_status', {
   id: integer('id').primaryKey().default(1),
@@ -126,13 +140,25 @@ export const providerConfig = sqliteTable('provider_config', {
   bedrockModel: text('bedrock_model').notNull().default(''),
 });
 
+export const worldConfig = sqliteTable('world_config', {
+  id: integer('id').primaryKey().default(1),
+  mcpServerToken: text('mcp_server_token').notNull().default(''),
+  mcpServerEnabled: integer('mcp_server_enabled', { mode: 'boolean' }).notNull().default(false),
+  mcpServerPort: text('mcp_server_port').notNull().default(''),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
+});
+
 // ─── Inferred row types ──────────────────────────────────
 export type SessionRow = typeof sessions.$inferSelect;
 export type SessionInsert = typeof sessions.$inferInsert;
 export type KbTreeRow = typeof kbTree.$inferSelect;
 export type KbInsightRow = typeof kbInsights.$inferSelect;
 export type RepoInfoRow = typeof repoInfo.$inferSelect;
+export type WorldServerRow = typeof worldServers.$inferSelect;
+export type WorldServerInsert = typeof worldServers.$inferInsert;
 export type ScanStatusRow = typeof scanStatus.$inferSelect;
 export type RequestLogRow = typeof requestLogs.$inferSelect;
 export type RequestLogInsert = typeof requestLogs.$inferInsert;
 export type ProviderConfigRow = typeof providerConfig.$inferSelect;
+export type WorldConfigRow = typeof worldConfig.$inferSelect;
+export type WorldConfigInsert = typeof worldConfig.$inferInsert;

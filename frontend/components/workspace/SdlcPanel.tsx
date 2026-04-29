@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import {
   Sparkles, Copy, Check, Download, Zap, CheckCircle2,
-  Loader2, RotateCcw, Square,
+  Loader2, RotateCcw, Square, ChevronDown, ChevronRight, Wrench, AlertTriangle,
 } from 'lucide-react'
 import AgentCard from './AgentCard'
 import { mdToHtml } from '@/lib/mdToHtml'
@@ -265,6 +265,52 @@ function AutoScrollDiv({ html, maxHeight }: { html: string; maxHeight: number })
   )
 }
 
+type ToolCallEntry = {
+  server: string
+  tool: string
+  args: Record<string, unknown>
+  result?: { content: unknown; is_error: boolean }
+}
+
+function ToolCallCard({ entry }: { entry: ToolCallEntry }) {
+  const [expanded, setExpanded] = React.useState(false)
+  const hasError = entry.result?.is_error
+
+  return (
+    <div className={`ml-2 my-1 border rounded-md text-xs ${hasError ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-md"
+      >
+        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {hasError ? <AlertTriangle size={12} className="text-red-500" /> : <Wrench size={12} className="text-blue-500" />}
+        <span className="font-mono text-gray-600 dark:text-gray-300">🔧 {entry.server}/{entry.tool}</span>
+        {hasError && <span className="text-red-500 ml-auto text-[10px]">error</span>}
+      </button>
+      {expanded && (
+        <div className="px-2 pb-2 pt-1 space-y-1">
+          <div className="text-gray-500 dark:text-gray-400">Args: <code className="text-gray-700 dark:text-gray-200 break-all">{JSON.stringify(entry.args)}</code></div>
+          {entry.result && (
+            <div className={hasError ? 'text-red-600 dark:text-red-400' : 'text-green-700 dark:text-green-400'}>
+              Result: <code className={`break-all ${hasError ? 'text-red-700 dark:text-red-300' : 'text-green-800 dark:text-green-300'}`}>{JSON.stringify(entry.result.content)}</code>
+            </div>
+          )}
+          {!entry.result && <div className="text-gray-400 dark:text-gray-500 italic">Waiting for result...</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ToolCallList({ entries }: { entries: ToolCallEntry[] }) {
+  if (!entries || entries.length === 0) return null
+  return (
+    <div className="mt-1 mb-2 space-y-0.5">
+      {entries.map((entry, i) => <ToolCallCard key={i} entry={entry} />)}
+    </div>
+  )
+}
+
 interface SdlcPanelProps {
   session: Session
   editBA: string
@@ -276,6 +322,8 @@ interface SdlcPanelProps {
   streamingAgent: string | null
   /** Accumulated streamed text for the current agent (flushed ~60ms) */
   streamingText: string
+  /** Tool calls grouped by agent key (ba, sa, dev_lead, dev, security, qa, sre) */
+  toolCalls?: Record<string, ToolCallEntry[]>
   onEditBA: (v: string) => void
   onEditSA: (v: string) => void
   onEditDevLead: (v: string) => void
@@ -288,7 +336,7 @@ interface SdlcPanelProps {
 
 export default function SdlcPanel({
   session, editBA, editSA, editDevLead, busy, workflowRunning,
-  streamingAgent, streamingText,
+  streamingAgent, streamingText, toolCalls = {},
   onEditBA, onEditSA, onEditDevLead,
   onApproveBA, onApproveSA, onApproveDevLead,
   onStop, onRestore,
@@ -350,30 +398,39 @@ export default function SdlcPanel({
         <div className="absolute top-0 bottom-0 w-px" style={{ left: 22, background: 'var(--border)' }} />
 
         {(outputs.ba || state === 'running_ba' || streamingAgent === 'ba') && (
-          <AgentCard dot="var(--green)" title="1. Business Analyst (BRD)"
+          <>
+            <ToolCallList entries={toolCalls['ba'] ?? []} />
+            <AgentCard dot="var(--green)" title="1. Business Analyst (BRD)"
             loading={state === 'running_ba' && !outputs.ba && streamingAgent !== 'ba'}
             content={streamingAgent === 'ba' ? streamingText : outputs.ba}
             editable={state === 'waiting_ba_approval'}
             editValue={editBA} onEditChange={onEditBA}
             onApprove={onApproveBA} approveLabel="Approve BA" approveColor="var(--green)" busy={busy} />
+          </>
         )}
 
         {(outputs.sa || state === 'running_sa' || streamingAgent === 'sa') && (
-          <AgentCard dot="#00aaff" title="2. Solution Architect (Design)"
+          <>
+            <ToolCallList entries={toolCalls['sa'] ?? []} />
+            <AgentCard dot="#00aaff" title="2. Solution Architect (Design)"
             loading={state === 'running_sa' && !outputs.sa && streamingAgent !== 'sa'}
             content={streamingAgent === 'sa' ? streamingText : outputs.sa}
             editable={state === 'waiting_sa_approval'}
             editValue={editSA} onEditChange={onEditSA}
             onApprove={onApproveSA} approveLabel="Approve SA" approveColor="#00aaff" busy={busy} />
+          </>
         )}
 
         {(outputs.dev_lead || state === 'running_dev_lead' || streamingAgent === 'dev_lead') && (
-          <AgentCard dot="var(--amber)" title="3. Tech Lead (Plan)"
+          <>
+            <ToolCallList entries={toolCalls['dev_lead'] ?? []} />
+            <AgentCard dot="var(--amber)" title="3. Tech Lead (Plan)"
             loading={state === 'running_dev_lead' && !outputs.dev_lead && streamingAgent !== 'dev_lead'}
             content={streamingAgent === 'dev_lead' ? streamingText : outputs.dev_lead}
             editable={state === 'waiting_dev_lead_approval'}
             editValue={editDevLead} onEditChange={onEditDevLead}
             onApprove={onApproveDevLead} approveLabel="Approve Dev Lead" approveColor="var(--amber)" busy={busy} />
+          </>
         )}
 
         {(outputs.dev || outputs.security || state === 'running_rest' || ['dev', 'security', 'qa', 'sre'].includes(streamingAgent ?? '')) && (
@@ -394,6 +451,7 @@ export default function SdlcPanel({
                   <div key={key} className="border rounded-lg px-4 py-3"
                     style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
                     <div className="text-xs font-bold mb-2" style={{ color }}>{label}</div>
+                    <ToolCallList entries={toolCalls[key] ?? []} />
                     {(outputs as any)[key] ? (
                       <AutoScrollDiv html={mdToHtml((outputs as any)[key])} maxHeight={280} />
                     ) : streamingAgent === key ? (

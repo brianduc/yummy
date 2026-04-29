@@ -7,10 +7,15 @@ import { api } from '@/lib/api'
 import type { ChatMessage, ScanStatus } from '@/lib/types'
 
 const TermLogRow = React.memo(function TermLogRow({ role, text }: { role: string; text: string }) {
+  const color = role === 'user' ? 'var(--green)'
+    : role === 'tool' ? '#00ffaa'
+    : role === 'error' ? '#ff6644'
+    : 'var(--text-2)'
+  const icon = role === 'user' ? '❯' : role === 'tool' ? '🔧' : role === 'error' ? '❌' : <Zap size={13} />
   return (
-    <div className="flex gap-2" style={{ color: role === 'user' ? 'var(--green)' : 'var(--text-2)' }}>
-      <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{role === 'user' ? '❯' : <Zap size={13} />}</span>
-      <span className="whitespace-pre-wrap">{text}</span>
+    <div className="flex gap-2" style={{ color }}>
+      <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-3)' }}>{icon}</span>
+      <span className="whitespace-pre-wrap break-words text-sm">{text}</span>
     </div>
   )
 })

@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "name": "server-1",
+    "transport": "stdio",
+    "command": "node",
+    "enabled": true
+  }
+}
+{
+  "success": true,
+  "data": {
+    "server_id": "srv_1",
+    "tool_name": "ping",
+    "arguments": {}
+  }
+}

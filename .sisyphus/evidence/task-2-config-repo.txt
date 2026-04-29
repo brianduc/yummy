@@ -1,0 +1,4 @@
+Implemented `worldConfig` singleton schema and `world.repo.ts` CRUD repository.
+
+Verification:
+- `lsp_diagnostics` could not run because the TypeScript language server is not installed in this environment.

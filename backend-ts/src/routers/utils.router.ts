@@ -110,11 +110,12 @@ utilsRouter.openapi(
     if (provider === 'openai') {
       const key = runtimeConfig.openai_key;
       const model = runtimeConfig.openai_model;
+      const baseURL = runtimeConfig.openai_base_url || undefined; // Allow empty string to fallback to default
       if (!key) {
         return c.json({ status: 'error' as const, provider, model, error: 'OPENAI_API_KEY not configured.' });
       }
       try {
-        const client = new OpenAI({ apiKey: key });
+        const client = new OpenAI({ apiKey: key, baseURL });
         await client.chat.completions.create({
           model,
           messages: [{ role: 'user', content: 'ping' }],

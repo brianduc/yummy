@@ -139,3 +139,49 @@ export interface MetricsData {
   agent_breakdown: Record<string, { calls: number; cost: number; total_tokens: number }>
   logs: RequestLog[]
 }
+
+// ── World / MCP ───────────────────────────────────────────
+export interface WorldServer {
+  id: string
+  name: string
+  transport: 'stdio' | 'http'
+  command: string | null
+  args: string[] | null
+  url: string | null
+  headers_json: string | null
+  enabled: boolean
+  created_at: string
+  last_status: 'connected' | 'disconnected' | 'error' | 'unknown'
+}
+
+export interface WorldServerCreate {
+  name: string
+  transport: 'stdio' | 'http'
+  command?: string
+  args?: string[]
+  url?: string
+  headers_json?: string
+  enabled?: boolean
+}
+
+export interface McpTool {
+  name: string
+  description?: string
+  input_schema?: Record<string, unknown>
+}
+
+export interface ToolListResponse {
+  server_id: string
+  tools: McpTool[]
+}
+
+export interface ToolInvokeResponse {
+  content: Array<{ type: string; text?: string }>
+  is_error: boolean
+}
+
+export interface WorldConfig {
+  mcp_server_enabled: boolean
+  mcp_server_token_set: boolean
+  mcp_server_port: string
+}

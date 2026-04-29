@@ -17,6 +17,7 @@ import { kbRouter } from './routers/kb.router.js';
 import { askRouter } from './routers/ask.router.js';
 import { sdlcRouter } from './routers/sdlc.router.js';
 import { metricsRouter } from './routers/metrics.router.js';
+import { worldRouter } from './routers/world.router.js';
 
 export function createApp(): OpenAPIHono {
   const app = new OpenAPIHono();
@@ -40,6 +41,7 @@ export function createApp(): OpenAPIHono {
   app.route('/', askRouter);
   app.route('/', sdlcRouter);
   app.route('/', metricsRouter);
+  app.route('/', worldRouter);
 
   // ── OpenAPI document + Swagger UI ─────────────────────
   app.doc('/openapi.json', {

@@ -10,6 +10,10 @@ export interface PriceEntry {
 }
 
 export const PRICING: Record<string, PriceEntry> = {
+  //
+  // Deepseek via OpenAI
+  'deepseek-v4-pro': { in: 0.2, out: 0.87 },
+  'deepseek-v4-flash': { in: 0.1, out: 0.6 },
   // Gemini
   'gemini-2.5-pro': { in: 1.25, out: 10.0 },
   'gemini-2.5-flash': { in: 0.075, out: 0.3 },

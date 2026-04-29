@@ -1,0 +1,2 @@
+Completed: Added worldServers schema and world server CRUD repository functions.
+Notes: Evidence captured after schema/repo update; lsp diagnostics unavailable because TypeScript LSP is not installed in this environment.
