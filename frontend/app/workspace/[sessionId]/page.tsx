@@ -2,20 +2,17 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Settings, Trash2, Loader2 } from 'lucide-react'
+import { Trash2, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useScanPoll } from '@/hooks/useScanPoll'
 import { applyTheme, loadSavedTheme, THEMES, type ThemeId } from '@/lib/theme'
 import { loadSavedUiSize } from '@/lib/uiSize'
 
-// Left-panel tabs
-import ChatPanel from '@/components/workspace/ChatPanel'
-import SessionsPanel from '@/components/workspace/SessionsPanel'
-import TracingPanel from '@/components/workspace/TracingPanel'
-import SettingsPanel from '@/components/workspace/SettingsPanel'
-import OnboardingWizard from '@/components/workspace/OnboardingWizard'
+import WorkspaceLayout from '@/components/workspace/WorkspaceLayout'
+import type { ActivityId } from '@/components/workspace/ActivityBar'
+import type { MainTabId } from '@/components/workspace/MainStage'
+import CommandPalette, { createDefaultCommands } from '@/components/workspace/CommandPalette'
 
-// Right-panel tabs
 import IdePanel from '@/components/workspace/IdePanel'
 import NodeGraph from '@/components/workspace/NodeGraph'
 import WikiPanel from '@/components/workspace/WikiPanel'
@@ -25,6 +22,10 @@ import SdlcPanel from '@/components/workspace/SdlcPanel'
 import BacklogPanel from '@/components/workspace/BacklogPanel'
 import DbPanel from '@/components/workspace/DbPanel'
 import WorldPanel from '@/components/workspace/WorldPanel'
+import SessionsPanel from '@/components/workspace/SessionsPanel'
+import TracingPanel from '@/components/workspace/TracingPanel'
+import SettingsPanel from '@/components/workspace/SettingsPanel'
+import OnboardingWizard from '@/components/workspace/OnboardingWizard'
 
 import type {
   Session, SystemStatus, KnowledgeBase,
@@ -32,24 +33,15 @@ import type {
 } from '@/lib/types'
 import type { SdlcEvent } from '@/lib/api'
 
-// ─── Tab types ───────────────────────────────────────────────────────────────
-
-type LeftTab  = 'chat' | 'sessions' | 'tracing' | 'settings'
-type RightTab = 'ide' | 'graph' | 'wiki' | 'insights' | 'rag' | 'sdlc' | 'backlog' | 'db' | 'world'
-
-// ─── Page ────────────────────────────────────────────────────────────────────
-
 export default function WorkspacePage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = React.use(params)
   const router = useRouter()
 
-  // ── Layout ──────────────────────────────────────────────────────────────────
-  const [leftW, setLeftW]     = useState(36)
-  const [dragging, setDragging] = useState(false)
-  const [leftTab, setLeftTab]   = useState<LeftTab>('chat')
-  const [rightTab, setRightTab] = useState<RightTab>('ide')
+  const [activeActivity, setActiveActivity] = useState<ActivityId>('explorer')
+  const [activeTab, setActiveTab] = useState<MainTabId>('ide')
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
-  // ── Server data ─────────────────────────────────────────────────────────────
+  // Server data
   const [session,  setSession]  = useState<Session | null>(null)
   const [status,   setStatus]   = useState<SystemStatus | null>(null)
   const [kb,       setKb]       = useState<KnowledgeBase | null>(null)
@@ -57,7 +49,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [metrics,  setMetrics]  = useState<MetricsData | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
 
-  // ── Chat / terminal ─────────────────────────────────────────────────────────
+  // Chat / terminal
   const [termLogs, setTermLogs] = useState<{ role: string; text: string }[]>([
     { role: 'system', text: '⚡ YUMMY — type /help to see commands.' },
   ])
@@ -65,23 +57,21 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [busy, setBusy] = useState(false)
   const [btwBusy, setBtwBusy] = useState(false)
 
-  // ── IDE ──────────────────────────────────────────────────────────────────────
+  // IDE
   const [ideFile,    setIdeFile]    = useState('')
   const [ideContent, setIdeContent] = useState('')
   const [ideLoading, setIdeLoading] = useState(false)
 
-  // ── SDLC edit buffers ────────────────────────────────────────────────────────
+  // SDLC edit buffers
   const [editBA,      setEditBA]      = useState('')
   const [editSA,      setEditSA]      = useState('')
   const [editDevLead, setEditDevLead] = useState('')
 
-  // ── SDLC streaming state ─────────────────────────────────────────────────────
-  // Which agent is currently streaming tokens ('ba', 'sa', 'dev_lead', 'dev', etc.)
+  // SDLC streaming state
   const [streamingAgent, setStreamingAgent] = useState<string | null>(null)
-  // Accumulated text for the currently streaming agent (flushed ~60ms)
   const [streamingText,  setStreamingText]  = useState('')
 
-  // ── Tool call tracking ───────────────────────────────────────────────────────
+  // Tool call tracking
   type ToolCallEntry = {
     server: string
     tool: string
@@ -90,10 +80,9 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
   const [toolCalls, setToolCalls] = useState<Record<string, ToolCallEntry[]>>({})
 
-  // ── UI helpers ───────────────────────────────────────────────────────────────
+  // UI helpers
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-  // null = not yet asked, 'wizard' = show wizard, 'dismissed' = skip
   const [onboardingState, setOnboardingState] = useState<'asking' | 'wizard' | 'dismissed'>(() => {
     if (typeof window === 'undefined') return 'dismissed'
     const stored = localStorage.getItem('yummy_onboarding')
@@ -103,8 +92,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
 
   const termRef = useRef<HTMLDivElement>(null)
 
-  // ─── Fetchers ────────────────────────────────────────────────────────────────
-
+  // Fetchers
   const fetchSession = useCallback(async () => {
     try {
       setSession(await api.sessions.get(sessionId) as Session)
@@ -123,8 +111,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const fetchSessions = useCallback(async () => { try { setSessions(await api.sessions.list() as Session[]) } catch { } }, [])
   const fetchMetrics  = useCallback(async () => { try { setMetrics(await api.metrics() as MetricsData) } catch { } }, [])
 
-  // ─── Bootstrap + polling ─────────────────────────────────────────────────────
-
+  // Bootstrap + polling
   useEffect(() => {
     fetchSession(); fetchStatus(); fetchKb(); fetchSessions()
     loadSavedTheme()
@@ -134,10 +121,9 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }, [sessionId, fetchSession, fetchStatus, fetchKb, fetchSessions])
 
   useEffect(() => {
-    if (leftTab === 'tracing') fetchMetrics()
-  }, [leftTab, fetchMetrics])
+    if (activeActivity === 'tracing') fetchMetrics()
+  }, [activeActivity, fetchMetrics])
 
-  // Sync session-level state once per session change
   const prevId = useRef('')
   useEffect(() => {
     if (session && session.id !== prevId.current) {
@@ -149,27 +135,11 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }, [session])
 
-  // Auto-scroll terminal
   useEffect(() => {
     termRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [termLogs, chatHistory, scanStatus])
 
-  // ─── Resize drag ─────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const move = (e: MouseEvent) => {
-      if (!dragging) return
-      const w = (e.clientX / window.innerWidth) * 100
-      if (w > 22 && w < 78) setLeftW(w)
-    }
-    const up = () => setDragging(false)
-    window.addEventListener('mousemove', move)
-    window.addEventListener('mouseup', up)
-    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up) }
-  }, [dragging])
-
-  // ─── Scan polling ────────────────────────────────────────────────────────────
-
+  // Scan polling
   const print = (text: string, role = 'system') =>
     setTermLogs(prev => [...prev, { role, text }])
 
@@ -179,14 +149,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     onComplete: async () => {
       await fetchKb(); await fetchStatus()
       print('✅ Scan complete.')
-      setRightTab('wiki')
+      setActiveTab('wiki')
     },
   })
 
-  // ─── IDE file open ───────────────────────────────────────────────────────────
-
+  // IDE file open
   const openFile = useCallback(async (path: string) => {
-    setIdeFile(path); setRightTab('ide'); setIdeLoading(true); setIdeContent('')
+    setIdeFile(path); setActiveTab('ide'); setIdeLoading(true); setIdeContent('')
     try {
       const res = await api.kb.file(path) as any
       setIdeContent(res.content || '// (empty)')
@@ -195,15 +164,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     } finally { setIdeLoading(false) }
   }, [])
 
-  // ─── Toast ───────────────────────────────────────────────────────────────────
-
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
   }
 
-  // ─── SDLC helpers ────────────────────────────────────────────────────────────
-
+  // SDLC helpers
   const refreshSDLC = async () => {
     try {
       const u = await api.sdlc.state(sessionId) as any
@@ -214,10 +180,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     } catch { }
   }
 
-  /**
-   * Consume an SDLC SSE stream, updating UI state as events arrive.
-   * Returns true if the pipeline was stopped, false if it completed normally.
-   */
   const runSdlcStream = async (gen: AsyncGenerator<SdlcEvent>): Promise<boolean> => {
     setBusy(true)
     setStreamingAgent(null)
@@ -247,7 +209,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           accumulated += event.text
           scheduleFlush()
         } else if (event.t === 'agent_done') {
-          // One of DEV/SEC/QA finished — save its output to session state
           if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
           const key = currentAgent
           const text = accumulated
@@ -305,8 +266,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
 
   const handleApproveBA = async () => {
-    // Optimistic update: mark session as running_sa so the SA card is visible
-    // immediately instead of waiting for the first SSE 'start' event.
     setSession(prev => prev ? { ...prev, workflow_state: 'running_sa' } : prev)
     print('📧 BA approved. Running SA...')
     const stopped = await runSdlcStream(api.sdlc.approveBaStream(sessionId, editBA))
@@ -352,13 +311,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  // ─── RAG ask (streaming) ─────────────────────────────────────────────────────
-
+  // RAG ask (streaming)
   const sendAsk = async (question: string, free = false) => {
     setChatHistory(prev => [...prev, { role: 'user', text: question }])
     setChatHistory(prev => [...prev, { role: 'assistant', text: '' }])
     setBusy(true)
-    setRightTab('rag')
+    setActiveTab('rag')
 
     let accumulated = ''
     let lastFlushed = ''
@@ -426,13 +384,11 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  // ─── /btw during SDLC — uses btwBusy so SDLC polling (busy) is unaffected ────
-
+  // /btw during SDLC
   const sendBtw = async (question: string) => {
     setChatHistory(prev => [...prev, { role: 'user', text: question }])
     setChatHistory(prev => [...prev, { role: 'assistant', text: '' }])
     setBtwBusy(true)
-    // Do NOT switch rightTab — avoid clobbering the SDLC panel while pipeline runs
 
     let accumulated = ''
     let lastFlushed = ''
@@ -480,8 +436,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  // ─── Session delete (direct — not routed through terminal) ──────────────────
-
+  // Session delete
   const deleteSession = async (targetId: string) => {
     try {
       await api.sessions.delete(targetId)
@@ -497,16 +452,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  // ─── Command handler ─────────────────────────────────────────────────────────
-
+  // Command handler
   const handleCmd = async (rawInput: string) => {
     const raw = rawInput.trim()
     if (!raw) return
     const args    = raw.split(' ')
     const command = args[0].toLowerCase()
 
-    // While SDLC pipeline is running (busy=true), only /btw and /stop are allowed through.
-    // For any other command, print an inline hint and bail.
     if (busy && command !== '/btw' && command !== '/stop') {
       if (session?.workflow_state?.includes('running')) {
         print('⟳ Pipeline is running — use /btw <question> to chat, or /stop to abort.')
@@ -552,7 +504,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           try { await api.kb.scan() } catch (e: any) { setBusy(false); throw e }
           setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
           print('🔍 Starting codebase scan...')
-          setRightTab('ide')
+          setActiveTab('ide')
           startScanPoll()
           setBusy(false)
           break
@@ -562,7 +514,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           const q = args.slice(1).join(' ')
           if (!q) throw new Error('Question required. Example: /ask Explain the auth flow?')
           if (!status?.kb_has_summary) throw new Error('KB not scanned yet. Run /scan first.')
-          setLeftTab('chat')
           await sendAsk(q)
           break
         }
@@ -570,9 +521,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         case '/btw': {
           const q = args.slice(1).join(' ')
           if (!q) throw new Error('Question required. Example: /btw What is a JWT token?')
-          setLeftTab('chat')
           if (busy) {
-            // SDLC pipeline is running — use btwBusy so SDLC tracking (busy) is unaffected
             await sendBtw(q)
           } else {
             await sendAsk(q, true)
@@ -584,11 +533,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           const req = args.slice(1).join(' ')
           if (!req) throw new Error('Requirement required. Example: /cr Add PDF export module')
           if (!status?.kb_has_summary) throw new Error('KB not scanned yet. Run /scan first.')
-          setRightTab('sdlc'); setLeftTab('tracing')
+          setActiveTab('sdlc'); setActiveActivity('tracing')
           await fetchMetrics()
-          // Optimistic update: show the BA card immediately without waiting for the
-          // 4-second session poll. SdlcPanel's early-return guard checks outputs.requirement,
-          // so we must set it here before the stream opens.
           setSession(prev => prev ? {
             ...prev,
             workflow_state: 'running_ba',
@@ -614,7 +560,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           const providerArg = args[1]?.toLowerCase()
           const keyArg = args.slice(2).join(' ')
 
-          // No args — show current status
           if (!providerArg) {
             print(
               `Current provider: ${status?.ai_provider ?? '—'}\n` +
@@ -753,34 +698,36 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     } catch (e: any) { print(`❌ ${e.message}`); setBusy(false) }
   }
 
-  // ─── Tab button helpers ───────────────────────────────────────────────────────
+  // Command palette commands
+  const commandItems = createDefaultCommands({
+    onScan: () => {
+      if (status?.repo) {
+        handleCmd('/scan')
+      } else {
+        print('No repo configured. Use /setup <github-url> to configure.')
+      }
+    },
+    onNewSession: () => handleCmd('/new'),
+    onToggleSettings: () => setActiveActivity('settings'),
+    onToggleTracing: () => setActiveActivity('tracing'),
+    onShowInfo: () => handleCmd('/info'),
+    onHealthcheck: () => handleCmd('/healthcheck'),
+    onStartSDLC: () => {
+      print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
+    },
+  })
 
-  const LTAB = (key: LeftTab, label: React.ReactNode) => (
-    <button key={key} onClick={() => setLeftTab(key)}
-      className="flex-1 cursor-pointer bg-transparent border-none uppercase tracking-wide font-mono flex items-center justify-center gap-1"
-      style={{
-        padding: '.5rem .3rem',
-        borderBottom: leftTab === key ? '2px solid var(--green)' : '2px solid transparent',
-        color: leftTab === key ? 'var(--green)' : 'var(--text-3)',
-        letterSpacing: '.05em',
-      }}>
-      {label}
-    </button>
-  )
+  // ActivityBar routing
+  const handleActivityChange = (id: ActivityId) => {
+    setActiveActivity(id)
+    if (id === 'sdlc') setActiveTab('sdlc')
+    if (id === 'db') setActiveTab('db')
+    if (id === 'tracing') fetchMetrics()
+  }
 
-  const RTAB = (key: RightTab, label: string, color = 'var(--text-2)') => (
-    <button key={key} onClick={() => setRightTab(key)}
-      className="whitespace-nowrap cursor-pointer font-mono text-xs bg-transparent border-none"
-      style={{
-        padding: '.45rem .9rem',
-        borderBottom: rightTab === key ? `2px solid ${color}` : '2px solid transparent',
-        color: rightTab === key ? color : 'var(--text-3)',
-      }}>
-      {label}
-    </button>
-  )
-
-  // ─── Loading state ────────────────────────────────────────────────────────────
+  // Derived state
+  const isRunning = session?.workflow_state?.includes('running') || !!scanStatus?.running
+  const isSDLCDone = session?.workflow_state === 'done'
 
   if (!session) {
     return (
@@ -790,135 +737,101 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     )
   }
 
-  const isRunning = session.workflow_state?.includes('running') || !!scanStatus?.running
-
-  // ─── Render ───────────────────────────────────────────────────────────────────
-
   return (
-    <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--bg)' }}>
-
-      {/* ══════════════════ LEFT PANEL ══════════════════ */}
-      <div className="flex flex-col flex-shrink-0 border-r"
-        style={{ width: `${leftW}%`, minWidth: 300, background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 border-b flex-shrink-0"
-          style={{ height: 44, borderColor: 'var(--border)', background: 'var(--bg)' }}>
-          <span className="font-display font-extrabold text-lg" style={{ color: 'var(--green)' }}>
-            YUMMY <span className="text-2xs font-normal" style={{ color: 'var(--text-3)' }}>.better than your ex</span>
-          </span>
-          {(isRunning || scanStatus) && (
-            <span className="text-2xs flex items-center gap-1" style={{ color: 'var(--amber)', background: 'rgba(255,179,0,.08)', border: '1px solid rgba(255,179,0,.2)', padding: '2px 8px', borderRadius: 20 }}>
-              <Loader2 size={10} className="animate-spin" />{scanStatus?.text?.slice(0, 26) || 'running...'}
-            </span>
-          )}
-        </div>
-
-        {/* Left tabs */}
-        <div className="flex border-b flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-          {LTAB('chat',     '⬡ Chat')}
-          {LTAB('sessions', '⬡ Session')}
-          {LTAB('tracing',  '⬡ Tracing')}
-          {LTAB('settings', <><Settings size={12}/> Settings</>)}
-        </div>
-
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {leftTab === 'chat' && (
-            <ChatPanel
-              sessionName={session.name}
-              termLogs={termLogs}
-              chatHistory={chatHistory}
-              scanStatus={scanStatus}
-              busy={busy}
-              btwBusy={btwBusy}
-              workflowRunning={!!session.workflow_state?.includes('running')}
-              termRef={termRef}
-              currentProvider={(status?.ai_provider ?? 'gemini') as any}
-              onSubmit={handleCmd}
-              onProviderSaved={fetchStatus}
-            />
-          )}
-          {leftTab === 'sessions' && (
-            <SessionsPanel
-              sessions={sessions}
-              currentSessionId={sessionId}
-              onNew={async () => {
-                const s = await api.sessions.create() as Session
-                await fetchSessions()
-                router.push(`/workspace/${s.id}`)
-              }}
-              onDeleteRequest={setDeleteTarget}
-            />
-          )}
-          {leftTab === 'tracing' && (
-            <TracingPanel metrics={metrics} onLoad={fetchMetrics} />
-          )}
-          {leftTab === 'settings' && (
-            <SettingsPanel status={status} onStatusRefresh={fetchStatus} />
-          )}
-        </div>
-      </div>
-
-      {/* ══════════════════ RESIZER ══════════════════ */}
-      <div
-        onMouseDown={() => setDragging(true)}
-        className="cursor-col-resize flex-shrink-0 z-50 hover:bg-green-500 transition-colors"
-        style={{ width: 4, background: dragging ? 'var(--green)' : 'var(--border)' }}
+    <>
+      <WorkspaceLayout
+        activeActivity={activeActivity}
+        onActivityChange={handleActivityChange}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        sessionName={session.name}
+        session={session}
+        workflowState={session.workflow_state}
+        streamingAgent={streamingAgent}
+        isSDLCDone={isSDLCDone}
+        fileTree={kb?.tree || []}
+        onFileOpen={openFile}
+        status={status}
+        metrics={metrics}
+        chatHistory={chatHistory}
+        termLogs={termLogs}
+        scanStatus={scanStatus}
+        busy={busy}
+        btwBusy={btwBusy}
+        workflowRunning={!!session.workflow_state?.includes('running')}
+        termRef={termRef}
+        onSubmit={handleCmd}
+        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+        onApproveBA={handleApproveBA}
+        onApproveSA={handleApproveSA}
+        onApproveDevLead={handleApproveDevLead}
+        onStop={handleStop}
+        mainStageChildren={
+          <>
+            {activeTab === 'ide'      && <IdePanel tree={kb?.tree || []} ideFile={ideFile} ideContent={ideContent} ideLoading={ideLoading} onFileOpen={openFile} />}
+            {activeTab === 'graph'    && (
+              <div className="p-6 h-full flex flex-col">
+                <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--green)' }}>⬡ Node Architecture Graph</h2>
+                <div className="flex-1 border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <NodeGraph tree={kb?.tree || []} repoInfo={status?.repo ?? null} />
+                </div>
+              </div>
+            )}
+            {activeTab === 'wiki'     && <WikiPanel kb={kb} />}
+            {activeTab === 'insights' && <InsightsPanel kb={kb} />}
+            {activeTab === 'rag'      && <RagPanel chatHistory={chatHistory} />}
+            {activeTab === 'sdlc'     && (
+              <SdlcPanel
+                session={session}
+                editBA={editBA} editSA={editSA} editDevLead={editDevLead}
+                busy={busy}
+                workflowRunning={!!session.workflow_state?.includes('running')}
+                streamingAgent={streamingAgent}
+                streamingText={streamingText}
+                toolCalls={toolCalls}
+                onEditBA={setEditBA} onEditSA={setEditSA} onEditDevLead={setEditDevLead}
+                onApproveBA={handleApproveBA} onApproveSA={handleApproveSA} onApproveDevLead={handleApproveDevLead}
+                onStop={handleStop}
+                onRestore={handleRestore}
+              />
+            )}
+            {activeTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}
+            {activeTab === 'db'       && <DbPanel sessions={sessions} currentSessionId={sessionId} status={status} />}
+            {activeTab === 'world'    && <WorldPanel />}
+          </>
+        }
+        contextPanelChildren={
+          <>
+            {activeActivity === 'tracing' && (
+              <TracingPanel metrics={metrics} onLoad={fetchMetrics} />
+            )}
+            {activeActivity === 'settings' && (
+              <SettingsPanel status={status} onStatusRefresh={fetchStatus} />
+            )}
+            {activeActivity === 'chat' && (
+              <SessionsPanel
+                sessions={sessions}
+                currentSessionId={sessionId}
+                onNew={async () => {
+                  const s = await api.sessions.create() as Session
+                  await fetchSessions()
+                  router.push(`/workspace/${s.id}`)
+                }}
+                onDeleteRequest={setDeleteTarget}
+              />
+            )}
+          </>
+        }
       />
 
-      {/* ══════════════════ RIGHT PANEL ══════════════════ */}
-      <div className="flex-1 flex flex-col min-w-0" style={{ background: 'var(--bg)' }}>
+      {/* Command Palette */}
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+        commands={commandItems}
+      />
 
-        {/* Right tabs */}
-        <div className="flex border-b overflow-x-auto flex-shrink-0 items-end"
-          style={{ height: 44, borderColor: 'var(--border)', background: 'var(--bg-1)' }}>
-          {RTAB('ide',      '⬡ IDE Simulator',     'var(--text-2)')}
-          {RTAB('graph',    '⬡ Node Arch',          'var(--green)')}
-          {RTAB('wiki',     '⬡ GitBook Wiki',       '#ff79c6')}
-          {RTAB('insights', '⬡ AI Insights',        '#ffb300')}
-          {RTAB('rag',      '⬡ RAG Trace',          '#00aaff')}
-          {RTAB('sdlc',     '⬡ SDLC Brainstorm',    '#ffb300')}
-          {RTAB('backlog',  '⬡ JIRA Kanban',        '#aa88ff')}
-          {RTAB('db',       '⬡ Local DB',           '#ff6644')}
-          {RTAB('world',    '⬡ World',              '#00ffaa')}
-        </div>
-
-        <div className="flex-1 overflow-hidden" style={{ background: 'var(--bg-1)' }}>
-          {rightTab === 'ide'      && <IdePanel tree={kb?.tree || []} ideFile={ideFile} ideContent={ideContent} ideLoading={ideLoading} onFileOpen={openFile} />}
-          {rightTab === 'graph'    && (
-            <div className="p-6 h-full flex flex-col">
-              <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--green)' }}>⬡ Node Architecture Graph</h2>
-              <div className="flex-1 border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                <NodeGraph tree={kb?.tree || []} repoInfo={status?.repo ?? null} />
-              </div>
-            </div>
-          )}
-          {rightTab === 'wiki'     && <WikiPanel kb={kb} />}
-          {rightTab === 'insights' && <InsightsPanel kb={kb} />}
-          {rightTab === 'rag'      && <RagPanel chatHistory={chatHistory} />}
-          {rightTab === 'sdlc'     && (
-            <SdlcPanel
-              session={session}
-              editBA={editBA} editSA={editSA} editDevLead={editDevLead}
-              busy={busy}
-              workflowRunning={!!session.workflow_state?.includes('running')}
-              streamingAgent={streamingAgent}
-              streamingText={streamingText}
-              toolCalls={toolCalls}
-              onEditBA={setEditBA} onEditSA={setEditSA} onEditDevLead={setEditDevLead}
-              onApproveBA={handleApproveBA} onApproveSA={handleApproveSA} onApproveDevLead={handleApproveDevLead}
-              onStop={handleStop}
-              onRestore={handleRestore}
-            />
-          )}
-          {rightTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}
-          {rightTab === 'db'       && <DbPanel sessions={sessions} currentSessionId={sessionId} status={status} />}
-          {rightTab === 'world'    && <WorldPanel />}
-        </div>
-      </div>
-
-      {/* ══════════════════ ONBOARDING ══════════════════ */}
-      {/* Step 0: Ask if first time */}
+      {/* Onboarding */}
       {onboardingState === 'asking' && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center"
           style={{ background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)' }}>
@@ -947,7 +860,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         </div>
       )}
 
-      {/* Step 1–3: Full wizard */}
       {onboardingState === 'wizard' && (
         <OnboardingWizard
           status={status}
@@ -959,13 +871,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           onScanStart={() => {
             setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
             print('🔍 Starting codebase scan...')
-            setRightTab('ide')
+            setActiveTab('ide')
             startScanPoll()
           }}
         />
       )}
 
-      {/* ══════════════════ DELETE CONFIRM MODAL ══════════════════ */}
+      {/* Delete Confirm Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center"
           style={{ background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)' }}
@@ -1001,7 +913,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         </div>
       )}
 
-      {/* ══════════════════ TOAST ══════════════════ */}
+      {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-[300] border rounded-lg flex items-center gap-2 font-mono text-base"
           style={{ background: 'var(--bg-1)', borderColor: 'var(--green-dim)', padding: '.65rem 1.1rem', color: 'var(--green)', boxShadow: '0 8px 32px rgba(0,0,0,.4)' }}>
@@ -1021,6 +933,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         .prose th,.prose td { border: 1px solid var(--border); padding: .4rem .65rem; }
         .prose th { background: var(--bg-2); color: var(--text-2); }
       `}</style>
-    </div>
+    </>
   )
 }
