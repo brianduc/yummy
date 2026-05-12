@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { Send, Loader2, Zap, Bot, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { mdToHtml } from '@/lib/mdToHtml'
 import type { ChatMessage, ScanStatus } from '@/lib/types'
+import { COMMANDS } from './ChatPanel'
 
 interface AICopilotProps {
   chatHistory: ChatMessage[]
@@ -20,7 +21,7 @@ interface AICopilotProps {
   sessionName: string
 }
 
-const QUICK_COMMANDS = ['/scan', '/ask', '/btw', '/cr', '/help']
+const QUICK_COMMANDS = ['/scan', '/ask Explain the auth flow?', '/btw', '/provider', '/help']
 
 export default function AICopilot({
   chatHistory,
@@ -34,8 +35,7 @@ export default function AICopilot({
   sessionName,
 }: AICopilotProps) {
   const [input, setInput] = useState('')
-  const [suggestions, setSuggestions] = useState<string[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [suggestionIdx, setSuggestionIdx] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -49,19 +49,82 @@ export default function AICopilot({
     const trimmed = input.trim()
     if (!trimmed || isBusy) return
     setInput('')
-    setShowSuggestions(false)
+    setSuggestionIdx(0)
     await onSubmit(trimmed)
   }
 
-  const handleInputChange = (value: string) => {
-    setInput(value)
-    if (value.startsWith('/') && value.length >= 2) {
-      const matching = QUICK_COMMANDS.filter((c) => c.startsWith(value))
-      setSuggestions(matching)
-      setShowSuggestions(matching.length > 0)
+  const activeSuggestions = useMemo(() => {
+    if (!input.startsWith('/')) return []
+    const prefix = input.split(' ')[0]
+    const matches = COMMANDS.filter(c => c.cmd.startsWith(prefix))
+    // During pipeline execution, only /btw is available
+    return workflowRunning ? matches.filter(c => c.cmd === '/btw') : matches
+  }, [input, workflowRunning])
+
+  const selectSuggestion = (s: typeof COMMANDS[number], i: number) => {
+    setSuggestionIdx(i)
+    if (!s.args) {
+      setInput('')
+      setSuggestionIdx(0)
+      onSubmit(s.cmd)
     } else {
-      setShowSuggestions(false)
+      setInput(s.cmd + ' ')
+      inputRef.current?.focus()
     }
+  }
+
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    if (activeSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSuggestionIdx(prev => Math.min(prev + 1, activeSuggestions.length - 1))
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSuggestionIdx(prev => Math.max(prev - 1, 0))
+        return
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault()
+        const s = activeSuggestions[suggestionIdx]
+        if (!s.args) {
+          setInput('')
+          setSuggestionIdx(0)
+          onSubmit(s.cmd)
+        } else {
+          setInput(s.cmd + ' ')
+        }
+        return
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        const s = activeSuggestions[suggestionIdx]
+        const parts = input.trim().split(' ')
+        const hasArgs = parts.length > 1 && parts[1] !== ''
+        if (hasArgs) {
+          handleSubmit()
+        } else if (!s.args) {
+          setInput('')
+          setSuggestionIdx(0)
+          onSubmit(s.cmd)
+        } else {
+          setInput(s.cmd + ' ')
+        }
+        return
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setInput('')
+        setSuggestionIdx(0)
+        return
+      }
+    }
+
+    if (e.key === 'Enter') {
+      handleSubmit()
+    }
+    if (e.key === 'Escape') { setInput(''); setSuggestionIdx(0) }
   }
 
   const renderLogLine = (entry: { role: string; text: string }, i: number) => {
@@ -214,20 +277,65 @@ export default function AICopilot({
         </div>
       </ScrollArea>
 
+      {/* Quick command chips */}
+      <div className="px-3 flex gap-1 overflow-x-auto pb-1.5 flex-shrink-0">
+        {QUICK_COMMANDS.map((h, i) => {
+          const isBtwChip = h === '/btw'
+          const chipBlocked = isBusy || (workflowRunning && !isBtwChip)
+          return (
+            <button
+              key={i}
+              onClick={() => !chipBlocked && (setInput(h), inputRef.current?.focus())}
+              disabled={chipBlocked}
+              className="whitespace-nowrap border rounded-full text-2xs cursor-pointer flex-shrink-0 flex items-center gap-1"
+              style={{
+                background: workflowRunning && isBtwChip ? 'rgba(255,179,0,.1)' : 'var(--bg)',
+                borderColor: workflowRunning && isBtwChip ? 'var(--amber)' : 'var(--border)',
+                color: workflowRunning && isBtwChip ? 'var(--amber)' : 'var(--text-3)',
+                padding: '3px 10px',
+                opacity: chipBlocked ? .3 : 1,
+              }}>
+              <Zap size={10} /> {h}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Command suggestions */}
-      {showSuggestions && (
-        <div className="px-3 pb-1">
-          <div className="flex gap-1.5 flex-wrap">
-            {suggestions.map((s) => (
-              <button
-                key={s}
-                onClick={() => { setInput(s); setShowSuggestions(false); inputRef.current?.focus() }}
-                className="text-2xs px-2 py-0.5 rounded font-mono cursor-pointer transition-colors"
-                style={{ background: 'var(--bg-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
-              >
-                {s}
-              </button>
-            ))}
+      {activeSuggestions.length > 0 && (
+        <div className="mx-3 mb-1 border rounded-lg overflow-hidden flex-shrink-0"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          {activeSuggestions.map((s, i) => (
+            <button
+              key={s.cmd}
+              onMouseEnter={() => setSuggestionIdx(i)}
+              onClick={() => selectSuggestion(s, i)}
+              className="w-full flex items-center gap-2 px-3 py-2 cursor-pointer text-left"
+              style={{
+                background: i === suggestionIdx ? 'var(--green-glow)' : 'transparent',
+                borderLeft: `2px solid ${i === suggestionIdx ? 'var(--green)' : 'transparent'}`,
+              }}>
+              <span className="font-mono text-sm font-bold flex-shrink-0"
+                style={{ color: i === suggestionIdx ? 'var(--green)' : 'var(--text-2)' }}>
+                {s.cmd}
+              </span>
+              {s.args && (
+                <span className="font-mono text-xs flex-shrink-0" style={{ color: 'var(--amber)' }}>
+                  {s.args}
+                </span>
+              )}
+              <span className="text-xs truncate flex-1" style={{ color: 'var(--text-3)' }}>{s.desc}</span>
+              {i === suggestionIdx && (
+                <span className="text-2xs flex-shrink-0 px-1 rounded"
+                  style={{ background: 'var(--bg-2)', color: 'var(--text-3)', border: '1px solid var(--border)' }}>
+                  ↵ select
+                </span>
+              )}
+            </button>
+          ))}
+          <div className="px-3 py-1 border-t text-2xs"
+            style={{ borderColor: 'var(--border)', color: 'var(--text-3)', background: 'var(--bg-1)' }}>
+            ↑↓ navigate · ↵ or Tab to select · Esc to close
           </div>
         </div>
       )}
@@ -237,8 +345,8 @@ export default function AICopilot({
         <Input
           ref={inputRef}
           value={input}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+          onChange={(e) => { setInput(e.target.value); setSuggestionIdx(0) }}
+          onKeyDown={handleInputKeyDown}
           placeholder={workflowRunning ? '/btw to chat, /stop to abort...' : 'Type /help for commands...'}
           disabled={isBusy}
           className="flex-1 h-8 text-xs"
