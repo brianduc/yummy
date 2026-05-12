@@ -1,6 +1,9 @@
 # Environment
 .env
 .env.local
+.env.dev
+.env.staging
+.env.prod
 
 # Python
 backend/venv/

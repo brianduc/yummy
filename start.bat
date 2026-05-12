@@ -1,6 +1,6 @@
 @echo off
 REM YUMMY - Start both Frontend + Backend with a single command
-REM Usage: start.bat
+REM Usage: start.bat [mode]
 
 setlocal enabledelayedexpansion
 
@@ -9,6 +9,43 @@ REM Backend now uses TypeScript / Hono (backend-ts/). Legacy Python
 REM backend (backend/) is kept as a fallback but no longer started.
 set "BACKEND_DIR=%ROOT_DIR%backend-ts"
 set "FRONTEND_DIR=%ROOT_DIR%frontend"
+
+REM ── Parse mode argument ──────────────────────────────────
+set "MODE_ARG=%~1"
+if /i "!MODE_ARG!"=="--help" goto :show_help
+if /i "!MODE_ARG!"=="-h" goto :show_help
+if /i "!MODE_ARG!"=="help" goto :show_help
+if "!MODE_ARG!"=="" (
+    set "MODE=dev"
+) else if /i "!MODE_ARG!"=="dev" (
+    set "MODE=dev"
+) else if /i "!MODE_ARG!"=="staging" (
+    set "MODE=staging"
+) else if /i "!MODE_ARG!"=="prod" (
+    echo ERROR: prod mode is not for local launchers. Use docker compose or your real deploy pipeline.
+    pause
+    exit /b 1
+) else (
+    echo ERROR: Unknown mode: !MODE_ARG!. Allowed: dev, staging, prod
+    pause
+    exit /b 1
+)
+goto :after_help
+
+:show_help
+echo.
+echo Usage: start.bat [mode]
+echo   mode: dev ^(default^) ^| staging ^| prod
+echo.
+echo   dev      Load .env then .env.dev. Start backend + frontend locally.
+echo   staging  Load .env then .env.staging. Start backend + frontend locally.
+echo   prod     REFUSED. Use docker compose or your real deploy pipeline.
+echo.
+echo   No mode argument is equivalent to 'dev'.
+echo.
+exit /b 0
+
+:after_help
 
 REM Auto-create .env from .env.example if missing
 if not exist "%ROOT_DIR%.env" (
@@ -25,6 +62,21 @@ if not exist "%ROOT_DIR%.env" (
     )
 )
 
+REM ── Auto-create .env.%MODE% ──────────────────────────────
+if not exist "%ROOT_DIR%.env.!MODE!" (
+    if exist "%ROOT_DIR%.env.!MODE!.example" (
+        copy "%ROOT_DIR%.env.!MODE!.example" "%ROOT_DIR%.env.!MODE!" >nul
+        echo Created .env.!MODE! from .env.!MODE!.example
+        echo Edit .env.!MODE! if needed, then run start.bat again.
+        pause
+        exit /b 0
+    ) else (
+        echo ERROR: .env.!MODE! not found and .env.!MODE!.example missing.
+        pause
+        exit /b 1
+    )
+)
+
 REM Parse .env - skip comment lines
 for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%ROOT_DIR%.env") do (
     set "_k=%%A"
@@ -34,12 +86,23 @@ for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%ROOT_DIR%.env") do (
     )
 )
 
+REM ── Load .env.%MODE% overlay ─────────────────────────────
+if exist "%ROOT_DIR%.env.!MODE!" (
+    for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%ROOT_DIR%.env.!MODE!") do (
+        set "_k=%%A"
+        set "_v=%%B"
+        if not "!_k!"=="" (
+            set "!_k!=!_v!"
+        )
+    )
+)
+
 if "!BACKEND_PORT!"=="" set "BACKEND_PORT=8000"
 if "!FRONTEND_PORT!"=="" set "FRONTEND_PORT=3000"
 if "!AI_PROVIDER!"=="" set "AI_PROVIDER=gemini"
 
 echo.
-echo YUMMY - AI SDLC Platform
+echo YUMMY - AI SDLC Platform [!MODE! mode]
 echo ==================================
 echo.
 echo Select AI Provider:
@@ -133,7 +196,8 @@ echo.
 echo [Frontend] Setting up Node.js...
 cd /d "%FRONTEND_DIR%"
 
-(echo NEXT_PUBLIC_API_URL=http://localhost:!BACKEND_PORT!) > "%FRONTEND_DIR%\.env.local"
+if "!NEXT_PUBLIC_API_URL!"=="" set "NEXT_PUBLIC_API_URL=http://localhost:!BACKEND_PORT!"
+(echo NEXT_PUBLIC_API_URL=!NEXT_PUBLIC_API_URL!) > "%FRONTEND_DIR%\.env.local"
 
 if not exist "node_modules" (
     echo [Frontend] Installing npm packages ^(first run^)...

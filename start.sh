@@ -2,7 +2,7 @@
 # ============================================================
 # YUMMY - Start both Frontend + Backend with a single command
 # Works on: Linux, Mac, Windows Git Bash
-# Usage: bash start.sh
+# Usage: bash start.sh [mode]
 #
 # Backend: TypeScript / Hono (backend-ts/). The legacy Python
 # backend (backend/) is kept as a fallback but no longer started.
@@ -13,6 +13,38 @@ BACKEND_DIR="$ROOT_DIR/backend-ts"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
+
+# ── Parse mode argument ────────────────────────────────────
+MODE_ARG="${1:-}"
+case "$MODE_ARG" in
+  --help|-h|help)
+    echo ""
+    echo "Usage: bash start.sh [mode]"
+    echo "  mode: dev (default) | staging | prod"
+    echo ""
+    echo "  dev      Load .env then .env.dev. Start backend + frontend locally."
+    echo "  staging  Load .env then .env.staging. Start backend + frontend locally."
+    echo "  prod     REFUSED. Use docker compose or your real deploy pipeline."
+    echo ""
+    echo "  No mode argument is equivalent to 'dev'."
+    echo ""
+    exit 0
+    ;;
+  ""|dev)
+    MODE="dev"
+    ;;
+  staging)
+    MODE="staging"
+    ;;
+  prod)
+    echo -e "${RED}ERROR: prod mode is not for local launchers. Use docker compose or your real deploy pipeline.${NC}"
+    exit 1
+    ;;
+  *)
+    echo -e "${RED}ERROR: Unknown mode: $MODE_ARG. Allowed: dev, staging, prod${NC}"
+    exit 1
+    ;;
+esac
 
 # ── Auto-create .env ───────────────────────────────────────
 if [ ! -f "$ROOT_DIR/.env" ]; then
@@ -27,9 +59,23 @@ if [ ! -f "$ROOT_DIR/.env" ]; then
   fi
 fi
 
+# ── Auto-create .env.$MODE ─────────────────────────────────
+if [ ! -f "$ROOT_DIR/.env.$MODE" ]; then
+  if [ -f "$ROOT_DIR/.env.$MODE.example" ]; then
+    cp "$ROOT_DIR/.env.$MODE.example" "$ROOT_DIR/.env.$MODE"
+    echo -e "${YELLOW}Created .env.$MODE from .env.$MODE.example"
+    echo -e "Edit .env.$MODE if needed, then run again.${NC}"
+    exit 0
+  else
+    echo -e "${RED}ERROR: .env.$MODE not found and .env.$MODE.example missing.${NC}"
+    exit 1
+  fi
+fi
+
 # ── Load .env ──────────────────────────────────────────────
 set -a
 source "$ROOT_DIR/.env"
+[ -f "$ROOT_DIR/.env.$MODE" ] && source "$ROOT_DIR/.env.$MODE"
 set +a
 
 BACKEND_PORT="${BACKEND_PORT:-8000}"
@@ -42,7 +88,7 @@ if [ "$AI_PROVIDER" = "gemini" ] && [ -z "$GEMINI_API_KEY" ]; then
 fi
 
 echo ""
-echo -e "${CYAN}YUMMY - AI SDLC Platform${NC}"
+echo -e "${CYAN}YUMMY - AI SDLC Platform ${YELLOW}[$MODE mode]${NC}"
 echo "=================================="
 
 # ── Detect Node ────────────────────────────────────────────
@@ -94,7 +140,8 @@ BACKEND_PID=$!
 echo -e "\n${YELLOW}[Frontend] Setting up...${NC}"
 cd "$FRONTEND_DIR"
 
-echo "NEXT_PUBLIC_API_URL=http://localhost:$BACKEND_PORT" > .env.local
+: "${NEXT_PUBLIC_API_URL:=http://localhost:$BACKEND_PORT}"
+echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" > .env.local
 
 if [ ! -d "node_modules" ]; then
   echo -e "${YELLOW}[Frontend] Installing npm packages (first run)...${NC}"

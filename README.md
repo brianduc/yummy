@@ -32,6 +32,28 @@ Get a free Gemini key at: [https://aistudio.google.com/app/apikey](https://aistu
 
 Run the same command again after filling in the key — everything else is automatic.
 
+### Modes
+
+Both `start.sh` and `start.bat` accept a mode argument:
+
+```bash
+bash start.sh           # equivalent to: bash start.sh dev
+bash start.sh dev       # local backend + frontend, .env + .env.dev
+bash start.sh staging   # local servers, .env + .env.staging (e.g. point frontend at staging API)
+bash start.sh prod      # REFUSED — use docker compose or your deploy pipeline
+bash start.sh --help    # show usage
+```
+
+Each mode loads `.env` first, then overlays `.env.<mode>` on top (mode-specific
+values win). On first run for a given mode, `.env.<mode>` is auto-created from
+the committed `.env.<mode>.example` template — fill in any secrets and re-run.
+
+Per-mode override files (gitignored, hold your real secrets):
+`.env.dev`, `.env.staging`, `.env.prod`
+
+Per-mode example templates (committed, contain placeholders only):
+`.env.dev.example`, `.env.staging.example`, `.env.prod.example`
+
 Requirements:
 - **Node.js 20+** (https://nodejs.org)
 - **pnpm** (auto-installed by the start scripts if missing)
@@ -40,6 +62,7 @@ Requirements:
 
 ## Configuration (.env)
 
+> The variables below can be overridden per-mode by setting them in `.env.<mode>`.
 
 | Variable          | Description               | Default                  |
 | ----------------- | ------------------------- | ------------------------ |
