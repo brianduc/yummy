@@ -52,6 +52,9 @@ export interface WorkspaceChatContext {
   sendBtw: (question: string) => Promise<void>
   print: (text: string, role?: string) => void
   handleCmd: (rawInput: string) => Promise<void>
+  setBusy: React.Dispatch<React.SetStateAction<boolean>>
+  setBtwBusy: React.Dispatch<React.SetStateAction<boolean>>
+  setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>
 }
 
 export interface WorkspaceSdlcToolCallEntry {

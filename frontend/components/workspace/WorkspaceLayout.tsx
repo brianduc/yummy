@@ -29,14 +29,8 @@ interface WorkspaceLayoutProps {
   metrics: MetricsData | null
 
   // Chat / AI copilot
-  chatHistory: ChatMessage[]
-  termLogs: { role: string; text: string }[]
   scanStatus: ScanStatus | null
-  busy: boolean
-  btwBusy: boolean
   workflowRunning: boolean
-  termRef: React.RefObject<HTMLDivElement | null>
-  onSubmit: (input: string) => Promise<void>
 
   // Command palette
   onOpenCommandPalette: () => void
@@ -66,14 +60,8 @@ export default function WorkspaceLayout({
   onFileOpen,
   status,
   metrics,
-  chatHistory,
-  termLogs,
   scanStatus,
-  busy,
-  btwBusy,
   workflowRunning,
-  termRef,
-  onSubmit,
   onOpenCommandPalette,
   onApproveBA,
   onApproveSA,
@@ -82,7 +70,7 @@ export default function WorkspaceLayout({
   mainStageChildren,
   contextPanelChildren,
 }: WorkspaceLayoutProps) {
-  const isRunning = !!scanStatus?.running || busy
+  const isRunning = !!scanStatus?.running || workflowRunning
 
   return (
     <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--bg)' }}>
@@ -122,7 +110,7 @@ export default function WorkspaceLayout({
             workflowState={workflowState}
             streamingAgent={streamingAgent}
             isSDLCDone={isSDLCDone}
-            busy={busy}
+            workflowRunning={workflowRunning}
             onOpenCommandPalette={onOpenCommandPalette}
             onApproveBA={onApproveBA}
             onApproveSA={onApproveSA}
@@ -137,14 +125,8 @@ export default function WorkspaceLayout({
 
         <Panel id="right" defaultSize="30" minSize="20" maxSize="50">
           <AICopilot
-            chatHistory={chatHistory}
-            termLogs={termLogs}
             scanStatus={scanStatus}
-            busy={busy}
-            btwBusy={btwBusy}
             workflowRunning={workflowRunning}
-            termRef={termRef}
-            onSubmit={onSubmit}
             sessionName={sessionName}
           />
         </Panel>

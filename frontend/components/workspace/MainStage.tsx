@@ -28,7 +28,7 @@ interface MainStageProps {
   workflowState: WorkflowState
   streamingAgent: string | null
   isSDLCDone: boolean
-  busy: boolean
+  workflowRunning: boolean
   onOpenCommandPalette: () => void
   onApproveBA?: () => void
   onApproveSA?: () => void
@@ -45,7 +45,7 @@ export default function MainStage({
   workflowState,
   streamingAgent,
   isSDLCDone,
-  busy,
+  workflowRunning,
   onOpenCommandPalette,
   onApproveBA,
   onApproveSA,
@@ -102,7 +102,7 @@ export default function MainStage({
           onApproveSA={onApproveSA}
           onApproveDevLead={onApproveDevLead}
           onStop={onStop}
-          busy={busy}
+          workflowRunning={workflowRunning}
         />
       )}
 

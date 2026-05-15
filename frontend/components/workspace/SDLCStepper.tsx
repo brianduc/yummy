@@ -52,7 +52,7 @@ interface SDLCStepperProps {
   onApproveSA?: () => void
   onApproveDevLead?: () => void
   onStop?: () => void
-  busy?: boolean
+  workflowRunning?: boolean
 }
 
 export default function SDLCStepper({
@@ -63,7 +63,7 @@ export default function SDLCStepper({
   onApproveSA,
   onApproveDevLead,
   onStop,
-  busy,
+  workflowRunning,
 }: SDLCStepperProps) {
   if (workflowState === 'idle') return null
 
@@ -120,7 +120,7 @@ export default function SDLCStepper({
               <span>{step.label}</span>
 
               {/* Approve button when waiting */}
-              {status === 'waiting' && step.key !== 'rest' && !busy && (
+              {status === 'waiting' && step.key !== 'rest' && !workflowRunning && (
                 <button
                   onClick={() => handleApprove(step)}
                   className="ml-1 px-2 py-0.5 rounded font-bold text-2xs cursor-pointer transition-all hover:opacity-80"
@@ -147,7 +147,7 @@ export default function SDLCStepper({
       })}
 
       {/* Stop button when running */}
-      {(workflowState.includes('running') || busy) && !isDone && (
+      {(workflowState.includes('running') || workflowRunning) && !isDone && (
         <button
           onClick={onStop}
           className="ml-3 px-2.5 py-1 rounded font-mono text-2xs font-bold cursor-pointer transition-all flex items-center gap-1"

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Trash2, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useScanPoll } from '@/hooks/useScanPoll'
+import { useWorkspaceChat, WorkspaceChatProvider } from '@/hooks/useWorkspaceChat'
 import { applyTheme, loadSavedTheme, THEMES, type ThemeId } from '@/lib/theme'
 import { loadSavedUiSize } from '@/lib/uiSize'
 
@@ -53,9 +54,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [termLogs, setTermLogs] = useState<{ role: string; text: string }[]>([
     { role: 'system', text: '⚡ YUMMY — type /help to see commands.' },
   ])
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
-  const [busy, setBusy] = useState(false)
-  const [btwBusy, setBtwBusy] = useState(false)
 
   // IDE
   const [ideFile,    setIdeFile]    = useState('')
@@ -90,7 +88,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     return 'asking'
   })
 
-  const termRef = useRef<HTMLDivElement>(null)
 
   // Fetchers
   const fetchSession = useCallback(async () => {
@@ -120,6 +117,20 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     return () => clearInterval(iv)
   }, [sessionId, fetchSession, fetchStatus, fetchKb, fetchSessions])
 
+  const chatRef = useRef<any>(null)
+
+  // Scan polling
+  const { startScanPoll } = useScanPoll({
+    onStatusUpdate: setScanStatus,
+    onMessage: chatRef.current?.print,
+    onComplete: async () => {
+      await fetchKb(); await fetchStatus()
+      chatRef.current?.chatRef.current?.print('✅ Scan complete.')
+      setActiveTab('wiki')
+    },
+  })
+
+
   useEffect(() => {
     if (activeActivity === 'tracing') fetchMetrics()
   }, [activeActivity, fetchMetrics])
@@ -128,30 +139,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   useEffect(() => {
     if (session && session.id !== prevId.current) {
       prevId.current = session.id
-      setChatHistory(session.chat_history || [])
+      chatRef.current?.setChatHistory(session.chat_history || [])
       if (session.agent_outputs?.ba)       setEditBA(session.agent_outputs.ba)
       if (session.agent_outputs?.sa)       setEditSA(session.agent_outputs.sa)
       if (session.agent_outputs?.dev_lead) setEditDevLead(session.agent_outputs.dev_lead)
     }
   }, [session])
-
-  useEffect(() => {
-    termRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [termLogs, chatHistory, scanStatus])
-
-  // Scan polling
-  const print = (text: string, role = 'system') =>
-    setTermLogs(prev => [...prev, { role, text }])
-
-  const { startScanPoll } = useScanPoll({
-    onStatusUpdate: setScanStatus,
-    onMessage: print,
-    onComplete: async () => {
-      await fetchKb(); await fetchStatus()
-      print('✅ Scan complete.')
-      setActiveTab('wiki')
-    },
-  })
 
   // IDE file open
   const openFile = useCallback(async (path: string) => {
@@ -181,7 +174,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
 
   const runSdlcStream = async (gen: AsyncGenerator<SdlcEvent>): Promise<boolean> => {
-    setBusy(true)
+    chatRef.current?.setBusy(true)
     setStreamingAgent(null)
     setStreamingText('')
 
@@ -237,7 +230,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           await refreshSDLC()
         } else if (event.t === 'error') {
           if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          print(`❌ ${event.message}`)
+          chatRef.current?.chatRef.current?.print(`❌ ${event.message}`)
         } else if (event.t === 'tool_call') {
           const agent = streamingAgent ?? 'unknown'
           setToolCalls(prev => ({
@@ -255,188 +248,63 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         }
       }
     } catch (e: any) {
-      print(`❌ ${e.message}`)
+      chatRef.current?.chatRef.current?.chatRef.current?.print(`❌ ${e.message}`)
     } finally {
       if (flushTimer) clearTimeout(flushTimer)
       setStreamingAgent(null)
       setStreamingText('')
-      setBusy(false)
+      chatRef.current?.setBusy(false)
     }
     return wasStopped
   }
 
   const handleApproveBA = async () => {
     setSession(prev => prev ? { ...prev, workflow_state: 'running_sa' } : prev)
-    print('📧 BA approved. Running SA...')
+    chatRef.current?.chatRef.current?.print('📧 BA approved. Running SA...')
     const stopped = await runSdlcStream(api.sdlc.approveBaStream(sessionId, editBA))
-    if (!stopped) print('⚠️ SA done. Waiting for approval...')
+    if (!stopped) chatRef.current?.chatRef.current?.print('⚠️ SA done. Waiting for approval...')
   }
 
   const handleApproveSA = async () => {
     setSession(prev => prev ? { ...prev, workflow_state: 'running_dev_lead' } : prev)
-    print('📧 SA approved. Running Dev Lead...')
+    chatRef.current?.chatRef.current?.print('📧 SA approved. Running Dev Lead...')
     const stopped = await runSdlcStream(api.sdlc.approveSaStream(sessionId, editSA))
-    if (!stopped) print('⚠️ Dev Lead done. Waiting for approval...')
+    if (!stopped) chatRef.current?.chatRef.current?.print('⚠️ Dev Lead done. Waiting for approval...')
   }
 
   const handleApproveDevLead = async () => {
     setSession(prev => prev ? { ...prev, workflow_state: 'running_rest' } : prev)
-    print('📧 Dev Lead approved. Running DEV/SEC/QA/SRE...')
+    chatRef.current?.chatRef.current?.print('📧 Dev Lead approved. Running DEV/SEC/QA/SRE...')
     const stopped = await runSdlcStream(api.sdlc.approveDevLeadStream(sessionId, editDevLead))
-    if (!stopped) print('🎉 Pipeline complete!')
-  }
-
-  const handleStop = async () => {
-    try {
-      await api.sdlc.stop(sessionId)
-      print('⏹ Pipeline stopped.')
-      setBusy(false)
-      await refreshSDLC()
-    } catch (e: any) {
-      print(`❌ Stop failed: ${e.message}`)
-    }
+    if (!stopped) chatRef.current?.chatRef.current?.print('🎉 Pipeline complete!')
   }
 
   const handleRestore = async (checkpoint: 'ba' | 'sa' | 'dev_lead') => {
     const labels: Record<string, string> = { ba: 'BA', sa: 'SA', dev_lead: 'Dev Lead' }
-    setBusy(true)
+    chatRef.current?.setBusy(true)
     try {
       await api.sdlc.restore(sessionId, checkpoint)
-      print(`↩ Restored to ${labels[checkpoint]} checkpoint. Review and approve to continue.`)
+      chatRef.current?.chatRef.current?.print(`↩ Restored to ${labels[checkpoint]} checkpoint. Review and approve to continue.`)
       await refreshSDLC()
     } catch (e: any) {
-      print(`❌ Restore failed: ${e.message}`)
+      chatRef.current?.chatRef.current?.print(`❌ Restore failed: ${e.message}`)
     } finally {
-      setBusy(false)
+      chatRef.current?.setBusy(false)
     }
   }
 
   // RAG ask (streaming)
-  const sendAsk = async (question: string, free = false) => {
-    setChatHistory(prev => [...prev, { role: 'user', text: question }])
-    setChatHistory(prev => [...prev, { role: 'assistant', text: '' }])
-    setBusy(true)
-    setActiveTab('rag')
-
-    let accumulated = ''
-    let lastFlushed = ''
-    let flushTimer: ReturnType<typeof setTimeout> | null = null
-
-    const flushAssistant = (force = false) => {
-      if (!force && accumulated === lastFlushed) return
-      lastFlushed = accumulated
-      setChatHistory(prev => {
-        const next = [...prev]
-        next[next.length - 1] = { role: 'assistant', text: accumulated }
-        return next
-      })
-    }
-
-    const scheduleFlush = () => {
-      if (flushTimer) return
-      flushTimer = setTimeout(() => {
-        flushTimer = null
-        flushAssistant()
-      }, 60)
-    }
-
-    try {
-      for await (const chunk of api.askStream(
-        sessionId, question,
-        ideFile || undefined,
-        ideContent ? ideContent.slice(0, 3000) : undefined,
-        free,
-      )) {
-        if (chunk === '[DONE]') break
-        if (chunk.startsWith('[ERROR]')) {
-          setChatHistory(prev => {
-            const next = [...prev]
-            next[next.length - 1] = { role: 'system', text: `❌ ${chunk.slice(8)}` }
-            return next
-          })
-          return
-        }
-        if (chunk.startsWith('[TRACE] ')) {
-          try {
-            const trace = JSON.parse(chunk.slice(8))
-            setChatHistory(prev => {
-              const next = [...prev]
-              const last = next[next.length - 1]
-              next[next.length - 1] = { ...last, trace }
-              return next
-            })
-          } catch { }
-          continue
-        }
-        accumulated += chunk
-        scheduleFlush()
-      }
-    } catch (e: any) {
-      setChatHistory(prev => {
-        const next = [...prev]
-        next[next.length - 1] = { role: 'system', text: `❌ ${e.message}` }
-        return next
-      })
-    } finally {
-      if (flushTimer) clearTimeout(flushTimer)
-      flushAssistant(true)
-      setBusy(false)
-    }
-  }
-
-  // /btw during SDLC
-  const sendBtw = async (question: string) => {
-    setChatHistory(prev => [...prev, { role: 'user', text: question }])
-    setChatHistory(prev => [...prev, { role: 'assistant', text: '' }])
-    setBtwBusy(true)
-
-    let accumulated = ''
-    let lastFlushed = ''
-    let flushTimer: ReturnType<typeof setTimeout> | null = null
-
-    const flushAssistant = (force = false) => {
-      if (!force && accumulated === lastFlushed) return
-      lastFlushed = accumulated
-      setChatHistory(prev => {
-        const next = [...prev]
-        next[next.length - 1] = { role: 'assistant', text: accumulated }
-        return next
-      })
-    }
-
-    const scheduleFlush = () => {
-      if (flushTimer) return
-      flushTimer = setTimeout(() => { flushTimer = null; flushAssistant() }, 60)
-    }
-
-    try {
-      for await (const chunk of api.askStream(sessionId, question, undefined, undefined, true)) {
-        if (chunk === '[DONE]') break
-        if (chunk.startsWith('[ERROR]')) {
-          setChatHistory(prev => {
-            const next = [...prev]
-            next[next.length - 1] = { role: 'system', text: `❌ ${chunk.slice(8)}` }
-            return next
-          })
-          return
-        }
-        accumulated += chunk
-        scheduleFlush()
-      }
-    } catch (e: any) {
-      setChatHistory(prev => {
-        const next = [...prev]
-        next[next.length - 1] = { role: 'system', text: `❌ ${e.message}` }
-        return next
-      })
-    } finally {
-      if (flushTimer) clearTimeout(flushTimer)
-      flushAssistant(true)
-      setBtwBusy(false)
-    }
-  }
-
   // Session delete
+  const handleStop = async () => {
+    try {
+      await api.sdlc.stop(sessionId)
+      chatRef.current?.print('⏹ Pipeline stopped.')
+      await refreshSDLC()
+    } catch (e: any) {
+      chatRef.current?.print(`❌ Stop failed: ${e.message}`)
+    }
+  }
+
   const deleteSession = async (targetId: string) => {
     try {
       await api.sessions.delete(targetId)
@@ -452,268 +320,42 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  // Command handler
-  const handleCmd = async (rawInput: string) => {
-    const raw = rawInput.trim()
-    if (!raw) return
-    const args    = raw.split(' ')
-    const command = args[0].toLowerCase()
+  const abortRef = useRef<AbortController>(new AbortController())
+  const chat = useWorkspaceChat(sessionId, abortRef, {
+    status,
+    session,
+    fetchStatus,
+    fetchMetrics,
+    startScanPoll,
+    setScanStatus,
+    setActiveTab: setActiveTab as any,
+    setActiveActivity: setActiveActivity as any,
+    setSession,
+    runSdlcStream,
+    handleStop,
+    ideFile,
+    ideContent: ideContent || null
+  })
+  chatRef.current = chat
 
-    if (busy && command !== '/btw' && command !== '/stop') {
-      if (session?.workflow_state?.includes('running')) {
-        print('⟳ Pipeline is running — use /btw <question> to chat, or /stop to abort.')
-      }
-      return
-    }
 
-    print(`> ${raw}`, 'user')
-
-    try {
-      switch (command) {
-        case '/help':
-          print(
-            'Available commands:\n' +
-            '  /setup <url> [token]     — Configure GitHub repo\n' +
-            '  /scan                    — Scan & index codebase\n' +
-            '  /ask <question>          — RAG chat with AI (requires scan)\n' +
-            '  /btw <question>          — Chat with AI freely (no scan needed)\n' +
-            '  /cr <requirement>        — Start SDLC brainstorm\n' +
-            '  /tool <srv>.<tool> [args]  — Invoke MCP tool\n' +
-            '  /stop                    — Stop running SDLC pipeline\n' +
-            '  /provider                — Show current AI provider\n' +
-            '  /provider <name>         — Switch provider (gemini/openai/ollama/copilot/bedrock)\n' +
-            '  /provider <name> <key>   — Switch provider and set API key in one step\n' +
-            '  /new                     — Create new workspace\n' +
-            '  /healthcheck             — Ping AI model connection\n' +
-            '  /info                    — Show system info'
-          )
-          break
-
-        case '/setup': {
-          const url = args[1]
-          if (!url) throw new Error('GitHub URL required. Example: /setup https://github.com/owner/repo')
-          await api.config.setup(url, args[2] || '', 10000)
-          await fetchStatus()
-          print(`✅ Repo configured: ${url}`)
-          break
-        }
-
-        case '/scan': {
-          if (!status?.repo) throw new Error('No repo configured. Run /setup first.')
-          setBusy(true)
-          try { await api.kb.scan() } catch (e: any) { setBusy(false); throw e }
-          setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
-          print('🔍 Starting codebase scan...')
-          setActiveTab('ide')
-          startScanPoll()
-          setBusy(false)
-          break
-        }
-
-        case '/ask': {
-          const q = args.slice(1).join(' ')
-          if (!q) throw new Error('Question required. Example: /ask Explain the auth flow?')
-          if (!status?.kb_has_summary) throw new Error('KB not scanned yet. Run /scan first.')
-          await sendAsk(q)
-          break
-        }
-
-        case '/btw': {
-          const q = args.slice(1).join(' ')
-          if (!q) throw new Error('Question required. Example: /btw What is a JWT token?')
-          if (busy) {
-            await sendBtw(q)
-          } else {
-            await sendAsk(q, true)
-          }
-          break
-        }
-
-        case '/cr': {
-          const req = args.slice(1).join(' ')
-          if (!req) throw new Error('Requirement required. Example: /cr Add PDF export module')
-          if (!status?.kb_has_summary) throw new Error('KB not scanned yet. Run /scan first.')
-          setActiveTab('sdlc'); setActiveActivity('tracing')
-          await fetchMetrics()
-          setSession(prev => prev ? {
-            ...prev,
-            workflow_state: 'running_ba',
-            agent_outputs: { ...prev.agent_outputs, requirement: req },
-          } : prev)
-          print('[BA] Analyzing requirement...')
-          const stopped = await runSdlcStream(api.sdlc.startStream(sessionId, req))
-          if (!stopped) print('⚠️ BA done. Waiting for approval...')
-          break
-        }
-
-        case '/stop': {
-          if (!session?.workflow_state?.includes('running')) {
-            throw new Error('No pipeline is running.')
-          }
-          print('⏹ Stopping pipeline...')
-          await handleStop()
-          break
-        }
-
-        case '/provider': {
-          const VALID_PROVIDERS = ['gemini', 'openai', 'ollama', 'copilot', 'bedrock']
-          const providerArg = args[1]?.toLowerCase()
-          const keyArg = args.slice(2).join(' ')
-
-          if (!providerArg) {
-            print(
-              `Current provider: ${status?.ai_provider ?? '—'}\n` +
-              `Available: ${VALID_PROVIDERS.join(' · ')}\n\n` +
-              `Usage:\n` +
-              `  /provider gemini AIza...     — set key + activate\n` +
-              `  /provider openai sk-...      — set key + activate\n` +
-              `  /provider ollama             — activate (no key needed)\n` +
-              `  /provider copilot ghp_...    — set token + activate\n` +
-              `  /provider bedrock            — activate (set creds in ⚙ Settings)`
-            )
-            break
-          }
-
-          if (!VALID_PROVIDERS.includes(providerArg)) {
-            throw new Error(`Unknown provider "${providerArg}". Valid: ${VALID_PROVIDERS.join(', ')}`)
-          }
-
-          setBusy(true)
-          try {
-            if (keyArg) {
-              if (providerArg === 'gemini')       await api.config.setGeminiKey(keyArg)
-              else if (providerArg === 'openai')  await api.config.setOpenAI(keyArg)
-              else if (providerArg === 'copilot') await api.config.setCopilot(keyArg)
-              else print(`ℹ Bedrock/Ollama credentials can't be set via command — use ⚙ Settings.`)
-            }
-            await api.config.setProvider(providerArg as any)
-            await fetchStatus()
-            print(`✅ Provider switched to ${providerArg}${keyArg ? ' with new API key' : ''}.`)
-            print(`⟳ Running healthcheck...`)
-            const hc = await api.health.model() as any
-            if (hc.status === 'ok') {
-              print(`✅ ${providerArg} OK — model: ${hc.model}, latency: ${hc.latency_ms}ms`)
-            } else {
-              print(`⚠ ${providerArg} error: ${hc.error}\n  Check your key in ⚙ Settings.`)
-            }
-          } finally {
-            setBusy(false)
-          }
-          break
-        }
-
-        case '/new': {
-          const s = await api.sessions.create() as Session
-          await fetchSessions()
-          router.push(`/workspace/${s.id}`)
-          break
-        }
-
-        case '/delete':
-          throw new Error('Use the Sessions panel (⬡ Session tab) to delete workspaces.')
-
-        case '/healthcheck': {
-          print('⟳ Pinging AI model...')
-          setBusy(true)
-          const hc = await api.health.model() as any
-          setBusy(false)
-          if (hc.status === 'ok') {
-            print(`✅ Model OK\n- Provider : ${hc.provider}\n- Model    : ${hc.model}\n- Latency  : ${hc.latency_ms}ms`)
-          } else {
-            print(`❌ Model FAILED\n- Provider : ${hc.provider}\n- Model    : ${hc.model}\n- Error    : ${hc.error}`)
-          }
-          break
-        }
-
-        case '/info': {
-          if (status) {
-            const modelMap: Record<string, string | undefined> = {
-              gemini:  status.gemini_model,
-              openai:  status.openai_model,
-              ollama:  status.ollama_model,
-              copilot: status.copilot_model,
-              bedrock: status.bedrock_model,
-            }
-            const currentModel = modelMap[status.ai_provider] || '—'
-            print(
-              `System Info:\n` +
-              `- Repo     : ${status.repo ? `${status.repo.owner}/${status.repo.repo}` : 'not set'}\n` +
-              `- AI       : ${status.ai_provider}  (${currentModel})\n` +
-              `- KB       : ${status.kb_files} files, ${status.kb_insights} chunks\n` +
-              `- Sessions : ${status.total_sessions}  Cost: $${status.total_cost_usd.toFixed(5)}`
-            )
-          }
-          break
-        }
-
-        case '/tool': {
-          const target = args[1]
-          if (!target) {
-            print('Usage: /tool <serverId>.<toolName> [json-args]\nExample: /tool srv-1.echo.ping {"message":"hello"}')
-            break
-          }
-          const dotIdx = target.indexOf('.')
-          if (dotIdx === -1) {
-            print('❌ Invalid format. Use: /tool <serverId>.<toolName> [json-args]')
-            break
-          }
-          const serverId = target.slice(0, dotIdx)
-          const toolName = target.slice(dotIdx + 1)
-          const jsonStr = args.slice(2).join(' ') || '{}'
-          let toolArgs: Record<string, unknown>
-          try {
-            toolArgs = JSON.parse(jsonStr)
-          } catch {
-            print(`❌ Invalid JSON args: ${jsonStr}`)
-            break
-          }
-          print(`🔧 Invoking ${serverId}.${toolName}...`, 'system')
-          try {
-            const result = await api.world.invoke(serverId, toolName, toolArgs)
-            const text = result.content.map(c => c.text ?? '').join('\n') || '(no output)'
-            const prefix = result.is_error ? '❌ Tool error:\n' : `✅ ${serverId}.${toolName}:\n`
-            print(prefix + text, result.is_error ? 'error' : 'tool')
-          } catch (e: any) {
-            print(`❌ Tool invocation failed: ${e.message}`)
-          }
-          break
-        }
-
-        case '/dark':
-        case '/light':
-        case '/dracula':
-        case '/yummy':
-        case '/angry':
-        case '/idea': {
-          const themeId = command.slice(1) as ThemeId
-          const theme = THEMES[themeId]
-          applyTheme(themeId)
-          print(`${theme.emoji} Theme → "${theme.name}" (${theme.mood} mode). Type /dark to reset.`)
-          break
-        }
-
-        default:
-          throw new Error(`Unknown command: ${command}. Type /help.`)
-      }
-    } catch (e: any) { print(`❌ ${e.message}`); setBusy(false) }
-  }
 
   // Command palette commands
   const commandItems = createDefaultCommands({
     onScan: () => {
       if (status?.repo) {
-        handleCmd('/scan')
+        chatRef.current?.handleCmd('/scan')
       } else {
-        print('No repo configured. Use /setup <github-url> to configure.')
+        chatRef.current?.print('No repo configured. Use /setup <github-url> to configure.')
       }
     },
-    onNewSession: () => handleCmd('/new'),
+    onNewSession: () => chatRef.current?.handleCmd('/new'),
     onToggleSettings: () => setActiveActivity('settings'),
     onToggleTracing: () => setActiveActivity('tracing'),
-    onShowInfo: () => handleCmd('/info'),
-    onHealthcheck: () => handleCmd('/healthcheck'),
+    onShowInfo: () => chatRef.current?.handleCmd('/info'),
+    onHealthcheck: () => chatRef.current?.handleCmd('/healthcheck'),
     onStartSDLC: () => {
-      print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
+      chatRef.current?.print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
     },
   })
 
@@ -738,7 +380,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
 
   return (
-    <>
+    <WorkspaceChatProvider value={chat}>
+      <>
       <WorkspaceLayout
         activeActivity={activeActivity}
         onActivityChange={handleActivityChange}
@@ -753,14 +396,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         onFileOpen={openFile}
         status={status}
         metrics={metrics}
-        chatHistory={chatHistory}
-        termLogs={termLogs}
         scanStatus={scanStatus}
-        busy={busy}
-        btwBusy={btwBusy}
-        workflowRunning={!!session.workflow_state?.includes('running')}
-        termRef={termRef}
-        onSubmit={handleCmd}
+                        workflowRunning={!!session.workflow_state?.includes('running')}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onApproveBA={handleApproveBA}
         onApproveSA={handleApproveSA}
@@ -779,13 +416,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             )}
             {activeTab === 'wiki'     && <WikiPanel kb={kb} />}
             {activeTab === 'insights' && <InsightsPanel kb={kb} />}
-            {activeTab === 'rag'      && <RagPanel chatHistory={chatHistory} />}
+            {activeTab === 'rag'      && <RagPanel chatHistory={chat?.chatHistory || []} />}
             {activeTab === 'sdlc'     && (
               <SdlcPanel
                 session={session}
                 editBA={editBA} editSA={editSA} editDevLead={editDevLead}
-                busy={busy}
-                workflowRunning={!!session.workflow_state?.includes('running')}
+                        busy={chat?.busy || false}
+                        workflowRunning={!!session.workflow_state?.includes('running')}
                 streamingAgent={streamingAgent}
                 streamingText={streamingText}
                 toolCalls={toolCalls}
@@ -870,7 +507,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           }}
           onScanStart={() => {
             setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
-            print('🔍 Starting codebase scan...')
+            chatRef.current?.chatRef.current?.print('🔍 Starting codebase scan...')
             setActiveTab('ide')
             startScanPoll()
           }}
@@ -933,6 +570,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         .prose th,.prose td { border: 1px solid var(--border); padding: .4rem .65rem; }
         .prose th { background: var(--bg-2); color: var(--text-2); }
       `}</style>
-    </>
+      </>
+    </WorkspaceChatProvider>
   )
 }
