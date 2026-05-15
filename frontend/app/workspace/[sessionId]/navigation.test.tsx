@@ -1,0 +1,57 @@
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { useParams, usePathname, useRouter } from 'next/navigation'
+
+const push = vi.fn()
+const replace = vi.fn()
+const back = vi.fn()
+
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ sessionId: 'test-session-123' }),
+  useRouter: () => ({ push, replace, back }),
+  usePathname: () => '/workspace/test-session-123',
+}))
+
+function NavigationProbe() {
+  const params = useParams<{ sessionId: string }>()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  return (
+    <div>
+      <div data-testid="session-id">{params.sessionId}</div>
+      <div data-testid="pathname">{pathname}</div>
+      <a href={`/workspace/${params.sessionId}`} data-testid="workspace-link">
+        Workspace link
+      </a>
+      <button type="button" onClick={() => router.push(`/workspace/${params.sessionId}/sdlc`)}>
+        Go SDLC
+      </button>
+      <button type="button" onClick={() => router.replace(`/workspace/${params.sessionId}/settings`)}>
+        Replace route
+      </button>
+      <button type="button" onClick={() => router.back()}>
+        Back
+      </button>
+    </div>
+  )
+}
+
+describe('next/navigation mock infrastructure', () => {
+  it('returns session-scoped params, pathname, and router methods', () => {
+    render(<NavigationProbe />)
+
+    expect(screen.getByTestId('session-id')).toHaveTextContent('test-session-123')
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/workspace/test-session-123')
+    expect(screen.getByTestId('workspace-link')).toHaveAttribute('href', '/workspace/test-session-123')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go SDLC' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Replace route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+    expect(push).toHaveBeenCalledWith('/workspace/test-session-123/sdlc')
+    expect(replace).toHaveBeenCalledWith('/workspace/test-session-123/settings')
+    expect(back).toHaveBeenCalledTimes(1)
+  })
+})

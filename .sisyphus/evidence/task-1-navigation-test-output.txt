@@ -1,0 +1,16 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run --run navigation characterization
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ app/workspace/[sessionId]/characterization.test.tsx (1 test) 429ms
+   ✓ WorkspacePage characterization > renders the current workspace shell with AI Copilot and accessible panels 427ms
+ ✓ app/workspace/[sessionId]/navigation.test.tsx (1 test) 155ms
+
+ Test Files  2 passed (2)
+      Tests  2 passed (2)
+   Start at  04:07:34
+   Duration  4.21s (transform 524ms, setup 191ms, collect 1.04s, tests 584ms, environment 1.23s, prepare 236ms)
+
