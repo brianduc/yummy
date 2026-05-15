@@ -1,0 +1,1 @@
+Groups 'Kinetic Enterprise' and 'Legacy Themes' were successfully rendered and verified by tests.

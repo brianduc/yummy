@@ -1,0 +1,20 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx (5 tests) 72ms
+ ✓ test/world-sdlc.test.tsx (6 tests) 922ms
+   ✓ SdlcPanel tool call rendering > renders tool call entries when toolCalls prop has entries 596ms
+ ✓ test/world.test.tsx (8 tests) 79ms
+ ✓ lib/theme-registry.test.ts (8 tests) 10ms
+ ✓ components/ui/theme-switcher.test.tsx (4 tests) 291ms
+ ✓ lib/theme.test.ts (3 tests) 6ms
+
+ Test Files  6 passed (6)
+      Tests  34 passed (34)
+   Start at  16:08:16
+   Duration  14.83s (transform 610ms, setup 704ms, collect 1.61s, tests 1.38s, environment 6.48s, prepare 1.38s)
+

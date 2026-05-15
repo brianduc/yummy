@@ -1,0 +1,14 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run scroll-area --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/ui/scroll-area.test.tsx (2 tests) 131ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  16:13:25
+   Duration  1.89s (transform 150ms, setup 128ms, collect 267ms, tests 131ms, environment 625ms, prepare 137ms)
+

@@ -1,0 +1,2 @@
+[0;31mERROR: prod mode is not for local launchers. Use docker compose or your real deploy pipeline.[0m
+exit=1

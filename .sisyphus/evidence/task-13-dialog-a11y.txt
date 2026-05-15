@@ -1,0 +1,14 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run dialog --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/ui/dialog.test.tsx (3 tests) 252ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:13:21
+   Duration  2.40s (transform 147ms, setup 95ms, collect 381ms, tests 252ms, environment 572ms, prepare 125ms)
+

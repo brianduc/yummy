@@ -1,0 +1,662 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run --run --reporter=verbose
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx > settings form sync — AI Provider race condition > seeds cfgProvider from server state when switching to the settings tab
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx > settings form sync — AI Provider race condition > does NOT reset cfgProvider when status updates while already on the settings tab
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx > settings form sync — AI Provider race condition > does NOT reset cfgProvider across multiple poll cycles
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx > settings form sync — AI Provider race condition > re-seeds the form when the user leaves and re-enters the settings tab
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx > settings form sync — AI Provider race condition > handles null status gracefully on tab switch
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'InsightsPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'ActivityBar' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'MainStage' renders with semantic tokens active 361ms
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'SDLCStepper' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'SdlcPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'ChatPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'SessionsPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'IdePanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-light theme > 'WikiPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'InsightsPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'ActivityBar' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'MainStage' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'SDLCStepper' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'SdlcPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'ChatPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'SessionsPanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'IdePanel' renders with semantic tokens active
+ ✓ test/a11y.test.tsx > a11y: kinetic-dark theme > 'WikiPanel' renders with semantic tokens active
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dark > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: light > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: dracula > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: yummy > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: angry > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: idea > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-light > renders 'WikiPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'InsightsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'ActivityBar' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'MainStage' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'SDLCStepper' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'SdlcPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'ChatPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'SessionsPanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'IdePanel' without throwing
+ ✓ test/panel-theme-regression.test.tsx > theme: kinetic-dark > renders 'WikiPanel' without throwing
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > renders tool call entries when toolCalls prop has entries
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > expands and collapses tool call card on click
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > shows error styling for tool calls with is_error=true
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > shows waiting state when result is not yet available
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > does not render tool section when toolCalls is empty
+ ✓ test/world-sdlc.test.tsx > SdlcPanel tool call rendering > renders successful tool result with green styling
+ ✓ test/world.test.tsx > api.world client > listServers calls GET /world/servers
+ ✓ test/world.test.tsx > api.world client > createServer calls POST /world/servers with body
+ ✓ test/world.test.tsx > api.world client > deleteServer calls DELETE /world/servers/:id
+ ✓ test/world.test.tsx > api.world client > invoke calls POST /world/invoke with correct body
+ ✓ test/world.test.tsx > api.world client > throws on non-ok response
+ ✓ test/world.test.tsx > api.world client > connectServer calls POST /world/servers/:id/connect
+ ✓ test/world.test.tsx > api.world client > listTools calls GET /world/servers/:id/tools
+ ✓ test/world.test.tsx > api.world client > getConfig calls GET /world/config
+ ✓ components/ui/select.test.tsx > Select Component > renders trigger and opens content on click 1037ms
+ ✓ components/ui/select.test.tsx > Select Component > can select an item 947ms
+ ✓ components/ui/select.test.tsx > Select Component > applies custom classes to trigger
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders Google Gemini form by default
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders UI size preferences
+ ✓ components/workspace/SettingsPanel.test.tsx > SettingsPanel > renders GitHub Token section
+ ✓ lib/theme-registry.test.ts > theme-registry > validateTheme > returns id when valid
+ ✓ lib/theme-registry.test.ts > theme-registry > validateTheme > returns null when invalid
+ ✓ lib/theme-registry.test.ts > theme-registry > validateTheme > handles null/undefined
+ ✓ lib/theme-registry.test.ts > theme-registry > getDefaultTheme > returns kinetic-light by default
+ ✓ lib/theme-registry.test.ts > theme-registry > getDefaultTheme > returns kinetic-dark when system pref is dark
+ ✓ lib/theme-registry.test.ts > theme-registry > resolveSystemPreference > returns "dark" when prefers-color-scheme: dark
+ ✓ lib/theme-registry.test.ts > theme-registry > resolveSystemPreference > returns "light" when prefers-color-scheme is not dark
+ ✓ lib/theme-registry.test.ts > theme-registry > ALL_THEME_IDS > lists all 8 themes including new kinetic variants
+ ✓ components/ui/dropdown-menu.test.tsx > DropdownMenu > renders correctly and opens when open=true 518ms
+ ✓ components/ui/dropdown-menu.test.tsx > DropdownMenu > renders CheckboxItem correctly
+ ✓ components/ui/dropdown-menu.test.tsx > DropdownMenu > renders RadioGroup and RadioItem correctly
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders without crashing with open={true} 713ms
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders ThemeSwitcher trigger
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under dark theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under light theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under dracula theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under yummy theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under angry theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under idea theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under kinetic-light theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > renders under kinetic-dark theme without error
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > selecting kinetic-dark calls applyTheme(kinetic-dark) 684ms
+ ✓ components/workspace/SettingsDialog.test.tsx > SettingsDialog > has no var(--bg in rendered HTML
+ ✓ components/ui/tabs.test.tsx > Tabs Component > renders tabs with trigger labels 395ms
+ ✓ components/ui/tabs.test.tsx > Tabs Component > default active tab has data-state="active" attribute
+ ✓ components/ui/tabs.test.tsx > Tabs Component > clicking a different trigger sets data-state="active" and previous loses it
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders the Explorer heading
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders empty state when no files
+ ✓ components/workspace/ContextPanel.test.tsx > ContextPanel > renders file tree nodes with correct text
+ ✓ components/ui/alert.test.tsx > Alert > renders with default variant
+ ✓ components/ui/alert.test.tsx > Alert > renders success variant
+ ✓ components/ui/alert.test.tsx > Alert > renders warning variant
+ ✓ components/ui/alert.test.tsx > Alert > renders destructive variant
+ ✓ components/ui/alert.test.tsx > Alert > renders info variant
+ ✓ components/ui/alert.test.tsx > Alert > renders AlertTitle
+ ✓ components/ui/alert.test.tsx > Alert > renders AlertDescription
+ ✓ components/ui/theme-switcher.test.tsx > ThemeSwitcher > renders all 8 themes when opened 581ms
+ ✓ components/ui/theme-switcher.test.tsx > ThemeSwitcher > groups themes into 2 groups with correct labels when opened 463ms
+ ✓ components/ui/theme-switcher.test.tsx > ThemeSwitcher > onChange is called with correct ThemeId when selection changes 334ms
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme kinetic-light
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme kinetic-dark
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme dark
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme light
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme dracula
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme yummy
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme angry
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme idea
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders the MCP Servers heading
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme kinetic-light
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme kinetic-dark
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme dark
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme light
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme dracula
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme yummy
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme angry
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders without legacy color classes on theme idea
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders the MCP Servers heading
+stderr | components/workspace/WorldPanel.test.tsx > WorldPanel > renders Add Server button
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to WorldPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders empty state when no servers configured
+ ✓ components/workspace/WorldPanel.test.tsx > WorldPanel > renders Add Server button
+ ✓ lib/theme.test.ts > Theme features registry > all themes declare features object
+ ✓ lib/theme.test.ts > Theme features registry > legacy themes preserve mono+scanlines+glow
+ ✓ lib/theme.test.ts > Theme features registry > light theme has no scanlines or glow but keeps mono
+ ✓ lib/theme.test.ts > default theme > DEFAULT_THEME_ID equals kinetic-light
+ ✓ lib/theme.test.ts > default theme > loadSavedTheme() applies kinetic-light when localStorage is empty
+ ✓ lib/theme.test.ts > default theme > saved theme still wins over default
+ ✓ lib/theme.test.ts > default theme > unknown saved id falls back to kinetic-light
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders the Kanban Board heading
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders empty state when backlog is empty
+ ✓ components/workspace/BacklogPanel.test.tsx > BacklogPanel > renders tasks in correct columns
+ ✓ components/ui/card.test.tsx > Card Components > 1. renders a full card composition
+ ✓ components/ui/card.test.tsx > Card Components > 2. Card applies semantic background surface class
+ ✓ components/ui/card.test.tsx > Card Components > 3. CardTitle applies correct text styling
+ ✓ components/ui/card.test.tsx > Card Components > 4. Custom classNames are merged via cn()
+ ✓ components/ui/badge.test.tsx > Badge > renders default badge
+ ✓ components/ui/badge.test.tsx > Badge > renders secondary badge
+ ✓ components/ui/badge.test.tsx > Badge > renders success badge
+ ✓ components/ui/badge.test.tsx > Badge > renders warning badge
+ ✓ components/ui/badge.test.tsx > Badge > renders destructive badge
+ ✓ components/ui/badge.test.tsx > Badge > renders info badge
+ ✓ components/ui/badge.test.tsx > Badge > renders outline badge
+ ✓ components/ui/badge.test.tsx > Badge > accepts additional class names
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme light
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders title
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders loading spinner and text when loading is true
+ ✓ components/workspace/AgentCard.test.tsx > AgentCard > renders approve button and textarea when editable is true
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders without crashing
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under dark theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under light theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under dracula theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under yummy theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under angry theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under idea theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under kinetic-light theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/ChatPanel.test.tsx > ChatPanel > has no legacy var(-- references
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders zero-trust banner
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders stats with 0 when status is null
+ ✓ components/workspace/DbPanel.test.tsx > DbPanel > renders sessions list
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders without crashing
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under dark theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under light theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under dracula theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under yummy theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under angry theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under idea theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under kinetic-light theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/SdlcPanel.test.tsx > SdlcPanel > has no legacy var(-- references
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > shows load button when metrics is null
+ ✓ components/workspace/TracingPanel.test.tsx > TracingPanel > renders metrics cards and logs when metrics provided
+ ✓ components/ui/button.test.tsx > Button > 1. renders with text
+ ✓ components/ui/button.test.tsx > Button > 2. default variant has bg-primary class
+ ✓ components/ui/button.test.tsx > Button > 3. destructive variant has bg-critical class
+ ✓ components/ui/button.test.tsx > Button > 4. ghost variant does NOT have bg-primary
+ ✓ components/ui/button.test.tsx > Button > 5. sm size has h-8 class
+ ✓ components/ui/button.test.tsx > Button > 6. no legacy var in any variant class string
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme kinetic-light
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme kinetic-dark
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme dark
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme light
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme dracula
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme yummy
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme angry
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme idea
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/workspace/CommandPalette.test.tsx > CommandPalette > renders command list when open
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme light
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders closed when open=false
+ ✓ components/workspace/CommandPalette.test.tsx > CommandPalette > renders command list when open
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders without crashing 345ms
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under dark theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under light theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under dracula theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under yummy theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under angry theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under idea theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under kinetic-light theme without error
+ ✓ components/workspace/WorkspaceLayout.test.tsx > WorkspaceLayout > renders under kinetic-dark theme without error
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme light
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders provider selection step
+ ✓ components/workspace/OnboardingWizard.test.tsx > OnboardingWizard > renders setup wizard heading
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders without crashing
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders skeleton loader when sessions is null
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under dark theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under light theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under dracula theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under yummy theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under angry theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under idea theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under kinetic-light theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/SessionsPanel.test.tsx > SessionsPanel > has no legacy var(-- references
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme light
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders empty state when no tree
+ ✓ components/workspace/NodeGraph.test.tsx > NodeGraph > renders SVG with nodes when tree provided
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme kinetic-light
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme kinetic-dark
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme dark
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme light
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme dracula
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme yummy
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme angry
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders without legacy CSS vars on theme idea
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders empty state when chat history is empty
+ ✓ components/workspace/RagPanel.test.tsx > RagPanel > renders chat history
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders without crashing
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under dark theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under light theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under dracula theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under yummy theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under angry theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under idea theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under kinetic-light theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/IdePanel.test.tsx > IdePanel > has no legacy var(-- references
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders without crashing
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under dark theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under light theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under dracula theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under yummy theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under angry theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under idea theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under kinetic-light theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > renders under kinetic-dark theme without error
+ ✓ components/workspace/FileTree.test.tsx > FileTree > has no legacy var(-- references except specific intentional exceptions
+ ✓ components/ui/tooltip.test.tsx > Tooltip > TooltipProvider renders children
+ ✓ components/ui/tooltip.test.tsx > Tooltip > TooltipContent renders with correct base classes
+ ✓ components/ui/tooltip.test.tsx > Tooltip > TooltipProvider accepts custom delayDuration
+stderr | components/ui/dialog.test.tsx > Dialog > opens when open={true} prop passed
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+stderr | components/ui/dialog.test.tsx > Dialog > renders DialogTitle as accessible heading
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+ ✓ components/ui/dialog.test.tsx > Dialog > is closed by default
+ ✓ components/ui/dialog.test.tsx > Dialog > opens when open={true} prop passed
+ ✓ components/ui/dialog.test.tsx > Dialog > renders DialogTitle as accessible heading
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders without crashing
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under dark theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under light theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under dracula theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under yummy theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under angry theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under idea theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under kinetic-light theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/InsightsPanel.test.tsx > InsightsPanel > has no legacy var(-- references
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders without crashing
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under dark theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under light theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under dracula theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under yummy theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under angry theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under idea theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under kinetic-light theme without error
+ ✓ components/workspace/MainStage.test.tsx > MainStage > renders under kinetic-dark theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders without crashing
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under dark theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under light theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under dracula theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under yummy theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under angry theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under idea theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under kinetic-light theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > renders under kinetic-dark theme without error
+ ✓ components/workspace/WikiPanel.test.tsx > WikiPanel > has no legacy var(-- references
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders without crashing when running
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders null when idle
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under dark theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under light theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under dracula theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under yummy theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under angry theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under idea theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under kinetic-light theme without error
+ ✓ components/workspace/SDLCStepper.test.tsx > SDLCStepper > renders under kinetic-dark theme without error
+ ✓ components/ui/switch.test.tsx > Switch > renders correctly as a switch
+ ✓ components/ui/switch.test.tsx > Switch > toggles state on click
+ ✓ components/workspace/AICopilot.test.tsx > AICopilot > renders correctly
+ ✓ components/workspace/AICopilot.test.tsx > AICopilot > does not contain legacy var(--) CSS variables
+ ✓ components/ui/input.test.tsx > Input > renders without crashing with placeholder text
+ ✓ components/ui/input.test.tsx > Input > className includes bg-surface and focus-visible:ring-ring
+ ✓ components/ui/input.test.tsx > Input > ref forwarding works correctly

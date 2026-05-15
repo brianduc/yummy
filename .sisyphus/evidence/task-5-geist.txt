@@ -1,0 +1,8 @@
+Task 5 evidence
+================
+- Updated frontend/app/layout.tsx to import GeistSans from geist/font/sans and apply GeistSans.variable to <html>
+- Updated frontend/app/globals.css: --font-ui => var(--font-geist-sans), system-ui, sans-serif
+- Verified with: cd /home/ec2-user/yummy/frontend && npm run build
+- Verified with: grep -c "GeistSans" frontend/app/layout.tsx => 2
+- Verified with: grep -n "font-ui" frontend/app/globals.css => line 65 now uses var(--font-geist-sans)
+- LSP diagnostics attempted but local TypeScript/biome LSP servers were not installed in this environment

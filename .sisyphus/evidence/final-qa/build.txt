@@ -1,0 +1,67 @@
+
+> yummy-frontend@1.0.0 build
+> next build
+
+▲ Next.js 16.2.3 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./tailwind.config.js:4:32
+Expression expected
+  [90m2 |[0m [90m * LEGACY UTILITY NAMESPACES (frozen — no new additions):[0m
+  [90m3 |[0m [90m * - bg-bg-1/bg-bg-2/bg-bg-3 — use bg-surface/bg-surface-2 for new code[0m
+[31m[1m>[0m [90m4 |[0m [90m * - text-green-*/[0mborder-green-* — use text-primary/border-primary [36mfor[0m [36mnew[0m code
+  [90m  |[0m                                [31m[1m^[0m
+  [90m5 |[0m  * - green-[33mDEFAULT[0m/amber-[33mDEFAULT[0m — use primary/warning [36mfor[0m [36mnew[0m code
+  [90m6 |[0m  * [33mThese[0m are preserved [36mfor[0m legacy themes (dark/light/dracula/yummy/angry/idea).
+  [90m7 |[0m  * [33mRemoval[0m scheduled [36mfor[0m vNext after legacy theme deprecation.
+
+Parsing ecmascript source code failed
+
+
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./app/globals.css
+Error evaluating Node.js code
+SyntaxError: Unexpected token (4:32)
+    [at unexpected (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/util.js:99:15)]
+    [at parseExprAtom (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:594:24)]
+    [at parseExprSubscripts (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:276:20)]
+    [at parseMaybeUnary (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:257:20)]
+    [at parseExprOp (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:223:7)]
+    [at parseExprOp (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:231:7)]
+    [at parseExprOps (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:189:3)]
+    [at parseMaybeConditional (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:157:20)]
+    [at baseParseMaybeAssign (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:142:20)]
+    [at tsParseMaybeAssignWithoutJSX (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/plugins/typescript.js:1580:45)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+./node_modules/geist/dist/geistsans_d5a4f12f.module.css
+Error evaluating Node.js code
+SyntaxError: Unexpected token (4:32)
+    [at unexpected (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/util.js:99:15)]
+    [at parseExprAtom (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:594:24)]
+    [at parseExprSubscripts (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:276:20)]
+    [at parseMaybeUnary (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:257:20)]
+    [at parseExprOp (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:223:7)]
+    [at parseExprOp (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:231:7)]
+    [at parseExprOps (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:189:3)]
+    [at parseMaybeConditional (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:157:20)]
+    [at baseParseMaybeAssign (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/traverser/expression.js:142:20)]
+    [at tsParseMaybeAssignWithoutJSX (/home/ec2-user/yummy/frontend/node_modules/sucrase/dist/parser/plugins/typescript.js:1580:45)]
+
+Import trace:
+  Server Component:
+    ./node_modules/geist/dist/geistsans_d5a4f12f.module.css
+    ./node_modules/geist/dist/geistsans_d5a4f12f.js
+    ./app/layout.tsx
+
+
+    at ignore-listed frames

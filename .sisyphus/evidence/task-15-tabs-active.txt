@@ -1,0 +1,14 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run tabs --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/ui/tabs.test.tsx (3 tests) 376ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:14:40
+   Duration  3.54s (transform 184ms, setup 168ms, collect 411ms, tests 376ms, environment 1.13s, prepare 219ms)
+

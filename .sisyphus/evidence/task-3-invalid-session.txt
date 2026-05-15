@@ -1,0 +1,15 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run --run workspace-providers
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ test/workspace-providers.test.tsx (18 tests) 589ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  04:47:56
+   Duration  2.28s (transform 193ms, setup 81ms, collect 291ms, tests 589ms, environment 555ms, prepare 108ms)
+

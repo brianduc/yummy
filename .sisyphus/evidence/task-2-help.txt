@@ -1,0 +1,4 @@
+--help: exit=0
+-h: exit=0
+help: exit=0
+usage text found

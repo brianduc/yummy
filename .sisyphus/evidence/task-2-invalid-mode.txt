@@ -1,0 +1,2 @@
+[0;31mERROR: Unknown mode: foo. Allowed: dev, staging, prod[0m
+exit=1

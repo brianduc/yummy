@@ -1,0 +1,19 @@
+app/workspace/[sessionId]/settingsSync.test.tsx(37,1): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(38,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(46,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(50,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(53,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(61,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(65,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(71,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(74,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(82,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(86,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(89,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(92,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(95,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(109,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(112,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+app/workspace/[sessionId]/settingsSync.test.tsx(121,5): error TS2304: Cannot find name 'expect'.
+app/workspace/[sessionId]/settingsSync.test.tsx(125,37): error TS2322: Type '{ ai_provider: string; }' is not assignable to type 'null'.
+app/workspace/[sessionId]/settingsSync.test.tsx(126,5): error TS2304: Cannot find name 'expect'.

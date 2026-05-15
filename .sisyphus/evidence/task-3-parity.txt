@@ -1,0 +1,6 @@
+MODE=: sh=2 bat=3
+help: sh=1 bat=6
+Unknown mode: sh=1 bat=1
+prod mode is not: sh=1 bat=1
+mode\]: sh=3 bat=3
+NEXT_PUBLIC_API_URL=: sh=1 bat=2

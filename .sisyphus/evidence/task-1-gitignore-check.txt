@@ -1,0 +1,5 @@
+.gitignore:4:.env.dev	.env.dev
+.gitignore:5:.env.staging	.env.staging
+.gitignore:6:.env.prod	.env.prod
+PASS: .env.dev.example is NOT ignored
+PASS: .env.example is NOT ignored

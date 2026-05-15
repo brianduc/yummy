@@ -1,0 +1,14 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run input --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/ui/input.test.tsx (3 tests) 60ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:12:40
+   Duration  1.62s (transform 108ms, setup 87ms, collect 163ms, tests 60ms, environment 587ms, prepare 124ms)
+

@@ -1,0 +1,15 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run theme-switcher --run
+
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/ui/theme-switcher.test.tsx (3 tests) 767ms
+   ✓ ThemeSwitcher > renders all 8 themes when opened 393ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:44:36
+   Duration  2.70s (transform 160ms, setup 93ms, collect 498ms, tests 767ms, environment 597ms, prepare 116ms)
+

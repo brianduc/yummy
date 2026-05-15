@@ -1,0 +1,2 @@
+npm warn exec The following package was not found and will be installed: tsx@4.22.0
+{ DEFAULT_THEME_ID: 'dark', KINETIC_DEFAULT_THEME_ID: 'kinetic-light' }
