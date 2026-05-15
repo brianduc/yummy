@@ -1,0 +1,37 @@
+Task 6: Persistent workspace layout and provider shell
+Date: 2026-05-15
+
+Files created:
+- frontend/app/workspace/[sessionId]/layout.tsx (NEW)
+- frontend/test/workspace-layout.test.tsx (NEW)
+
+Test run: cd frontend && npm test -- --run workspace-layout
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ test/workspace-layout.test.tsx (4 tests) 73ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  05:55:05
+   Duration  1.66s
+
+Full suite (npm test -- --run):
+ ✓ test/workspace-providers.test.tsx (18 tests)
+ ✓ test/workspace-layout.test.tsx (4 tests)
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx (5 tests)
+ × test/stream-lifecycle.test.tsx (1 failed) — INTENTIONAL RED (abort-on-unmount)
+ ✓ app/workspace/[sessionId]/characterization.test.tsx (2 tests)
+ ✓ test/world-sdlc.test.tsx (6 tests)
+ ✓ test/sdlc-provider.test.tsx (2 tests)
+ ✓ test/world.test.tsx (8 tests)
+ ✓ test/chat-provider.test.tsx (2 tests)
+ ✓ app/workspace/[sessionId]/navigation.test.tsx (1 test)
+
+Total: 1 failed (intentional RED) | 49 passed (50)
+
+Tests verified:
+- workspace-layout wrapper renders (data-testid="workspace-layout")
+- workspace-main-slot renders with child content (data-testid="workspace-main-slot")
+- workspace-nav renders (data-testid="workspace-nav")
+- layout shell persists when children are replaced (route navigation simulation)

@@ -43,3 +43,12 @@
 - `runSdlcStream` must track the current agent in a ref/local variable; React state is too stale for immediate `tool_call` / `tool_result` events inside the same stream loop.
 - Focused SDLC provider test passes and evidence is captured in `.sisyphus/evidence/task-5-sdlc-provider.txt` and `task-5-sdlc-abort.txt`.
 - Full frontend test suite still has the inherited intentional RED `stream-lifecycle` abort-on-workspace-layout-unmount failure; frontend build passes.
+
+## 2026-05-15 Task 6 — Persistent Workspace Layout
+
+- Created `frontend/app/workspace/[sessionId]/layout.tsx` as a 'use client' persistent shell wrapping all workspace provider hooks (useWorkspaceSession, useWorkspaceStatus, useWorkspaceUi, useWorkspaceChat, useWorkspaceSdlc).
+- **React.use vs named import**: Layout uses `React.use(params)` (NOT the named `use` import). Tests spy via `vi.spyOn(React, 'use')` — the spy ONLY intercepts `React.use`, not a destructured named `use`. Always use `React.use(params)` in 'use client' layouts for testability.
+- **Session mirror pattern**: `useWorkspaceSession` doesn't expose a `setSession` setter. Layout uses `useState<Session | null> + useEffect` to sync from `sessionCtx.session` into a local `session` state that is passed to `useWorkspaceSdlc` and `useWorkspaceChat` which require a writable setter.
+- **Test import path**: Tests in `frontend/test/` import from `@/app/workspace/[sessionId]/layout` (alias works even with brackets in path). Relative paths with `[sessionId]` in them cause Vite import analysis errors.
+- **Provider persistence test**: To verify layout persists across child navigation, use `rerender()` with different children and check the layout data-testids remain present while old child is gone and new child appears.
+- 4/4 workspace-layout tests pass. Full suite: 49 pass, 1 intentional RED (stream-lifecycle abort).
