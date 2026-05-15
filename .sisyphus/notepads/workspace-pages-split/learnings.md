@@ -24,3 +24,22 @@
 - Added frontend/test/stream-lifecycle.test.tsx as RED lifecycle characterization: child workspace route rerender preserves mocked stream signals; leaving workspace expects abort and currently fails until providers/layout own AbortController cleanup.
 - Evidence captured in .sisyphus/evidence/task-2-stream-lifecycle.txt and task-2-stream-abort.txt from npm test -- --run stream-lifecycle.
 - LSP diagnostics unavailable in environment: typescript-language-server command not installed.
+
+## 2026-05-15 Task 3 — Workspace Provider Hooks
+- Created three hooks: useWorkspaceSession, useWorkspaceStatus, useWorkspaceUi
+- 18/18 tests passing in frontend/test/workspace-providers.test.tsx
+- routerRef pattern: store useRouter() result in a ref, update each render, use routerRef.current in callbacks — removes router from useCallback deps, prevents infinite re-render when mock returns new object per render
+- stopScanPollRef pattern: same idea for useScanPoll's stopScanPoll (non-memoized) — removes it from useEffect deps, prevents effect re-run on every render
+- useWorkspaceUi uses getCurrentTheme() / getSavedUiSizeIndex() as useState initializer functions (lazy init)
+- cancelledRef in useWorkspaceSession prevents setState after unmount
+- vi.hoisted() required for mock variables accessible inside vi.mock() factory closures
+- Evidence: .sisyphus/evidence/task-3-provider-tests.txt
+- **Characterization Tests**: Keeping characterization tests running continuously while refactoring large pages is essential to ensure critical element hierarchy (e.g. \`WorkspaceChatProvider\` placement, conditional UI rendering) is preserved.
+- **Provider Refactoring Gotcha**: When wrapping a component in a Provider during a heavy refactoring, ensure that the closing tags are syntactically valid in JSX (e.g., matching the \`<></>\` fragments correctly) and that no inner `useEffect` blocks mistakenly consume variables hoisted above the hook declarations.
+
+## 2026-05-15 Task 5 — SDLC Provider Extraction
+- Extracted SDLC streaming state into `frontend/hooks/useWorkspaceSdlc.ts`; hook owns edit buffers, streaming agent/text, tool calls, approval/restore/abort handlers, and guards state updates with `isMountedRef`.
+- RED test pattern: `renderHook` plus a manually controlled async generator can prove abort cleanup without relying on real SSE/fetch.
+- `runSdlcStream` must track the current agent in a ref/local variable; React state is too stale for immediate `tool_call` / `tool_result` events inside the same stream loop.
+- Focused SDLC provider test passes and evidence is captured in `.sisyphus/evidence/task-5-sdlc-provider.txt` and `task-5-sdlc-abort.txt`.
+- Full frontend test suite still has the inherited intentional RED `stream-lifecycle` abort-on-workspace-layout-unmount failure; frontend build passes.

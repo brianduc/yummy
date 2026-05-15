@@ -2,10 +2,11 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2, Loader2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useScanPoll } from '@/hooks/useScanPoll'
 import { useWorkspaceChat, WorkspaceChatProvider } from '@/hooks/useWorkspaceChat'
+import { useWorkspaceSdlc } from '@/hooks/useWorkspaceSdlc'
 import { applyTheme, loadSavedTheme, THEMES, type ThemeId } from '@/lib/theme'
 import { loadSavedUiSize } from '@/lib/uiSize'
 
@@ -30,9 +31,8 @@ import OnboardingWizard from '@/components/workspace/OnboardingWizard'
 
 import type {
   Session, SystemStatus, KnowledgeBase,
-  ScanStatus, MetricsData, ChatMessage, WorkflowState,
+  ScanStatus, MetricsData, ChatMessage,
 } from '@/lib/types'
-import type { SdlcEvent } from '@/lib/api'
 
 export default function WorkspacePage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = React.use(params)
@@ -59,24 +59,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [ideFile,    setIdeFile]    = useState('')
   const [ideContent, setIdeContent] = useState('')
   const [ideLoading, setIdeLoading] = useState(false)
-
-  // SDLC edit buffers
-  const [editBA,      setEditBA]      = useState('')
-  const [editSA,      setEditSA]      = useState('')
-  const [editDevLead, setEditDevLead] = useState('')
-
-  // SDLC streaming state
-  const [streamingAgent, setStreamingAgent] = useState<string | null>(null)
-  const [streamingText,  setStreamingText]  = useState('')
-
-  // Tool call tracking
-  type ToolCallEntry = {
-    server: string
-    tool: string
-    args: Record<string, unknown>
-    result?: { content: unknown; is_error: boolean }
-  }
-  const [toolCalls, setToolCalls] = useState<Record<string, ToolCallEntry[]>>({})
 
   // UI helpers
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
@@ -140,9 +122,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     if (session && session.id !== prevId.current) {
       prevId.current = session.id
       chatRef.current?.setChatHistory(session.chat_history || [])
-      if (session.agent_outputs?.ba)       setEditBA(session.agent_outputs.ba)
-      if (session.agent_outputs?.sa)       setEditSA(session.agent_outputs.sa)
-      if (session.agent_outputs?.dev_lead) setEditDevLead(session.agent_outputs.dev_lead)
     }
   }, [session])
 
@@ -162,149 +141,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     setTimeout(() => setToast(null), 3000)
   }
 
-  // SDLC helpers
-  const refreshSDLC = async () => {
-    try {
-      const u = await api.sdlc.state(sessionId) as any
-      setSession(prev => prev ? { ...prev, workflow_state: u.workflow_state, agent_outputs: u.agent_outputs, jira_backlog: u.jira_backlog } : prev)
-      if (u.agent_outputs?.ba)       setEditBA(u.agent_outputs.ba)
-      if (u.agent_outputs?.sa)       setEditSA(u.agent_outputs.sa)
-      if (u.agent_outputs?.dev_lead) setEditDevLead(u.agent_outputs.dev_lead)
-    } catch { }
-  }
-
-  const runSdlcStream = async (gen: AsyncGenerator<SdlcEvent>): Promise<boolean> => {
-    chatRef.current?.setBusy(true)
-    setStreamingAgent(null)
-    setStreamingText('')
-
-    let currentAgent: string | null = null
-    let accumulated = ''
-    let wasStopped = false
-    let flushTimer: ReturnType<typeof setTimeout> | null = null
-
-    const flushText = () => setStreamingText(accumulated)
-    const scheduleFlush = () => {
-      if (flushTimer) return
-      flushTimer = setTimeout(() => { flushTimer = null; flushText() }, 60)
-    }
-
-    try {
-      for await (const event of gen) {
-        if (event.t === 'start') {
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          currentAgent = event.agent
-          accumulated = ''
-          setStreamingAgent(event.agent)
-          setStreamingText('')
-          setToolCalls(prev => ({ ...prev, [event.agent]: [] }))
-        } else if (event.t === 'c') {
-          accumulated += event.text
-          scheduleFlush()
-        } else if (event.t === 'agent_done') {
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          const key = currentAgent
-          const text = accumulated
-          if (key) {
-            setSession(prev => prev
-              ? { ...prev, agent_outputs: { ...prev.agent_outputs, [key]: text } }
-              : prev)
-          }
-          accumulated = ''
-          setStreamingText('')
-        } else if (event.t === 'done') {
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          const ao = event.agent_outputs as Record<string, string>
-          setSession(prev => prev ? {
-            ...prev,
-            workflow_state: event.state as WorkflowState,
-            agent_outputs: ao as any,
-            jira_backlog: event.jira_backlog as any,
-          } : prev)
-          if (ao?.ba)       setEditBA(ao.ba)
-          if (ao?.sa)       setEditSA(ao.sa)
-          if (ao?.dev_lead) setEditDevLead(ao.dev_lead)
-        } else if (event.t === 'stopped') {
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          wasStopped = true
-          await refreshSDLC()
-        } else if (event.t === 'error') {
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-          chatRef.current?.chatRef.current?.print(`❌ ${event.message}`)
-        } else if (event.t === 'tool_call') {
-          const agent = streamingAgent ?? 'unknown'
-          setToolCalls(prev => ({
-            ...prev,
-            [agent]: [...(prev[agent] ?? []), { server: event.server, tool: event.tool, args: event.args }],
-          }))
-        } else if (event.t === 'tool_result') {
-          const agent = streamingAgent ?? 'unknown'
-          setToolCalls(prev => {
-            const entries = [...(prev[agent] ?? [])]
-            const last = entries[entries.length - 1]
-            if (last) entries[entries.length - 1] = { ...last, result: { content: event.content, is_error: event.is_error } }
-            return { ...prev, [agent]: entries }
-          })
-        }
-      }
-    } catch (e: any) {
-      chatRef.current?.chatRef.current?.chatRef.current?.print(`❌ ${e.message}`)
-    } finally {
-      if (flushTimer) clearTimeout(flushTimer)
-      setStreamingAgent(null)
-      setStreamingText('')
-      chatRef.current?.setBusy(false)
-    }
-    return wasStopped
-  }
-
-  const handleApproveBA = async () => {
-    setSession(prev => prev ? { ...prev, workflow_state: 'running_sa' } : prev)
-    chatRef.current?.chatRef.current?.print('📧 BA approved. Running SA...')
-    const stopped = await runSdlcStream(api.sdlc.approveBaStream(sessionId, editBA))
-    if (!stopped) chatRef.current?.chatRef.current?.print('⚠️ SA done. Waiting for approval...')
-  }
-
-  const handleApproveSA = async () => {
-    setSession(prev => prev ? { ...prev, workflow_state: 'running_dev_lead' } : prev)
-    chatRef.current?.chatRef.current?.print('📧 SA approved. Running Dev Lead...')
-    const stopped = await runSdlcStream(api.sdlc.approveSaStream(sessionId, editSA))
-    if (!stopped) chatRef.current?.chatRef.current?.print('⚠️ Dev Lead done. Waiting for approval...')
-  }
-
-  const handleApproveDevLead = async () => {
-    setSession(prev => prev ? { ...prev, workflow_state: 'running_rest' } : prev)
-    chatRef.current?.chatRef.current?.print('📧 Dev Lead approved. Running DEV/SEC/QA/SRE...')
-    const stopped = await runSdlcStream(api.sdlc.approveDevLeadStream(sessionId, editDevLead))
-    if (!stopped) chatRef.current?.chatRef.current?.print('🎉 Pipeline complete!')
-  }
-
-  const handleRestore = async (checkpoint: 'ba' | 'sa' | 'dev_lead') => {
-    const labels: Record<string, string> = { ba: 'BA', sa: 'SA', dev_lead: 'Dev Lead' }
-    chatRef.current?.setBusy(true)
-    try {
-      await api.sdlc.restore(sessionId, checkpoint)
-      chatRef.current?.chatRef.current?.print(`↩ Restored to ${labels[checkpoint]} checkpoint. Review and approve to continue.`)
-      await refreshSDLC()
-    } catch (e: any) {
-      chatRef.current?.chatRef.current?.print(`❌ Restore failed: ${e.message}`)
-    } finally {
-      chatRef.current?.setBusy(false)
-    }
-  }
-
   // RAG ask (streaming)
   // Session delete
-  const handleStop = async () => {
-    try {
-      await api.sdlc.stop(sessionId)
-      chatRef.current?.print('⏹ Pipeline stopped.')
-      await refreshSDLC()
-    } catch (e: any) {
-      chatRef.current?.print(`❌ Stop failed: ${e.message}`)
-    }
-  }
-
   const deleteSession = async (targetId: string) => {
     try {
       await api.sessions.delete(targetId)
@@ -321,6 +159,14 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
 
   const abortRef = useRef<AbortController>(new AbortController())
+  const sdlc = useWorkspaceSdlc(sessionId, {
+    session,
+    setSession,
+    print: (message, role) => chatRef.current?.print(message, role),
+    setBusy: (busy) => chatRef.current?.setBusy(busy),
+  })
+  const { sdlcState } = sdlc
+
   const chat = useWorkspaceChat(sessionId, abortRef, {
     status,
     session,
@@ -331,8 +177,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     setActiveTab: setActiveTab as any,
     setActiveActivity: setActiveActivity as any,
     setSession,
-    runSdlcStream,
-    handleStop,
+    runSdlcStream: sdlc.runSdlcStream,
+    handleStop: sdlc.abort,
     ideFile,
     ideContent: ideContent || null
   })
@@ -390,7 +236,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         sessionName={session.name}
         session={session}
         workflowState={session.workflow_state}
-        streamingAgent={streamingAgent}
+        streamingAgent={sdlcState.streamingAgent}
         isSDLCDone={isSDLCDone}
         fileTree={kb?.tree || []}
         onFileOpen={openFile}
@@ -399,10 +245,10 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         scanStatus={scanStatus}
                         workflowRunning={!!session.workflow_state?.includes('running')}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-        onApproveBA={handleApproveBA}
-        onApproveSA={handleApproveSA}
-        onApproveDevLead={handleApproveDevLead}
-        onStop={handleStop}
+        onApproveBA={sdlc.approveBA}
+        onApproveSA={sdlc.approveSA}
+        onApproveDevLead={sdlc.approveDevLead}
+        onStop={sdlc.abort}
         mainStageChildren={
           <>
             {activeTab === 'ide'      && <IdePanel tree={kb?.tree || []} ideFile={ideFile} ideContent={ideContent} ideLoading={ideLoading} onFileOpen={openFile} />}
@@ -420,16 +266,16 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             {activeTab === 'sdlc'     && (
               <SdlcPanel
                 session={session}
-                editBA={editBA} editSA={editSA} editDevLead={editDevLead}
+                editBA={sdlcState.editBA} editSA={sdlcState.editSA} editDevLead={sdlcState.editDevLead}
                         busy={chat?.busy || false}
                         workflowRunning={!!session.workflow_state?.includes('running')}
-                streamingAgent={streamingAgent}
-                streamingText={streamingText}
-                toolCalls={toolCalls}
-                onEditBA={setEditBA} onEditSA={setEditSA} onEditDevLead={setEditDevLead}
-                onApproveBA={handleApproveBA} onApproveSA={handleApproveSA} onApproveDevLead={handleApproveDevLead}
-                onStop={handleStop}
-                onRestore={handleRestore}
+                streamingAgent={sdlcState.streamingAgent}
+                streamingText={sdlcState.streamingText}
+                toolCalls={sdlcState.toolCalls}
+                onEditBA={sdlc.setEditBA} onEditSA={sdlc.setEditSA} onEditDevLead={sdlc.setEditDevLead}
+                onApproveBA={sdlc.approveBA} onApproveSA={sdlc.approveSA} onApproveDevLead={sdlc.approveDevLead}
+                onStop={sdlc.abort}
+                onRestore={sdlc.restore}
               />
             )}
             {activeTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}
