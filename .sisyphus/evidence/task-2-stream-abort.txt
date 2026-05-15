@@ -1,0 +1,38 @@
+
+> yummy-frontend@1.0.0 test
+> vitest run --run stream-lifecycle
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ❯ test/stream-lifecycle.test.tsx (2 tests | 1 failed) 185ms
+   × workspace stream lifecycle contracts > stream aborts on workspace layout unmount 37ms
+     → expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/stream-lifecycle.test.tsx > workspace stream lifecycle contracts > stream aborts on workspace layout unmount
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/stream-lifecycle.test.tsx:171:70
+    169|     const activeSignals = getSignalsFromAbortControllerMock()
+    170|     expect(activeSignals).toHaveLength(2)
+    171|     expect(activeSignals.every((signal) => signal.aborted === true)).t…
+       |                                                                      ^
+    172|   })
+    173| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  04:34:28
+   Duration  1.86s (transform 111ms, setup 93ms, collect 149ms, tests 185ms, environment 679ms, prepare 130ms)
+
