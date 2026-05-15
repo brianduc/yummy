@@ -196,8 +196,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
       }
     },
     onNewSession: () => chatRef.current?.handleCmd('/new'),
-    onToggleSettings: () => setActiveActivity('settings'),
-    onToggleTracing: () => setActiveActivity('tracing'),
+    onNavigateSettings: () => router.push(`/workspace/${sessionId}/settings`),
+    onNavigateTracing: () => router.push(`/workspace/${sessionId}/tracing`),
     onShowInfo: () => chatRef.current?.handleCmd('/info'),
     onHealthcheck: () => chatRef.current?.handleCmd('/healthcheck'),
     onStartSDLC: () => {

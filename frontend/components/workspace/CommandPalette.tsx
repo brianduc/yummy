@@ -185,8 +185,8 @@ export function createDefaultCommands(
   handlers: {
     onScan: () => void
     onNewSession: () => void
-    onToggleSettings: () => void
-    onToggleTracing: () => void
+    onNavigateSettings: () => void
+    onNavigateTracing: () => void
     onShowInfo: () => void
     onHealthcheck: () => void
     onStartSDLC: () => void
@@ -230,7 +230,7 @@ export function createDefaultCommands(
       label: 'Tracing Panel',
       description: 'View AI usage metrics and request logs',
       icon: <Activity size={16} />,
-      action: handlers.onToggleTracing,
+      action: handlers.onNavigateTracing,
       category: 'View',
     },
     {
@@ -238,7 +238,7 @@ export function createDefaultCommands(
       label: 'Settings',
       description: 'Configure AI providers and credentials',
       icon: <Settings size={16} />,
-      action: handlers.onToggleSettings,
+      action: handlers.onNavigateSettings,
       category: 'Configuration',
     },
     {
