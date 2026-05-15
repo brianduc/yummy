@@ -2,6 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const push = vi.fn()
 const replace = vi.fn()
@@ -22,9 +23,12 @@ function NavigationProbe() {
     <div>
       <div data-testid="session-id">{params.sessionId}</div>
       <div data-testid="pathname">{pathname}</div>
-      <a href={`/workspace/${params.sessionId}`} data-testid="workspace-link">
+      <Link href={`/workspace/${params.sessionId}`} data-testid="workspace-link">
         Workspace link
-      </a>
+      </Link>
+      <Link href={`/workspace/${params.sessionId}/settings`} data-testid="settings-link">
+        Settings link
+      </Link>
       <button type="button" onClick={() => router.push(`/workspace/${params.sessionId}/sdlc`)}>
         Go SDLC
       </button>
@@ -45,6 +49,7 @@ describe('next/navigation mock infrastructure', () => {
     expect(screen.getByTestId('session-id')).toHaveTextContent('test-session-123')
     expect(screen.getByTestId('pathname')).toHaveTextContent('/workspace/test-session-123')
     expect(screen.getByTestId('workspace-link')).toHaveAttribute('href', '/workspace/test-session-123')
+    expect(screen.getByTestId('settings-link')).toHaveAttribute('href', '/workspace/test-session-123/settings')
 
     fireEvent.click(screen.getByRole('button', { name: 'Go SDLC' }))
     fireEvent.click(screen.getByRole('button', { name: 'Replace route' }))

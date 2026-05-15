@@ -1,0 +1,1 @@
+Playwright screenshot capture failed: Chromium distribution chrome is not installed at /opt/google/chrome/chrome. Unable to capture workspace baseline screenshot.

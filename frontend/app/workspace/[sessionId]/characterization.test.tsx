@@ -127,7 +127,7 @@ beforeEach(() => {
 })
 
 describe('WorkspacePage characterization', () => {
-  it('renders the current workspace shell with AI Copilot and accessible panels', async () => {
+  it('renders the current workspace shell with the default IDE panel and workspace chrome', async () => {
     vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
 
     render(<WorkspacePage params={Promise.resolve({ sessionId: 'test-session-123' })} />)
@@ -137,6 +137,18 @@ describe('WorkspacePage characterization', () => {
     expect(screen.getByRole('button', { name: 'AI Copilot' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Explorer' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'IDE Simulator' })).toBeInTheDocument()
+    expect(screen.getByTestId('ide-panel')).toBeInTheDocument()
     expect(screen.getAllByText('Workspace Baseline')).toHaveLength(2)
+  })
+
+  it('documents that the default render shows the IDE panel and not SDLC', async () => {
+    vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
+
+    render(<WorkspacePage params={Promise.resolve({ sessionId: 'test-session-123' })} />)
+
+    await waitFor(() => expect(screen.getByText('AI Copilot')).toBeInTheDocument())
+
+    expect(screen.getByTestId('ide-panel')).toBeInTheDocument()
+    expect(screen.queryByTestId('sdlc-panel')).toBeNull()
   })
 })
