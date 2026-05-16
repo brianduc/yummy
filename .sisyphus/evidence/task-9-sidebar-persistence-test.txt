@@ -1,0 +1,10 @@
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ components/workspace/AppSidebar.test.tsx (3 tests) 427ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  10:54:56
+   Duration  4.02s (transform 307ms, setup 238ms, collect 750ms, tests 427ms, environment 1.19s, prepare 211ms)
+

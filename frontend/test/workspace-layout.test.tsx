@@ -1,17 +1,15 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+
+const { mockPathname } = vi.hoisted(() => ({
+  mockPathname: { value: '/workspace/test-layout-session' },
+}))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
   useParams: () => ({ sessionId: 'test-layout-session' }),
-  usePathname: () => '/workspace/test-layout-session',
-}))
-
-vi.mock('react-resizable-panels', () => ({
-  Group: ({ children }: { children: React.ReactNode }) => <div data-testid="panel-group">{children}</div>,
-  Panel: ({ children }: { children: React.ReactNode }) => <div data-testid="panel">{children}</div>,
-  Separator: () => <div data-testid="separator" />,
+  usePathname: () => mockPathname.value,
 }))
 
 const mockSessionHook = vi.fn()
@@ -30,10 +28,18 @@ vi.mock('@/hooks/useWorkspaceUi', () => ({
 }))
 
 vi.mock('@/hooks/useWorkspaceChat', () => ({
+  useChat: () => ({
+    chatHistory: [],
+    termLogs: [],
+    termRef: { current: { scrollIntoView: vi.fn() } },
+    busy: false,
+    btwBusy: false,
+    handleCmd: vi.fn(),
+  }),
   useWorkspaceChat: vi.fn().mockReturnValue({
     chatHistory: [],
     termLogs: [],
-    termRef: { current: null },
+    termRef: { current: { scrollIntoView: vi.fn() } },
     busy: false,
     btwBusy: false,
     sendAsk: vi.fn(),
@@ -75,14 +81,32 @@ vi.mock('@/hooks/useWorkspaceSdlc', () => ({
   }),
 }))
 
-vi.mock('@/components/workspace/WorkspaceLayout', () => ({
-  default: ({ mainStageChildren }: { mainStageChildren?: React.ReactNode }) => (
-    <div data-testid="workspace-layout-inner">{mainStageChildren}</div>
+vi.mock('@/components/workspace/AppSidebar', () => ({
+  AppSidebar: () => {
+    const isExplorerActive = mockPathname.value.includes('/explorer')
+
+    return (
+      <aside data-testid="app-sidebar">
+        <a data-testid="sidebar-nav-explorer" className={isExplorerActive ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session/explorer`}>Explorer</a>
+        <a data-testid="sidebar-nav-sdlc" className={mockPathname.value.includes('/sdlc') ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session/sdlc`}>SDLC Pipeline</a>
+        <a data-testid="sidebar-nav-copilot" className={mockPathname.value === '/workspace/test-layout-session' ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session`}>AI Copilot</a>
+      </aside>
+    )
+  },
+}))
+
+vi.mock('@/components/workspace/AppHeader', () => ({
+  default: ({ onOpenCommandPalette, onOpenCopilot }: { onOpenCommandPalette?: () => void; onOpenCopilot?: () => void }) => (
+    <header data-testid="app-header">
+      <div data-testid="breadcrumbs">Workspace / {mockPathname.value.includes('/explorer') ? 'Explorer' : 'AI Copilot'}</div>
+      <button data-testid="command-palette-trigger" onClick={onOpenCommandPalette}>Command</button>
+      <button data-testid="ai-copilot-trigger" onClick={onOpenCopilot}>AI Copilot</button>
+    </header>
   ),
 }))
 
-vi.mock('@/components/workspace/ActivityBar', () => ({
-  default: () => <div data-testid="activity-bar" />,
+vi.mock('@/components/workspace/CopilotSheet', () => ({
+  CopilotSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="copilot-sheet">AI Copilot</div> : null),
 }))
 
 const defaultSessionReturn = {
@@ -132,6 +156,7 @@ const defaultUiReturn = {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockPathname.value = '/workspace/test-layout-session'
   mockSessionHook.mockReturnValue(defaultSessionReturn)
   mockStatusHook.mockReturnValue(defaultStatusReturn)
   mockUiHook.mockReturnValue(defaultUiReturn)
@@ -192,5 +217,74 @@ describe('WorkspaceRouteLayout', () => {
     expect(screen.getByTestId('workspace-main-slot')).toBeInTheDocument()
     expect(screen.getByTestId('child-page-b')).toBeInTheDocument()
     expect(screen.queryByTestId('child-page-a')).toBeNull()
+  })
+
+  it('renders dashboard shell composition without resize handles or permanent Copilot pane', () => {
+    render(
+      <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
+        <div data-testid="mock-child">child content</div>
+      </WorkspaceRouteLayout>,
+    )
+
+    expect(screen.getByTestId('dashboard-shell')).toHaveClass('h-screen', 'w-full', 'flex', 'overflow-hidden')
+    expect(screen.getByTestId('app-sidebar')).toBeInTheDocument()
+    expect(screen.getByTestId('app-header')).toBeInTheDocument()
+    expect(screen.getByTestId('dashboard-main')).toHaveClass('flex-1', 'flex', 'flex-col', 'min-w-0')
+    expect(screen.getByTestId('dashboard-content')).toHaveClass('flex-1', 'overflow-y-auto', 'p-6')
+    expect(screen.getByTestId('mock-child')).toBeInTheDocument()
+    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('AI Copilot')
+    expect(screen.queryByTestId('panel-group')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+  })
+
+  it('shows index breadcrumb and keeps the command palette trigger wired', () => {
+    render(
+      <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
+        <div data-testid="mock-child">child content</div>
+      </WorkspaceRouteLayout>,
+    )
+
+    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('AI Copilot')
+    fireEvent.click(screen.getByTestId('command-palette-trigger'))
+    expect(defaultUiReturn.setCommandPaletteOpen).toHaveBeenCalledWith(true)
+  })
+
+  it('shows nested route breadcrumb semantics through the header', () => {
+    mockPathname.value = '/workspace/test-layout-session/explorer/folder-a'
+
+    render(
+      <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
+        <div data-testid="mock-child">child content</div>
+      </WorkspaceRouteLayout>,
+    )
+
+    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('Explorer')
+  })
+
+  it('keeps sidebar active route semantics aligned with the shared navigation model', () => {
+    mockPathname.value = '/workspace/test-layout-session/explorer/folder-a'
+
+    render(
+      <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
+        <div data-testid="mock-child">child content</div>
+      </WorkspaceRouteLayout>,
+    )
+
+    expect(screen.getByTestId('sidebar-nav-explorer')).toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('sidebar-nav-sdlc')).not.toHaveClass('bg-[var(--bg-2)]')
+  })
+
+  it('preserves command palette trigger behavior through dashboard header', () => {
+    render(
+      <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
+        <div>child</div>
+      </WorkspaceRouteLayout>,
+    )
+
+    fireEvent.click(screen.getByTestId('command-palette-trigger'))
+
+    expect(defaultUiReturn.setCommandPaletteOpen).toHaveBeenCalledWith(true)
   })
 })

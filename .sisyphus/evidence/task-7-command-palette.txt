@@ -1,0 +1,9 @@
+Verified Task 7 command palette wiring.
+
+Test command:
+cd frontend && npx vitest run components/workspace/WorkspaceLayout.test.tsx test/workspace-layout.test.tsx components/workspace/CopilotSheet.test.tsx components/workspace/AppHeader.test.tsx
+
+Result:
+- 4 files passed
+- 23 tests passed
+- WorkspaceLayout real-component test confirms command palette trigger still calls onOpenCommandPalette

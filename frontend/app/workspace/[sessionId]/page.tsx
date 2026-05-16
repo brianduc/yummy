@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useScanPoll } from '@/hooks/useScanPoll'
-import { useWorkspaceChat, WorkspaceChatProvider } from '@/hooks/useWorkspaceChat'
+import { useChat } from '@/hooks/useWorkspaceChat'
 import { useWorkspaceSdlc } from '@/hooks/useWorkspaceSdlc'
-import { applyTheme, loadSavedTheme, THEMES, type ThemeId } from '@/lib/theme'
+import { loadSavedTheme } from '@/lib/theme'
 import { loadSavedUiSize } from '@/lib/uiSize'
 
-import WorkspaceLayout from '@/components/workspace/WorkspaceLayout'
 import type { ActivityId } from '@/components/workspace/ActivityBar'
-import type { MainTabId } from '@/components/workspace/MainStage'
+import MainStage, { type MainTabId } from '@/components/workspace/MainStage'
 import CommandPalette, { createDefaultCommands } from '@/components/workspace/CommandPalette'
 
 import IdePanel from '@/components/workspace/IdePanel'
@@ -31,7 +30,7 @@ import OnboardingWizard from '@/components/workspace/OnboardingWizard'
 
 import type {
   Session, SystemStatus, KnowledgeBase,
-  ScanStatus, MetricsData, ChatMessage,
+  ScanStatus, MetricsData,
 } from '@/lib/types'
 
 export default function WorkspacePage({ params }: { params: Promise<{ sessionId: string }> }) {
@@ -41,6 +40,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [activeActivity, setActiveActivity] = useState<ActivityId>('explorer')
   const [activeTab, setActiveTab] = useState<MainTabId>('ide')
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const chat = useChat()
 
   // Server data
   const [session,  setSession]  = useState<Session | null>(null)
@@ -49,11 +49,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null)
   const [metrics,  setMetrics]  = useState<MetricsData | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
-
-  // Chat / terminal
-  const [termLogs, setTermLogs] = useState<{ role: string; text: string }[]>([
-    { role: 'system', text: '⚡ YUMMY — type /help to see commands.' },
-  ])
 
   // IDE
   const [ideFile,    setIdeFile]    = useState('')
@@ -99,15 +94,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     return () => clearInterval(iv)
   }, [sessionId, fetchSession, fetchStatus, fetchKb, fetchSessions])
 
-  const chatRef = useRef<any>(null)
-
   // Scan polling
   const { startScanPoll } = useScanPoll({
     onStatusUpdate: setScanStatus,
-    onMessage: chatRef.current?.print,
+    onMessage: chat.print,
     onComplete: async () => {
       await fetchKb(); await fetchStatus()
-      chatRef.current?.chatRef.current?.print('✅ Scan complete.')
+      chat.print('✅ Scan complete.')
       setActiveTab('wiki')
     },
   })
@@ -121,9 +114,9 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   useEffect(() => {
     if (session && session.id !== prevId.current) {
       prevId.current = session.id
-      chatRef.current?.setChatHistory(session.chat_history || [])
+      chat.setChatHistory(session.chat_history || [])
     }
-  }, [session])
+  }, [session, chat])
 
   // IDE file open
   const openFile = useCallback(async (path: string) => {
@@ -158,31 +151,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }
 
-  const abortRef = useRef<AbortController>(new AbortController())
   const sdlc = useWorkspaceSdlc(sessionId, {
     session,
     setSession,
-    print: (message, role) => chatRef.current?.print(message, role),
-    setBusy: (busy) => chatRef.current?.setBusy(busy),
+    print: chat.print,
+    setBusy: chat.setBusy,
   })
   const { sdlcState } = sdlc
-
-  const chat = useWorkspaceChat(sessionId, abortRef, {
-    status,
-    session,
-    fetchStatus,
-    fetchMetrics,
-    startScanPoll,
-    setScanStatus,
-    setActiveTab: setActiveTab as any,
-    setActiveActivity: setActiveActivity as any,
-    setSession,
-    runSdlcStream: sdlc.runSdlcStream,
-    handleStop: sdlc.abort,
-    ideFile,
-    ideContent: ideContent || null
-  })
-  chatRef.current = chat
 
 
 
@@ -190,31 +165,22 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   const commandItems = createDefaultCommands({
     onScan: () => {
       if (status?.repo) {
-        chatRef.current?.handleCmd('/scan')
+        chat.handleCmd('/scan')
       } else {
-        chatRef.current?.print('No repo configured. Use /setup <github-url> to configure.')
+        chat.print('No repo configured. Use /setup <github-url> to configure.')
       }
     },
-    onNewSession: () => chatRef.current?.handleCmd('/new'),
+    onNewSession: () => chat.handleCmd('/new'),
     onNavigateSettings: () => router.push(`/workspace/${sessionId}/settings`),
     onNavigateTracing: () => router.push(`/workspace/${sessionId}/tracing`),
-    onShowInfo: () => chatRef.current?.handleCmd('/info'),
-    onHealthcheck: () => chatRef.current?.handleCmd('/healthcheck'),
+    onShowInfo: () => chat.handleCmd('/info'),
+    onHealthcheck: () => chat.handleCmd('/healthcheck'),
     onStartSDLC: () => {
-      chatRef.current?.print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
+      chat.print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
     },
   })
 
-  // ActivityBar routing
-  const handleActivityChange = (id: ActivityId) => {
-    setActiveActivity(id)
-    if (id === 'sdlc') setActiveTab('sdlc')
-    if (id === 'db') setActiveTab('db')
-    if (id === 'tracing') fetchMetrics()
-  }
-
   // Derived state
-  const isRunning = session?.workflow_state?.includes('running') || !!scanStatus?.running
   const isSDLCDone = session?.workflow_state === 'done'
 
   if (!session) {
@@ -226,11 +192,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
   }
 
   return (
-    <WorkspaceChatProvider value={chat}>
-      <>
-      <WorkspaceLayout
-        activeActivity={activeActivity}
-        onActivityChange={handleActivityChange}
+    <>
+      <MainStage
         activeTab={activeTab}
         onTabChange={setActiveTab}
         sessionName={session.name}
@@ -238,18 +201,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         workflowState={session.workflow_state}
         streamingAgent={sdlcState.streamingAgent}
         isSDLCDone={isSDLCDone}
-        fileTree={kb?.tree || []}
-        onFileOpen={openFile}
-        status={status}
-        metrics={metrics}
-        scanStatus={scanStatus}
-                        workflowRunning={!!session.workflow_state?.includes('running')}
+        workflowRunning={!!session.workflow_state?.includes('running')}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onApproveBA={sdlc.approveBA}
         onApproveSA={sdlc.approveSA}
         onApproveDevLead={sdlc.approveDevLead}
         onStop={sdlc.abort}
-        mainStageChildren={
+      >
           <>
             {activeTab === 'ide'      && <IdePanel tree={kb?.tree || []} ideFile={ideFile} ideContent={ideContent} ideLoading={ideLoading} onFileOpen={openFile} />}
             {activeTab === 'graph'    && (
@@ -282,30 +240,26 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
             {activeTab === 'db'       && <DbPanel sessions={sessions} currentSessionId={sessionId} status={status} />}
             {activeTab === 'world'    && <WorldPanel />}
           </>
-        }
-        contextPanelChildren={
-          <>
-            {activeActivity === 'tracing' && (
-              <TracingPanel metrics={metrics} onLoad={fetchMetrics} />
-            )}
-            {activeActivity === 'settings' && (
-              <SettingsPanel status={status} onStatusRefresh={fetchStatus} />
-            )}
-            {activeActivity === 'chat' && (
-              <SessionsPanel
-                sessions={sessions}
-                currentSessionId={sessionId}
-                onNew={async () => {
-                  const s = await api.sessions.create() as Session
-                  await fetchSessions()
-                  router.push(`/workspace/${s.id}`)
-                }}
-                onDeleteRequest={setDeleteTarget}
-              />
-            )}
-          </>
-        }
-      />
+      </MainStage>
+
+      {activeActivity === 'tracing' && (
+        <TracingPanel metrics={metrics} onLoad={fetchMetrics} />
+      )}
+      {activeActivity === 'settings' && (
+        <SettingsPanel status={status} onStatusRefresh={fetchStatus} />
+      )}
+      {activeActivity === 'chat' && (
+        <SessionsPanel
+          sessions={sessions}
+          currentSessionId={sessionId}
+          onNew={async () => {
+            const s = await api.sessions.create() as Session
+            await fetchSessions()
+            router.push(`/workspace/${s.id}`)
+          }}
+          onDeleteRequest={setDeleteTarget}
+        />
+      )}
 
       {/* Command Palette */}
       <CommandPalette
@@ -353,7 +307,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           }}
           onScanStart={() => {
             setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
-            chatRef.current?.chatRef.current?.print('🔍 Starting codebase scan...')
+            chat.print('🔍 Starting codebase scan...')
             setActiveTab('ide')
             startScanPoll()
           }}
@@ -416,7 +370,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
         .prose th,.prose td { border: 1px solid var(--border); padding: .4rem .65rem; }
         .prose th { background: var(--bg-2); color: var(--text-2); }
       `}</style>
-      </>
-    </WorkspaceChatProvider>
+    </>
   )
 }

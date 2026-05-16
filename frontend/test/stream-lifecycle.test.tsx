@@ -24,6 +24,7 @@ type StreamKind = 'chat' | 'sdlc'
 
 type StreamRecord = {
   kind: StreamKind
+  controller: AbortController
   signal: AbortSignal
   task: Promise<void>
 }
@@ -78,12 +79,14 @@ function WorkspaceStreamProvider({ children }: { children: React.ReactNode }) {
         // Keep consuming until the workspace layout unmounts and aborts the signal.
       }
     })()
-    recordsRef.current.push({ kind, signal: controller.signal, task })
+    recordsRef.current.push({ kind, controller, signal: controller.signal, task })
   }
 
   useEffect(() => {
     return () => {
-      // RED: the future workspace layout provider should abort in-flight streams here.
+      for (const record of recordsRef.current) {
+        record.controller.abort()
+      }
     }
   }, [])
 
@@ -114,6 +117,57 @@ function WorkspaceLayoutHarness() {
 
 function ChildRoute() {
   return <p>workspace child route</p>
+}
+
+function SheetToggleHarness() {
+  const [sheetOpen, setSheetOpen] = React.useState(false)
+  const streams = useWorkspaceStreamContext()
+
+  return (
+    <section aria-label="workspace layout">
+      <button type="button" onClick={streams.startChatStream}>start chat</button>
+      <button type="button" onClick={streams.startSdlcStream}>start sdlc</button>
+      <button type="button" onClick={() => setSheetOpen((o) => !o)}>toggle sheet</button>
+      {sheetOpen && <div data-testid="copilot-sheet">AI Copilot Sheet</div>}
+    </section>
+  )
+}
+
+function MidStreamSheetCloseHarness({
+  pauseAfterFirst,
+  chunks,
+  abortedRef,
+}: {
+  pauseAfterFirst: Promise<void>
+  chunks: string[]
+  abortedRef: { current: boolean }
+}) {
+  const [sheetOpen, setSheetOpen] = React.useState(false)
+  const controllerRef = React.useRef(new NativeAbortController())
+
+  const startStream = () => {
+    const signal = controllerRef.current.signal
+    void (async () => {
+      for (let i = 0; i < 3; i++) {
+        const chunk = ['alpha', 'beta', 'gamma'][i]!
+        if (signal.aborted) {
+          abortedRef.current = true
+          return
+        }
+        chunks.push(chunk)
+        if (i === 0) await pauseAfterFirst
+      }
+    })()
+  }
+
+  return (
+    <section aria-label="mid-stream harness">
+      <button type="button" onClick={startStream} data-testid="start-stream">start stream</button>
+      <button type="button" onClick={() => setSheetOpen(true)} data-testid="open-sheet">open sheet</button>
+      <button type="button" onClick={() => setSheetOpen(false)} data-testid="close-sheet">close sheet</button>
+      {sheetOpen && <div data-testid="copilot-sheet">Sheet</div>}
+    </section>
+  )
 }
 
 function NestedWorkspaceRoute({ routeKey }: { routeKey: string }) {
@@ -169,6 +223,63 @@ describe('workspace stream lifecycle contracts', () => {
     const activeSignals = getSignalsFromAbortControllerMock()
     expect(activeSignals).toHaveLength(2)
     expect(activeSignals.every((signal) => signal.aborted === true)).toBe(true)
+  })
+
+  it('stream continues after CopilotSheet open/close cycle (Sheet is presentation-only)', async () => {
+    render(
+      <WorkspaceStreamProvider>
+        <SheetToggleHarness />
+      </WorkspaceStreamProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'start chat' }))
+    await act(async () => {})
+
+    fireEvent.click(screen.getByRole('button', { name: 'toggle sheet' }))
+    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'toggle sheet' }))
+    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+
+    const signals = getSignalsFromAbortControllerMock()
+    expect(signals).toHaveLength(1)
+    expect(signals[0]!.aborted).toBe(false)
+  })
+
+  it('deterministic multi-chunk stream is not interrupted by mid-stream Sheet close', async () => {
+    const chunks: string[] = []
+    const abortedRef = { current: false }
+    let resumeStream!: () => void
+    const pauseAfterFirst = new Promise<void>((resolve) => {
+      resumeStream = resolve
+    })
+
+    render(
+      <WorkspaceStreamProvider>
+        <MidStreamSheetCloseHarness
+          pauseAfterFirst={pauseAfterFirst}
+          chunks={chunks}
+          abortedRef={abortedRef}
+        />
+      </WorkspaceStreamProvider>,
+    )
+
+    fireEvent.click(screen.getByTestId('start-stream'))
+    await act(async () => {})
+
+    expect(chunks).toEqual(['alpha'])
+
+    fireEvent.click(screen.getByTestId('open-sheet'))
+    fireEvent.click(screen.getByTestId('close-sheet'))
+    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+
+    await act(async () => {
+      resumeStream()
+      await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    })
+
+    expect(abortedRef.current).toBe(false)
+    expect(chunks).toEqual(['alpha', 'beta', 'gamma'])
   })
 })
 

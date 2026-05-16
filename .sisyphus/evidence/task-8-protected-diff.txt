@@ -1,0 +1,7 @@
+Task 8 protected diff evidence
+
+Command: git diff --stat -- frontend/lib/api.ts frontend/hooks/useWorkspaceChat.tsx frontend/hooks/useWorkspaceSdlc.ts backend-ts
+
+Command: git diff --stat -- frontend/app/workspace/[sessionId]/sdlc frontend/app/workspace/[sessionId]/settings frontend/app/workspace/[sessionId]/database frontend/app/workspace/[sessionId]/world frontend/app/workspace/[sessionId]/sessions frontend/app/workspace/[sessionId]/tracing
+
+Result: no output from either diff-stat command; protected files and protected route directories are unchanged.

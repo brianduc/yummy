@@ -1,0 +1,4 @@
+Isolated component test for AppSidebar (`AppSidebar.test.tsx`) confirms toggle functionality:
+- Default state renders with `w-64` class and displays full labels/YUMMY branding.
+- Clicking `data-testid="sidebar-toggle"` transitions the container to `w-[64px]`.
+- YUMMY branding and item labels are hidden in collapsed state.

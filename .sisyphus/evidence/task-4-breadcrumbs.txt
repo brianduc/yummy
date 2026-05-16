@@ -1,0 +1,13 @@
+TEST RUN:
+cd frontend && npx vitest run components/workspace/AppHeader.test.tsx components/workspace/AppSidebar.test.tsx 'app/workspace/[sessionId]/navigation.test.tsx' test/activity-bar-routing.test.tsx
+
+TEST RESULTS:
+- components/workspace/AppHeader.test.tsx passed
+- Test asserts `app-header` container renders with h-14 border-b
+- Test asserts breadcrumbs correctly render "Workspace > AI Copilot" on base route
+- Test asserts breadcrumbs correctly render "Workspace > Explorer" on /explorer route
+- Used `buildWorkspaceActivityRoute` for path resolution
+
+STATUS:
+- The `AppHeader` component has been created in isolation.
+- It is NOT wired into `WorkspaceLayout` yet (this is deferred to Task 6).

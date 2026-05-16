@@ -1,0 +1,16 @@
+COMMAND: npx vitest run test/workspace-layout.test.tsx components/workspace/WorkspaceLayout.test.tsx components/workspace/CopilotSheet.test.tsx components/workspace/AppHeader.test.tsx components/workspace/AppSidebar.test.tsx
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90m/home/ec2-user/yummy/frontend[39m
+
+ [32m✓[39m test/workspace-layout.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[90m 115[2mms[22m[39m
+ [32m✓[39m components/workspace/WorkspaceLayout.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 381[2mms[22m[39m
+ [32m✓[39m components/workspace/CopilotSheet.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 473[2mms[22m[39m
+ [32m✓[39m components/workspace/AppHeader.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[90m 160[2mms[22m[39m
+ [32m✓[39m components/workspace/AppSidebar.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[90m 144[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 10:24:53
+[2m   Duration [22m 9.29s[2m (transform 533ms, setup 439ms, collect 1.96s, tests 1.27s, environment 3.29s, prepare 572ms)[22m
+

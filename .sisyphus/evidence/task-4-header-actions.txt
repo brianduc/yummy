@@ -1,0 +1,12 @@
+TEST RUN:
+cd frontend && npx vitest run components/workspace/AppHeader.test.tsx components/workspace/AppSidebar.test.tsx 'app/workspace/[sessionId]/navigation.test.tsx' test/activity-bar-routing.test.tsx
+
+TEST RESULTS:
+- components/workspace/AppHeader.test.tsx passed
+- Test asserts Command palette trigger fires `onOpenCommandPalette`
+- Test asserts AI Copilot trigger fires `onOpenCopilot`
+- Test asserts Command palette button properly renders the cross-platform `Cmd/Ctrl+K` hint
+
+STATUS:
+- The `AppHeader` component has been created in isolation.
+- It is NOT wired into `WorkspaceLayout` yet (this is deferred to Task 6).

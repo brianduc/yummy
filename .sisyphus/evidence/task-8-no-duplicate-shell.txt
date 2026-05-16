@@ -1,0 +1,20 @@
+Task 8 no duplicate shell evidence
+
+Targeted Vitest command:
+cd frontend && npx vitest run test/workspace-layout.test.tsx test/workspace-providers.test.tsx app/workspace/'[sessionId]'/characterization.test.tsx components/workspace/WorkspaceLayout.test.tsx
+
+Result: PASS
+Test Files: 4 passed (4)
+Tests: 34 passed (34)
+
+Added characterization coverage asserts /workspace/:sessionId renders:
+- [data-testid="dashboard-shell"] count: 1
+- [data-testid="app-sidebar"] count: 1
+- [data-testid="app-header"] count: 1
+- workspace index IDE content inside parent dashboard-content/workspace-main-slot
+
+Implementation inspection:
+- frontend/app/workspace/[sessionId]/layout.tsx remains the persistent WorkspaceLayout + WorkspaceChatProvider owner.
+- frontend/app/workspace/[sessionId]/page.tsx no longer imports/renders WorkspaceLayout.
+- frontend/app/workspace/[sessionId]/page.tsx no longer imports/renders WorkspaceChatProvider.
+- Page-owned business content now renders as MainStage content inside the parent layout dashboard-content slot.

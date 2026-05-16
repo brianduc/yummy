@@ -1,5 +1,6 @@
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { renderHook, act, waitFor, render, screen, fireEvent } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useState } from 'react'
 
 const { mockPush, mockReplace } = vi.hoisted(() => ({
   mockPush: vi.fn(),
@@ -51,6 +52,8 @@ import { applyUiSize } from '@/lib/uiSize'
 import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
 import { useWorkspaceStatus } from '@/hooks/useWorkspaceStatus'
 import { useWorkspaceUi } from '@/hooks/useWorkspaceUi'
+import { WorkspaceChatProvider, useChat } from '@/hooks/useWorkspaceChat'
+import type { WorkspaceChatContext } from '@/hooks/useWorkspaceContracts'
 
 const mockSession = {
   id: 'test-session-123',
@@ -338,5 +341,95 @@ describe('useWorkspaceUi', () => {
     localStorage.removeItem('yummy_onboarding')
     const { result } = renderHook(() => useWorkspaceUi())
     expect(result.current.preferences.onboardingState).toBe('asking')
+  })
+})
+
+describe('WorkspaceChatProvider stability across Sheet toggle simulation', () => {
+  it('context object identity is preserved when Sheet child is toggled', () => {
+    const chatContext: WorkspaceChatContext = {
+      chatHistory: [{ role: 'user', text: 'Provider stability check' }],
+      termLogs: [],
+      termRef: { current: null },
+      busy: false,
+      btwBusy: false,
+      sendAsk: vi.fn(),
+      sendBtw: vi.fn(),
+      print: vi.fn(),
+      handleCmd: vi.fn().mockResolvedValue(undefined),
+      setBusy: vi.fn(),
+      setBtwBusy: vi.fn(),
+      setChatHistory: vi.fn(),
+    }
+
+    let capturedBefore: WorkspaceChatContext | null = null
+    let capturedAfter: WorkspaceChatContext | null = null
+
+    function ValueCapture({ onCapture }: { onCapture: (v: WorkspaceChatContext) => void }) {
+      const value = useChat()
+      onCapture(value)
+      return null
+    }
+
+    const { rerender } = render(
+      <WorkspaceChatProvider value={chatContext}>
+        <ValueCapture onCapture={(v) => { capturedBefore = v }} />
+      </WorkspaceChatProvider>,
+    )
+
+    rerender(
+      <WorkspaceChatProvider value={chatContext}>
+        <ValueCapture onCapture={(v) => { capturedAfter = v }} />
+        <div data-testid="sheet-open">Sheet is open</div>
+      </WorkspaceChatProvider>,
+    )
+
+    expect(capturedBefore).not.toBeNull()
+    expect(capturedAfter).not.toBeNull()
+    expect(Object.is(capturedBefore, capturedAfter)).toBe(true)
+  })
+
+  it('chat history is readable from context after Sheet child is removed', () => {
+    const chatContext: WorkspaceChatContext = {
+      chatHistory: [{ role: 'user', text: 'Still here after Sheet close' }],
+      termLogs: [],
+      termRef: { current: null },
+      busy: false,
+      btwBusy: false,
+      sendAsk: vi.fn(),
+      sendBtw: vi.fn(),
+      print: vi.fn(),
+      handleCmd: vi.fn().mockResolvedValue(undefined),
+      setBusy: vi.fn(),
+      setBtwBusy: vi.fn(),
+      setChatHistory: vi.fn(),
+    }
+
+    function SheetToggle() {
+      const [open, setOpen] = useState(false)
+      const ctx = useChat()
+      return (
+        <>
+          <button onClick={() => setOpen((o) => !o)} data-testid="toggle">toggle</button>
+          {open && <div data-testid="sheet">Sheet</div>}
+          <span data-testid="history-text">{ctx.chatHistory[0]?.text ?? ''}</span>
+        </>
+      )
+    }
+
+    render(
+      <WorkspaceChatProvider value={chatContext}>
+        <SheetToggle />
+      </WorkspaceChatProvider>,
+    )
+
+    expect(screen.getByTestId('history-text')).toHaveTextContent('Still here after Sheet close')
+
+    fireEvent.click(screen.getByTestId('toggle'))
+    expect(screen.getByTestId('sheet')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('toggle'))
+    expect(screen.queryByTestId('sheet')).not.toBeInTheDocument()
+
+    expect(screen.getByTestId('history-text')).toHaveTextContent('Still here after Sheet close')
   })
 })

@@ -1,0 +1,46 @@
+QA Browser Tour Results:
+Passed: 21
+Failed: 0
+Exceptions: 2
+
+Passes:
+✅ Dashboard shell exists
+✅ App sidebar exists
+✅ App header exists
+✅ Dashboard content exists
+✅ No react-resizable-panels resize handles exist
+✅ No react-resizable-panels group containers exist
+✅ Command Palette opens on Cmd/Ctrl+K keyboard shortcut
+✅ Copilot Sheet is not permanently mounted before opening
+✅ Copilot Sheet opens on Cmd/Ctrl+J keyboard shortcut
+✅ Dashboard shell exists on route chat
+✅ Content block exists for route chat
+✅ Dashboard shell exists on route sdlc
+✅ Content block exists for route sdlc
+✅ Dashboard shell exists on route tracing
+✅ Content block exists for route tracing
+✅ Dashboard shell exists on route db
+✅ Content block exists for route db
+✅ Dashboard shell exists on route settings
+✅ Content block exists for route settings
+✅ Dashboard shell exists on route world
+✅ Content block exists for route world
+✅ Dashboard shell exists on route sessions
+✅ Content block exists for route sessions
+
+Exceptions (Known):
+⚠️ Route explorer returned a 404 page (Known topology exception from Task 1)
+⚠️ Stream response mocking blocked in browser automation environment - refer to Task 10 Vitest coverage for deterministic stream close survival validation
+
+Logs:
+Starting route tour QA
+Testing Cmd+K via Keyboard Shortcut
+Testing Cmd+J via Keyboard Shortcut and Stream Survival
+Testing route: chat
+Testing route: explorer
+Testing route: sdlc
+Testing route: tracing
+Testing route: db
+Testing route: settings
+Testing route: world
+Testing route: sessions

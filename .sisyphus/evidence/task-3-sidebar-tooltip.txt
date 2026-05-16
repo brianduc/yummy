@@ -1,0 +1,4 @@
+Isolated component review confirms native browser tooltips:
+- When collapsed (`isExpanded === false`), links use `title={item.label}` and `aria-label={item.label}`.
+- When expanded (`isExpanded === true`), `title` is `undefined` so it doesn't redundantly show tooltips over text.
+- Toggle button also uses native `title` ("Collapse Sidebar" / "Expand Sidebar").

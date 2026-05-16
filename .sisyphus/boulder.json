@@ -1,31 +1,135 @@
 {
-  "active_plan": "/Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/.sisyphus/plans/yummy-world-mcp.md",
-  "started_at": "2026-04-29T16:26:50.896Z",
+  "active_plan": "/home/ec2-user/yummy/.sisyphus/plans/enterprise-dashboard-layout-refactor.md",
+  "started_at": "2026-05-15T09:38:29.273Z",
   "session_ids": [
-    "ses_226149dcbffeNHNkxpL4RlNOuB",
-    "ses_225402d48ffeW0olopzl7cJscT",
-    "ses_2253fcf2dffeeJ1BC3wSZ06Ruq",
-    "ses_2253f4f22ffegvl8og7zh9Ky77",
-    "ses_2253f09f0ffeZgwmyzBgjvGpLR"
+    "ses_1d516e00dffeikDhnzRj7JlGR7",
+    "ses_1d4fde502ffeCwuNxSKoFrxMbq",
+    "ses_1d4fde41fffem4R4Mu4FCPIKdG",
+    "ses_1d4fde339ffe2fSc2PVyO2jh4J"
   ],
   "session_origins": {
-    "ses_226149dcbffeNHNkxpL4RlNOuB": "direct",
-    "ses_225402d48ffeW0olopzl7cJscT": "appended",
-    "ses_2253fcf2dffeeJ1BC3wSZ06Ruq": "appended",
-    "ses_2253f4f22ffegvl8og7zh9Ky77": "appended",
-    "ses_2253f09f0ffeZgwmyzBgjvGpLR": "appended"
+    "ses_1d516e00dffeikDhnzRj7JlGR7": "direct",
+    "ses_1d4fde502ffeCwuNxSKoFrxMbq": "appended",
+    "ses_1d4fde41fffem4R4Mu4FCPIKdG": "appended",
+    "ses_1d4fde339ffe2fSc2PVyO2jh4J": "appended"
   },
-  "plan_name": "yummy-world-mcp",
+  "plan_name": "enterprise-dashboard-layout-refactor",
   "agent": "atlas",
   "task_sessions": {
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "Add `@modelcontextprotocol/sdk` dependency + DB migration",
-      "session_id": "ses_2253f09f0ffeZgwmyzBgjvGpLR",
+      "task_title": "Route topology, baseline, impact analysis, and Sheet availability safety gate",
+      "session_id": "ses_1d4fde41fffem4R4Mu4FCPIKdG",
+      "agent": "explore",
+      "updated_at": "2026-05-15T09:42:24.516Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Extract canonical workspace navigation model",
+      "session_id": "ses_1d4f7b744ffeCP0mZaqfFpQoaK",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-15T09:50:01.989Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Build expandable dashboard sidebar component",
+      "session_id": "ses_1d4f33fecffeIz7XBxoULieKzl",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-05-15T09:54:34.377Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Build global header with breadcrumbs and action triggers",
+      "session_id": "ses_1d4ef502bffe991hnT81rF7Ljh",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-15T10:02:09.839Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Build AI Copilot Sheet wrapper without moving chat state",
+      "session_id": "ses_1d4e67a3cffebKK12COf6f8PcT",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-05-15T10:14:29.533Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Replace 3-pane WorkspaceLayout shell with dashboard composition",
+      "session_id": "ses_1d4dc260effepaHLOsj0ShOY8m",
       "agent": "Sisyphus-Junior",
       "category": "deep",
-      "updated_at": "2026-04-29T19:45:56.688Z"
+      "updated_at": "2026-05-15T10:25:44.723Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Wire Command Palette and AI Copilot keyboard shortcuts",
+      "session_id": "ses_1d4d24528ffeK3cBaVtMRe3S0S",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-15T10:29:26.089Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Preserve route/page content and eliminate duplicate shell ownership",
+      "session_id": "ses_1d4cf5de6ffek8lcRLqbNwRLDm",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-15T10:48:10.645Z"
+    },
+    "todo:9": {
+      "task_key": "todo:9",
+      "task_label": "9",
+      "task_title": "Update layout, navigation, and breadcrumb tests",
+      "session_id": "ses_1d4bcf21effeGVq8S1rk5oiYET",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-15T10:57:44.278Z"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "Add Copilot Sheet and streaming preservation tests",
+      "session_id": "ses_1d4b577b5ffeMjOLR0f2OyKU40",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-15T11:24:34.372Z"
+    },
+    "todo:11": {
+      "task_key": "todo:11",
+      "task_label": "11",
+      "task_title": "Add and execute browser QA checks for dashboard flows",
+      "session_id": "ses_1d49d40a6ffejg1w88XwwmviSi",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-05-15T11:51:23.552Z"
+    },
+    "todo:12": {
+      "task_key": "todo:12",
+      "task_label": "12",
+      "task_title": "Full frontend regression, protected diff, and GitNexus change verification",
+      "session_id": "ses_1d484ad63ffe5hhGTeWBapWet2",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-15T11:57:06.590Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_1d476322cffe6pWlO7Mzhi6ry5",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-15T12:09:58.118Z"
     }
   }
 }

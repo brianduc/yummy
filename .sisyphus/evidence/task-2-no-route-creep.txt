@@ -1,0 +1,10 @@
+Task 2 evidence: no route creep
+
+Checks performed:
+- preserved current ActivityBar destinations without adding/removing nav items
+- preserved explorer mismatch exactly as requested (`explorer` → `explorer` suffix)
+- did not modify route pages, API files, hooks, backend files, or page business logic
+
+Result:
+- targeted navigation tests passed
+- no unexpected route changes were introduced

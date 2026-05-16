@@ -1,0 +1,32 @@
+Task 1 Baseline Command Evidence
+================================
+
+Command: cd frontend && npm run test
+Result: FAILING BASELINE
+
+Summary:
+- 15 test files passed, 1 failed.
+- 76 tests passed, 1 failed.
+- Failing test: `test/stream-lifecycle.test.tsx > workspace stream lifecycle contracts > stream aborts on workspace layout unmount`
+- Failure: expected every active abort signal to be aborted, received false at `test/stream-lifecycle.test.tsx:171`.
+
+Command: cd frontend && npm run build
+Result: FAILING BASELINE
+
+Summary:
+- Next.js compiled successfully.
+- TypeScript failed in `app/workspace/[sessionId]/layout.tsx:50:5`.
+- Error: `Dispatch<SetStateAction<MainTabId>>` is not assignable to `(tab: string) => void` for `setActiveTab` passed into `useWorkspaceChat` options.
+
+Command: cd frontend && npm run lint
+Result: FAILING BASELINE / SCRIPT ISSUE
+
+Summary:
+- Script invokes `next lint`.
+- Next reports: `Invalid project directory provided, no such directory: /home/ec2-user/yummy/frontend/lint`.
+
+These are pre-refactor baseline failures captured before implementation edits for this session.
+
+Dirty tree note:
+- `git status --short` before Task 1 evidence finalization showed pre-existing modified/untracked files outside this task, including `frontend/components/workspace/AICopilot.tsx`, `frontend/next-env.d.ts`, `frontend/tsconfig.tsbuildinfo`, and unrelated `.playwright-mcp` / `.sisyphus` artifacts.
+- Task 1 intentionally added only discovery evidence and notepad entries; no app source code implementation edits were made for this task.

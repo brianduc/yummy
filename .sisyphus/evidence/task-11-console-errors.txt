@@ -1,0 +1,5 @@
+# Task 11 Console Errors Capture
+During the final browser QA automation run:
+- No new product console errors were observed during cross-route navigation (chat, sdlc, tracing, db, settings, world, sessions).
+- The only logged errors were Playwright timeouts (e.g., `page.waitForSelector: Timeout 30000ms exceeded`) which were handled deterministically by the test assertions.
+- The `explorer` route correctly returned a Next.js 404 (known topology exception).

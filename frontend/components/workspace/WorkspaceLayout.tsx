@@ -1,12 +1,13 @@
 'use client'
 
 import React from 'react'
-import { Group, Panel, Separator } from 'react-resizable-panels'
-import ActivityBar, { type ActivityId } from './ActivityBar'
-import ContextPanel from './ContextPanel'
-import MainStage, { type MainTabId } from './MainStage'
-import AICopilot from './AICopilot'
-import type { Session, SystemStatus, MetricsData, ScanStatus, ChatMessage, FileNode, WorkflowState } from '@/lib/types'
+import { useChat } from '@/hooks/useWorkspaceChat'
+import type { ActivityId } from './ActivityBar'
+import type { MainTabId } from './MainStage'
+import { AppSidebar } from './AppSidebar'
+import AppHeader from './AppHeader'
+import { CopilotSheet } from './CopilotSheet'
+import type { Session, SystemStatus, MetricsData, ScanStatus, FileNode, WorkflowState } from '@/lib/types'
 
 interface WorkspaceLayoutProps {
   // Activity management
@@ -47,90 +48,62 @@ interface WorkspaceLayoutProps {
 }
 
 export default function WorkspaceLayout({
-  activeActivity,
-  onActivityChange,
-  activeTab,
-  onTabChange,
   sessionName,
-  session,
-  workflowState,
-  streamingAgent,
-  isSDLCDone,
-  fileTree,
-  onFileOpen,
-  status,
-  metrics,
   scanStatus,
   workflowRunning,
   onOpenCommandPalette,
-  onApproveBA,
-  onApproveSA,
-  onApproveDevLead,
-  onStop,
   mainStageChildren,
-  contextPanelChildren,
 }: WorkspaceLayoutProps) {
-  const isRunning = !!scanStatus?.running || workflowRunning
+  const [isCopilotOpen, setIsCopilotOpen] = React.useState(false)
+  const { chatHistory, termLogs, busy, btwBusy, termRef, handleCmd } = useChat()
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'j') {
+        event.preventDefault()
+        setIsCopilotOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--bg)' }}>
-      <Group
-        id="yummy-workspace"
-        orientation="horizontal"
-        defaultLayout={{ left: 20, center: 50, right: 30 }}
-        className="flex-1"
+    <div
+      data-testid="dashboard-shell"
+      className="h-screen w-full flex overflow-hidden font-mono"
+      style={{ background: 'var(--bg)' }}
+    >
+      <AppSidebar />
+
+      <div
+        data-testid="dashboard-main"
+        className="flex-1 flex flex-col min-w-0"
       >
-        <ActivityBar
-          activeActivity={activeActivity}
-          onActivityChange={onActivityChange}
-          workflowState={workflowState}
-          isRunning={isRunning}
+        <AppHeader
+          onOpenCommandPalette={onOpenCommandPalette}
+          onOpenCopilot={() => setIsCopilotOpen(true)}
         />
 
-        <Panel id="left" defaultSize="20" minSize="15" maxSize="35">
-          <ContextPanel
-            fileTree={fileTree}
-            onFileOpen={onFileOpen}
-            status={status}
-            metrics={metrics}
-            isRunning={isRunning}
-          >
-            {contextPanelChildren}
-          </ContextPanel>
-        </Panel>
+        <div data-testid="dashboard-content" className="flex-1 overflow-y-auto p-6">
+          {mainStageChildren}
+        </div>
+      </div>
 
-        <Separator className="w-1 transition-colors cursor-col-resize z-50" style={{ background: 'var(--border)' }} />
-
-        <Panel id="center" defaultSize="50" minSize="30">
-          <MainStage
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            sessionName={sessionName}
-            session={session}
-            workflowState={workflowState}
-            streamingAgent={streamingAgent}
-            isSDLCDone={isSDLCDone}
-            workflowRunning={workflowRunning}
-            onOpenCommandPalette={onOpenCommandPalette}
-            onApproveBA={onApproveBA}
-            onApproveSA={onApproveSA}
-            onApproveDevLead={onApproveDevLead}
-            onStop={onStop}
-          >
-            {mainStageChildren}
-          </MainStage>
-        </Panel>
-
-        <Separator className="w-1 transition-colors cursor-col-resize z-50" style={{ background: 'var(--border)' }} />
-
-        <Panel id="right" defaultSize="30" minSize="20" maxSize="50">
-          <AICopilot
-            scanStatus={scanStatus}
-            workflowRunning={workflowRunning}
-            sessionName={sessionName}
-          />
-        </Panel>
-      </Group>
+      <CopilotSheet
+        open={isCopilotOpen}
+        onOpenChange={setIsCopilotOpen}
+        chatHistory={chatHistory}
+        termLogs={termLogs}
+        busy={busy}
+        btwBusy={btwBusy}
+        termRef={termRef}
+        scanStatus={scanStatus}
+        workflowRunning={workflowRunning}
+        onSubmit={handleCmd}
+        sessionName={sessionName}
+      />
     </div>
   )
 }

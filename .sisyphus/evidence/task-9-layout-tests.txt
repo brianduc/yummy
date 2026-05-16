@@ -1,0 +1,15 @@
+
+ RUN  v2.1.9 /home/ec2-user/yummy/frontend
+
+ ✓ test/workspace-layout.test.tsx (9 tests) 153ms
+ ✓ app/workspace/[sessionId]/characterization.test.tsx (4 tests) 500ms
+ ✓ test/activity-bar-routing.test.tsx (17 tests) 302ms
+ ✓ components/workspace/AppHeader.test.tsx (9 tests) 160ms
+ ✓ app/workspace/[sessionId]/navigation.test.tsx (1 test) 142ms
+ ✓ components/workspace/AppSidebar.test.tsx (3 tests) 167ms
+
+ Test Files  6 passed (6)
+      Tests  43 passed (43)
+   Start at  10:56:19
+   Duration  9.89s (transform 518ms, setup 456ms, collect 1.89s, tests 1.42s, environment 3.59s, prepare 595ms)
+

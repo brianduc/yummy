@@ -2,49 +2,15 @@
 
 import React from 'react'
 import { useRouter, usePathname, useParams } from 'next/navigation'
-import {
-  MessageSquare,
-  FolderTree,
-  GitBranch,
-  Activity,
-  Settings,
-  Database,
-  Globe,
-  History,
-  type LucideIcon,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  activityItems,
+  buildWorkspaceActivityRoute,
+  isWorkspaceActivityActive,
+  type ActivityId,
+} from '@/lib/workspace-navigation'
 
-export type ActivityId =
-  | 'chat'
-  | 'explorer'
-  | 'sdlc'
-  | 'tracing'
-  | 'settings'
-  | 'db'
-  | 'world'
-  | 'sessions'
-
-interface ActivityItem {
-  id: ActivityId
-  icon: LucideIcon
-  label: string
-  activeColor: string
-  testId: string
-  isIndex: boolean
-  routeSuffix: string
-}
-
-const ITEMS: ActivityItem[] = [
-  { id: 'explorer', icon: FolderTree,    label: 'Explorer',      activeColor: 'var(--green)',   testId: 'activity-bar-item-explorer',  isIndex: false, routeSuffix: 'explorer'  },
-  { id: 'sdlc',     icon: GitBranch,     label: 'SDLC Pipeline', activeColor: 'var(--amber)',   testId: 'activity-bar-item-sdlc',      isIndex: false, routeSuffix: 'sdlc'      },
-  { id: 'chat',     icon: MessageSquare, label: 'AI Copilot',    activeColor: 'var(--green)',   testId: 'activity-bar-item-copilot',   isIndex: true,  routeSuffix: ''          },
-  { id: 'tracing',  icon: Activity,      label: 'Tracing',       activeColor: '#00aaff',        testId: 'activity-bar-item-tracing',   isIndex: false, routeSuffix: 'tracing'   },
-  { id: 'db',       icon: Database,      label: 'Database',      activeColor: '#ff6644',        testId: 'activity-bar-item-database',  isIndex: false, routeSuffix: 'database'  },
-  { id: 'settings', icon: Settings,      label: 'Settings',      activeColor: 'var(--text-2)',  testId: 'activity-bar-item-settings',  isIndex: false, routeSuffix: 'settings'  },
-  { id: 'world',    icon: Globe,         label: 'World',         activeColor: '#00ccaa',        testId: 'activity-bar-item-world',     isIndex: false, routeSuffix: 'world'     },
-  { id: 'sessions', icon: History,       label: 'Sessions',      activeColor: 'var(--text-2)',  testId: 'activity-bar-item-sessions',  isIndex: false, routeSuffix: 'sessions'  },
-]
+export type { ActivityId, ActivityItem } from '@/lib/workspace-navigation'
 
 interface ActivityBarProps {
   activeActivity?: ActivityId
@@ -58,20 +24,6 @@ export default function ActivityBar({ workflowState, isRunning }: ActivityBarPro
   const pathname = usePathname()
   const params = useParams()
   const sessionId = params?.sessionId as string | undefined
-
-  const buildRoute = (item: ActivityItem): string => {
-    const base = `/workspace/${sessionId ?? ''}`
-    return item.isIndex ? base : `${base}/${item.routeSuffix}`
-  }
-
-  const getIsActive = (item: ActivityItem): boolean => {
-    if (!sessionId) return false
-    const route = buildRoute(item)
-    if (item.isIndex) {
-      return pathname === route
-    }
-    return pathname === route || pathname.startsWith(`${route}/`)
-  }
 
   return (
     <div
@@ -92,8 +44,8 @@ export default function ActivityBar({ workflowState, isRunning }: ActivityBarPro
       <div className="w-8 h-px my-1" style={{ background: 'var(--border)' }} />
 
       {/* Activity items */}
-      {ITEMS.map((item) => {
-        const isActive = getIsActive(item)
+      {activityItems.map((item) => {
+        const isActive = isWorkspaceActivityActive(pathname, sessionId, item)
         const showIndicator =
           item.id === 'sdlc' &&
           (isRunning || (workflowState && workflowState !== 'idle' && workflowState !== 'done'))
@@ -102,7 +54,7 @@ export default function ActivityBar({ workflowState, isRunning }: ActivityBarPro
           <button
             key={item.id}
             data-testid={item.testId}
-            onClick={() => sessionId && router.push(buildRoute(item))}
+            onClick={() => sessionId && router.push(buildWorkspaceActivityRoute(sessionId, item))}
             className={cn(
               'w-10 h-10 flex items-center justify-center rounded-md transition-all duration-150 cursor-pointer relative',
               'hover:bg-[var(--bg-3)]',

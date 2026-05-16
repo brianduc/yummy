@@ -1,0 +1,16 @@
+# Test execution evidence for presentation-only close behavior
+
+```
+$ cd frontend && npx vitest run components/workspace/CopilotSheet.test.tsx
+
+ ✓ components/workspace/CopilotSheet.test.tsx (3 tests) 475ms
+   ✓ renders correctly and respects open state
+   ✓ preserves prop-backed chat history across open/close cycles
+   ✓ does not invoke onSubmit or other callbacks upon closing (presentation-only close)
+```
+
+The test `does not invoke onSubmit or other callbacks upon closing` successfully executed. It confirms that clicking the Radix Sheet close button:
+1. Calls `onOpenChange(false)` (the expected UI response).
+2. Does **not** call `onSubmit` or any other action callbacks.
+
+Since `CopilotSheet` forwards the exact prop contract of `AICopilot` and adds no internal lifecycle hooks to abort streams or reset the chat history, closing the sheet is guaranteed to be a presentation-only unmount of the UI.

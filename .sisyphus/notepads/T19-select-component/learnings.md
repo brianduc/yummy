@@ -1,0 +1,1 @@
+- Use JSDOM mocks for window.HTMLElement.prototype.hasPointerCapture and scrollIntoView when testing Radix primitives like Select and DropdownMenu

@@ -1,0 +1,9 @@
+Verified Task 7 Copilot shortcut wiring.
+
+Test command:
+cd frontend && npx vitest run components/workspace/WorkspaceLayout.test.tsx test/workspace-layout.test.tsx components/workspace/CopilotSheet.test.tsx components/workspace/AppHeader.test.tsx
+
+Result:
+- Meta+J and Ctrl+J open CopilotSheet in the real WorkspaceLayout
+- Repeated Meta+J keeps a single copilot-sheet dialog
+- Shortcut listener registers once and cleans up with the component lifecycle

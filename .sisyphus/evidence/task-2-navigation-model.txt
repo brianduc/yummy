@@ -1,0 +1,20 @@
+Task 2 evidence: canonical workspace navigation model
+
+Changed files:
+- frontend/lib/workspace-navigation.ts
+- frontend/components/workspace/ActivityBar.tsx
+
+What moved:
+- `ActivityId`
+- `ActivityItem`
+- activity item metadata (labels, icons, colors, test ids, route suffixes, index flags)
+- route builder + active-state helpers
+- breadcrumb / route label mapping
+
+Preserved behavior:
+- explorer still routes to `/workspace/:sessionId/explorer`
+- AI Copilot still routes to `/workspace/:sessionId`
+- all existing activity-bar test ids remain unchanged
+
+Verification:
+- `npx vitest run app/workspace/[sessionId]/navigation.test.tsx test/activity-bar-routing.test.tsx` ✅

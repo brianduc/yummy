@@ -1,0 +1,17 @@
+# Test execution evidence for CopilotSheet history preservation
+
+```
+$ cd frontend && npx vitest run components/workspace/CopilotSheet.test.tsx
+
+ ✓ components/workspace/CopilotSheet.test.tsx (3 tests) 475ms
+   ✓ renders correctly and respects open state
+   ✓ preserves prop-backed chat history across open/close cycles
+   ✓ does not invoke onSubmit or other callbacks upon closing (presentation-only close)
+```
+
+The test `preserves prop-backed chat history across open/close cycles` successfully executed. It works by mounting `CopilotSheet` with a `chatHistory` array containing "Persistent History Message", then simulating:
+1. Open the sheet -> message is visible
+2. Close the sheet -> sheet is removed from DOM
+3. Open the sheet again -> message is still visible and re-rendered intact.
+
+This confirms the sheet acts as a pure presentation wrapper over the canonical `AICopilot` and its prop-based API, rather than coupling the visual sheet state to the underlying chat data lifecycle.

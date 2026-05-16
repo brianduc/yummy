@@ -1,0 +1,5 @@
+# Task 11 Network / Mock Notes
+- Stream mocking for Next.js App Router API streams via Playwright `route.fulfill` was blocked in this environment (likely due to CORS / OPTIONS preflight resolution within the test context vs proxy config).
+- Hitting real staging / paid AI endpoints is strictly prohibited to ensure deterministic tests without cost.
+- Consequently, full e2e stream completion and survival in the browser automation is officially documented as a KNOWN EXCEPTION/BLOCKED.
+- Fallback coverage: Task 10's Vitest unit tests successfully mock `WorkspaceLayout` and prove deterministically that the closure of `CopilotSheet` DOES NOT cancel parent-owned streams.

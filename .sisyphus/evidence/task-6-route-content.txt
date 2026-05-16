@@ -1,0 +1,18 @@
+Focused Task 6 real-component assertions in frontend/components/workspace/WorkspaceLayout.test.tsx:
+- renders actual WorkspaceLayout under WorkspaceChatProvider, without mocking WorkspaceLayout
+- verifies actual data-testid="dashboard-shell" classes: h-screen w-full flex overflow-hidden
+- verifies actual AppSidebar, AppHeader, dashboard-main, and dashboard-content render
+- verifies mainStageChildren marker appears inside actual dashboard-content
+- clicks actual data-testid="ai-copilot-trigger" and asserts actual data-testid="copilot-sheet" opens with chat context content
+- verifies no legacy panel-group, panel, separator, data-panel-resize-handle-id, or data-panel-group-id artifacts
+
+Route-layout assertions in frontend/test/workspace-layout.test.tsx still cover child route slot preservation with a mocked WorkspaceLayout.
+
+Diff scope:
+ frontend/components/workspace/WorkspaceLayout.tsx | 117 ++++++++--------------
+ frontend/test/workspace-layout.test.tsx           |  57 ++++++++---
+ 2 files changed, 82 insertions(+), 92 deletions(-)
+ M frontend/components/workspace/WorkspaceLayout.tsx
+ M frontend/test/workspace-layout.test.tsx
+?? frontend/components/workspace/CopilotSheet.tsx
+?? frontend/components/workspace/WorkspaceLayout.test.tsx
