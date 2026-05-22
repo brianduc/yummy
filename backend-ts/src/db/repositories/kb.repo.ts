@@ -3,84 +3,88 @@
  * Matches Python's DB["knowledge_base"] = {tree, insights, project_summary}.
  */
 import { asc, eq } from 'drizzle-orm';
-import { db } from '../client.js';
-import { kbInsights, kbMeta, kbTree, type KbInsightRow, type KbTreeRow } from '../schema.js';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import type * as schema from '../schema.js';
+import { type KbInsightRow, type KbTreeRow, kbInsights, kbMeta, kbTree } from '../schema.js';
 
+type DB = DrizzleD1Database<typeof schema>;
 export type TreeEntry = KbTreeRow;
 export type Insight = KbInsightRow;
 
 export const kbRepo = {
   // ─── Tree ─────────────────────────────────────────────
-  listTree(): TreeEntry[] {
-    return db.select().from(kbTree).all();
+  async listTree(db: DB): Promise<TreeEntry[]> {
+    return await db.select().from(kbTree).all();
   },
 
-  replaceTree(entries: Array<Omit<TreeEntry, 'status'> & { status?: string }>): void {
-    db.transaction((tx) => {
-      tx.delete(kbTree).run();
-      if (entries.length === 0) return;
-      tx.insert(kbTree)
-        .values(entries.map((e) => ({ path: e.path, name: e.name, status: e.status ?? 'pending' })))
-        .run();
-    });
+  async replaceTree(
+    db: DB,
+    entries: Array<Omit<TreeEntry, 'status'> & { status?: string }>,
+  ): Promise<void> {
+    await db.delete(kbTree).run();
+    if (entries.length === 0) return;
+    await db
+      .insert(kbTree)
+      .values(entries.map((e) => ({ path: e.path, name: e.name, status: e.status ?? 'pending' })))
+      .run();
   },
 
-  updateTreeStatus(path: string, status: string): void {
-    db.update(kbTree).set({ status }).where(eq(kbTree.path, path)).run();
+  async updateTreeStatus(db: DB, path: string, status: string): Promise<void> {
+    await db.update(kbTree).set({ status }).where(eq(kbTree.path, path)).run();
   },
 
-  clearTree(): void {
-    db.delete(kbTree).run();
+  async clearTree(db: DB): Promise<void> {
+    await db.delete(kbTree).run();
   },
 
   // ─── Insights ─────────────────────────────────────────
-  listInsights(): Insight[] {
-    return db.select().from(kbInsights).orderBy(asc(kbInsights.createdAt)).all();
+  async listInsights(db: DB): Promise<Insight[]> {
+    return await db.select().from(kbInsights).orderBy(asc(kbInsights.createdAt)).all();
   },
 
-  addInsight(insight: Insight): void {
-    db.insert(kbInsights).values(insight).run();
+  async addInsight(db: DB, insight: Insight): Promise<void> {
+    await db.insert(kbInsights).values(insight).run();
   },
 
-  clearInsights(): void {
-    db.delete(kbInsights).run();
+  async clearInsights(db: DB): Promise<void> {
+    await db.delete(kbInsights).run();
   },
 
   // ─── Project summary (singleton) ──────────────────────
-  getProjectSummary(): string {
-    const row = db.select().from(kbMeta).where(eq(kbMeta.id, 1)).get();
+  async getProjectSummary(db: DB): Promise<string> {
+    const row = await db.select().from(kbMeta).where(eq(kbMeta.id, 1)).get();
     return row?.projectSummary ?? '';
   },
 
-  setProjectSummary(summary: string): void {
-    const existing = db.select().from(kbMeta).where(eq(kbMeta.id, 1)).get();
+  async setProjectSummary(db: DB, summary: string): Promise<void> {
+    const existing = await db.select().from(kbMeta).where(eq(kbMeta.id, 1)).get();
     if (existing) {
-      db.update(kbMeta).set({ projectSummary: summary }).where(eq(kbMeta.id, 1)).run();
+      await db.update(kbMeta).set({ projectSummary: summary }).where(eq(kbMeta.id, 1)).run();
     } else {
-      db.insert(kbMeta).values({ id: 1, projectSummary: summary }).run();
+      await db.insert(kbMeta).values({ id: 1, projectSummary: summary }).run();
     }
   },
 
   /** Reset everything — used by DELETE /kb and at scan start. */
-  resetAll(): void {
-    db.transaction((tx) => {
-      tx.delete(kbTree).run();
-      tx.delete(kbInsights).run();
-      tx.delete(kbMeta).run();
-    });
+  async resetAll(db: DB): Promise<void> {
+    await db.delete(kbTree).run();
+    await db.delete(kbInsights).run();
+    await db.delete(kbMeta).run();
   },
 
   /** Whole-KB snapshot for /kb GET. */
-  snapshot(): { tree: TreeEntry[]; insights: Insight[]; project_summary: string } {
+  async snapshot(
+    db: DB,
+  ): Promise<{ tree: TreeEntry[]; insights: Insight[]; project_summary: string }> {
     return {
-      tree: this.listTree(),
-      insights: this.listInsights(),
-      project_summary: this.getProjectSummary(),
+      tree: await this.listTree(db),
+      insights: await this.listInsights(db),
+      project_summary: await this.getProjectSummary(db),
     };
   },
 
-  isEmpty(): boolean {
-    const r = db.select({ id: kbInsights.id }).from(kbInsights).limit(1).get();
+  async isEmpty(db: DB): Promise<boolean> {
+    const r = await db.select({ id: kbInsights.id }).from(kbInsights).limit(1).get();
     return r === undefined;
   },
 };

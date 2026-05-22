@@ -1,8 +1,9 @@
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { newSessionId } from '../../lib/id.js';
+import type { Db } from '../../db/client.js';
 import { kbRepo } from '../../db/repositories/kb.repo.js';
 import { repoRepo } from '../../db/repositories/repo.repo.js';
 import { sessionsRepo } from '../../db/repositories/sessions.repo.js';
+import { newSessionId } from '../../lib/id.js';
 import { callAI } from '../ai/dispatcher.js';
 
 const TOOL_DEFINITIONS: Tool[] = [
@@ -62,7 +63,10 @@ const TOOL_DEFINITIONS: Tool[] = [
       type: 'object',
       properties: {
         session_id: { type: 'string', description: 'Session ID to run SDLC in' },
-        change_request: { type: 'string', description: 'The change request or feature description' },
+        change_request: {
+          type: 'string',
+          description: 'The change request or feature description',
+        },
       },
       required: ['session_id', 'change_request'],
     },
@@ -81,12 +85,14 @@ const TOOL_DEFINITIONS: Tool[] = [
 ];
 
 function textResult(text: string, isError?: true): CallToolResult {
-  return isError ? { content: [{ type: 'text', text }], isError } : { content: [{ type: 'text', text }] };
+  return isError
+    ? { content: [{ type: 'text', text }], isError }
+    : { content: [{ type: 'text', text }] };
 }
 
-function getHistoryText(sessionId?: string): string {
+async function getHistoryText(db: Db, sessionId?: string): Promise<string> {
   if (!sessionId) return '';
-  const session = sessionsRepo.get(sessionId);
+  const session = await sessionsRepo.get(db, sessionId);
   if (!session) return '';
 
   return session.chatHistory
@@ -95,12 +101,16 @@ function getHistoryText(sessionId?: string): string {
     .join('\n');
 }
 
-function buildRagPrompt(question: string, sessionId?: string): { prompt: string; instruction: string } {
-  const insights = kbRepo.listInsights().slice(0, 2);
-  const summary = kbRepo.getProjectSummary();
+async function buildRagPrompt(
+  db: Db,
+  question: string,
+  sessionId?: string,
+): Promise<{ prompt: string; instruction: string }> {
+  const insights = (await kbRepo.listInsights(db)).slice(0, 2);
+  const summary = await kbRepo.getProjectSummary(db);
   const kbContext = `${summary}\n\n=== TOP INSIGHTS ===\n${insights.map((insight) => insight.summary).join('\n')}`;
-  const history = getHistoryText(sessionId);
-  const repoName = repoRepo.get()?.repo ?? 'project';
+  const history = await getHistoryText(db, sessionId);
+  const repoName = (await repoRepo.get(db))?.repo ?? 'project';
 
   return {
     prompt: `=== REPO KNOWLEDGE (RAG Context) ===\n${kbContext}\n\n=== CHAT HISTORY ===\n${history}\n\n=== QUESTION ===\n${question}`,
@@ -126,38 +136,48 @@ export function getAllToolDefinitions(): Tool[] {
   return TOOL_DEFINITIONS;
 }
 
-export async function executeToolCall(name: string, args: Record<string, unknown>): Promise<CallToolResult> {
+export async function executeToolCall(
+  db: Db,
+  name: string,
+  args: Record<string, unknown>,
+): Promise<CallToolResult> {
   switch (name) {
     case 'yummy.rag_ask': {
       const question = String(args.question ?? '');
       const sessionId = args.session_id ? String(args.session_id) : undefined;
-      const { prompt, instruction } = buildRagPrompt(question, sessionId);
-      const answer = await callAI('EXPERT', prompt, instruction);
+      const { prompt, instruction } = await buildRagPrompt(db, question, sessionId);
+      const answer = await callAI('EXPERT', prompt, instruction, undefined, db);
       return textResult(answer);
     }
     case 'yummy.rag_ask_free': {
       const question = String(args.question ?? '');
       const { prompt, instruction } = buildFreePrompt(question);
-      const answer = await callAI('EXPERT', prompt, instruction);
+      const answer = await callAI('EXPERT', prompt, instruction, undefined, db);
       return textResult(answer);
     }
     case 'yummy.get_kb_insights': {
-      const insights = kbRepo.listInsights();
-      const text = insights.map((insight) => `[${insight.files.join(', ')}]: ${insight.summary}`).join('\n\n');
+      const insights = await kbRepo.listInsights(db);
+      const text = insights
+        .map((insight) => `[${insight.files.join(', ')}]: ${insight.summary}`)
+        .join('\n\n');
       return textResult(text || 'No insights available.');
     }
     case 'yummy.get_kb_summary': {
-      const summary = kbRepo.getProjectSummary();
+      const summary = await kbRepo.getProjectSummary(db);
       return textResult(summary || 'No project summary available.');
     }
     case 'yummy.session_create': {
-      const name = args.name ? String(args.name) : `Session ${sessionsRepo.list().length + 1}`;
-      const session = sessionsRepo.create(newSessionId(), name);
+      const name = args.name
+        ? String(args.name)
+        : `Session ${(await sessionsRepo.list(db)).length + 1}`;
+      const session = await sessionsRepo.create(db, newSessionId(), name);
       return textResult(JSON.stringify({ id: session.id, name: session.name }));
     }
     case 'yummy.session_list': {
-      const sessions = sessionsRepo.list();
-      return textResult(JSON.stringify(sessions.map((session) => ({ id: session.id, name: session.name }))));
+      const sessions = await sessionsRepo.list(db);
+      return textResult(
+        JSON.stringify(sessions.map((session) => ({ id: session.id, name: session.name }))),
+      );
     }
     case 'yummy.sdlc_start': {
       const sessionId = String(args.session_id ?? '');
@@ -168,9 +188,11 @@ export async function executeToolCall(name: string, args: Record<string, unknown
     }
     case 'yummy.sdlc_status': {
       const sessionId = String(args.session_id ?? '');
-      const session = sessionsRepo.get(sessionId);
+      const session = await sessionsRepo.get(db, sessionId);
       if (!session) return textResult(`Session ${sessionId} not found.`, true);
-      return textResult(JSON.stringify({ session_id: sessionId, workflow_state: session.workflowState }));
+      return textResult(
+        JSON.stringify({ session_id: sessionId, workflow_state: session.workflowState }),
+      );
     }
     default:
       return textResult(`Unknown tool: ${name}`, true);

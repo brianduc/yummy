@@ -4,8 +4,10 @@
  * via /config/* endpoints. Initialized from env at boot, then overridden
  * by any values previously persisted to SQLite (DB wins over env).
  */
-import { env } from './env.js';
+
+import type { Db } from '../db/client.js';
 import { providerConfigRepo } from '../db/repositories/provider-config.repo.js';
+import { env } from './env.js';
 
 export type Provider = 'gemini' | 'openai' | 'ollama' | 'copilot' | 'bedrock';
 
@@ -44,10 +46,11 @@ export const runtimeConfig: RuntimeConfig = {
   provider: env.AI_PROVIDER,
 };
 
-// Step 2: overwrite with DB-persisted values where non-empty (DB wins over env).
-// Non-empty check ensures env fallback still works when a field was never set via UI.
-const _saved = providerConfigRepo.get();
-if (_saved) {
+/** Hydrate from DB-persisted values where non-empty (DB wins over env). */
+export async function hydrateRuntimeConfig(db: Db): Promise<void> {
+  const _saved = await providerConfigRepo.get(db);
+  if (!_saved) return;
+
   if (_saved.provider) runtimeConfig.provider = _saved.provider as Provider;
   if (_saved.geminiKey) runtimeConfig.gemini_key = _saved.geminiKey;
   if (_saved.geminiModel) runtimeConfig.gemini_model = _saved.geminiModel;

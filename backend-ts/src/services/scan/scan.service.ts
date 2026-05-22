@@ -13,18 +13,13 @@
  *
  * Poll status via GET /kb/scan/status (handled by kb router).
  */
-import { extname } from 'node:path';
 import { ALLOWED_EXTENSIONS, SCAN_CHUNK_BYTES } from '../../config/constants.js';
+import type { Db } from '../../db/client.js';
 import { kbRepo } from '../../db/repositories/kb.repo.js';
 import { repoRepo } from '../../db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../db/repositories/scan-status.repo.js';
 import { callAI } from '../ai/dispatcher.js';
-import {
-  getRepoInfo,
-  getRepoTree,
-  githubRaw,
-  type TreeEntry,
-} from '../github/github.service.js';
+import { getRepoInfo, getRepoTree, githubRaw, type TreeEntry } from '../github/github.service.js';
 
 const INDEXER_INSTRUCTION =
   'You are a code indexer. Briefly summarize the functionality, ' +
@@ -51,7 +46,7 @@ function isAllowedFile(entry: TreeEntry): boolean {
   if (entry.type !== 'blob') return false;
   if (entry.path.includes('node_modules')) return false;
   if (entry.path.includes('.git')) return false;
-  const ext = extname(entry.path).toLowerCase();
+  const ext = entry.path.slice(entry.path.lastIndexOf('.')).toLowerCase();
   return ALLOWED_EXTENSIONS.has(ext);
 }
 
@@ -59,19 +54,19 @@ function isAllowedFile(entry: TreeEntry): boolean {
  * Run a full repo scan in the background. Resolves when finished (or errored).
  * Status is persisted to scan_status; clients poll via GET /kb/scan/status.
  */
-export async function runScan(): Promise<void> {
-  scanStatusRepo.set({
+export async function runScan(db: Db): Promise<void> {
+  await scanStatusRepo.set(db, {
     running: true,
     text: 'Connecting to GitHub API...',
     progress: 0,
     error: false,
   });
-  kbRepo.resetAll();
+  await kbRepo.resetAll(db);
 
   try {
-    const ri = repoRepo.get();
+    const ri = await repoRepo.get(db);
     if (!ri) {
-      scanStatusRepo.set({
+      await scanStatusRepo.set(db, {
         running: false,
         text: 'Scan error: repo info not configured.',
         progress: 0,
@@ -82,18 +77,18 @@ export async function runScan(): Promise<void> {
     const maxLimit = ri.maxScanLimit;
 
     // ── Step 1: repo metadata ──
-    scanStatusRepo.patch({ text: 'Reading repo info...' });
-    const repoData = await getRepoInfo(ri.owner, ri.repo);
+    await scanStatusRepo.patch(db, { text: 'Reading repo info...' });
+    const repoData = await getRepoInfo(db, ri.owner, ri.repo);
     const branch = repoData.default_branch;
-    repoRepo.setBranch(branch);
+    await repoRepo.setBranch(db, branch);
 
     // ── Step 2: file tree ──
-    scanStatusRepo.patch({ text: 'Fetching file list...' });
-    const allFiles = await getRepoTree(ri.owner, ri.repo, branch);
+    await scanStatusRepo.patch(db, { text: 'Fetching file list...' });
+    const allFiles = await getRepoTree(db, ri.owner, ri.repo, branch);
     const validFiles = allFiles.filter(isAllowedFile).slice(0, maxLimit);
 
     if (validFiles.length === 0) {
-      scanStatusRepo.set({
+      await scanStatusRepo.set(db, {
         running: false,
         text: 'No matching files found in the repo.',
         progress: 0,
@@ -103,7 +98,8 @@ export async function runScan(): Promise<void> {
     }
 
     // Initialize tree with "pending" status
-    kbRepo.replaceTree(
+    await kbRepo.replaceTree(
+      db,
       validFiles.map((f) => ({
         path: f.path,
         name: f.path.split('/').pop() ?? f.path,
@@ -117,33 +113,31 @@ export async function runScan(): Promise<void> {
     let insightsCount = 0;
     const total = validFiles.length;
 
-    for (let i = 0; i < total; i++) {
-      const file = validFiles[i]!;
+    for (const [i, file] of validFiles.entries()) {
       const progress = Math.round((i / total) * 80);
-      scanStatusRepo.set({
+      await scanStatusRepo.set(db, {
         running: true,
         text: `Indexing [${file.path}] (${i + 1}/${total})`,
         progress,
         error: false,
       });
 
-      kbRepo.updateTreeStatus(file.path, 'processing');
+      await kbRepo.updateTreeStatus(db, file.path, 'processing');
 
       try {
-        const content = await githubRaw(ri.owner, ri.repo, branch, file.path);
+        const content = await githubRaw(db, ri.owner, ri.repo, branch, file.path);
         currentChunk += `\n--- FILE: ${file.path} ---\n${content}\n`;
         filesInChunk.push(file.path);
       } catch {
         // Skip files that cannot be read (binary, too large, etc.)
       }
 
-      kbRepo.updateTreeStatus(file.path, 'done');
+      await kbRepo.updateTreeStatus(db, file.path, 'done');
 
       // Flush chunk if large enough or last file
-      const chunkReady =
-        currentChunk.length >= SCAN_CHUNK_BYTES || i === total - 1;
+      const chunkReady = currentChunk.length >= SCAN_CHUNK_BYTES || i === total - 1;
       if (chunkReady && currentChunk.trim() && filesInChunk.length > 0) {
-        scanStatusRepo.patch({
+        await scanStatusRepo.patch(db, {
           text:
             `AI indexing chunk of ${filesInChunk.length} files... ` +
             `(${insightsCount + 1} insights so far)`,
@@ -153,9 +147,11 @@ export async function runScan(): Promise<void> {
           'INDEXER',
           `Summarize the code logic:\n${currentChunk}`,
           INDEXER_INSTRUCTION,
+          undefined,
+          db,
         );
 
-        kbRepo.addInsight({
+        await kbRepo.addInsight(db, {
           id: Date.now() + i,
           files: [...filesInChunk],
           summary,
@@ -169,33 +165,32 @@ export async function runScan(): Promise<void> {
     }
 
     // ── Step 5: project wiki ──
-    scanStatusRepo.set({
+    await scanStatusRepo.set(db, {
       running: true,
       text: 'Writing Project Wiki (Project Summary)...',
       progress: 90,
       error: false,
     });
 
-    const allInsightsStr = kbRepo
-      .listInsights()
-      .map((ins) => ins.summary)
-      .join('\n\n');
+    const allInsightsStr = (await kbRepo.listInsights(db)).map((ins) => ins.summary).join('\n\n');
 
     const projectSummary = await callAI(
       'ARCHITECT',
       `Based on these technical summaries:\n${allInsightsStr}`,
       architectInstruction(ri.repo),
+      undefined,
+      db,
     );
 
-    kbRepo.setProjectSummary(projectSummary);
-    scanStatusRepo.set({
+    await kbRepo.setProjectSummary(db, projectSummary);
+    await scanStatusRepo.set(db, {
       running: false,
       text: `Scan complete. Indexed ${total} files, generated ${insightsCount} insights.`,
       progress: 100,
       error: false,
     });
   } catch (e) {
-    scanStatusRepo.set({
+    await scanStatusRepo.set(db, {
       running: false,
       text: `Scan error: ${(e as Error).message}`,
       progress: 0,

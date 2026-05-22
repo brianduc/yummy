@@ -1,19 +1,16 @@
 /**
- * Environment loader — read once at boot, validated via Zod.
- * Runtime-mutable provider config lives in src/config/runtime.ts.
+ * Environment loader for Cloudflare Workers.
+ * Reads from Worker env bindings (c.env) instead of process.env.
  */
-import 'dotenv/config';
 import { z } from 'zod';
 
 const EnvSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8000),
   HOST: z.string().default('0.0.0.0'),
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  DATABASE_URL: z.string().default('./data/yummy.db'),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+  DATABASE_URL: z.string().default(''),
 
-  AI_PROVIDER: z
-    .enum(['gemini', 'openai', 'ollama', 'copilot', 'bedrock'])
-    .default('gemini'),
+  AI_PROVIDER: z.enum(['gemini', 'openai', 'ollama', 'copilot', 'bedrock']).default('gemini'),
 
   GEMINI_API_KEY: z.string().default(''),
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
@@ -32,20 +29,21 @@ const EnvSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().default(''),
   AWS_SECRET_ACCESS_KEY: z.string().default(''),
   AWS_REGION: z.string().default('us-east-1'),
-  BEDROCK_MODEL: z
-    .string()
-    .default('anthropic.claude-3-5-sonnet-20241022-v2:0'),
+  BEDROCK_MODEL: z.string().default('anthropic.claude-3-5-sonnet-20241022-v2:0'),
 
   GITHUB_TOKEN: z.string().default(''),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
 
-const parsed = EnvSchema.safeParse(process.env);
-if (!parsed.success) {
-  console.error('❌ Invalid environment configuration:');
-  console.error(z.treeifyError(parsed.error));
-  process.exit(1);
+export function loadEnv(raw: Record<string, string | undefined>): Env {
+  const parsed = EnvSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`Invalid environment: ${JSON.stringify(z.treeifyError(parsed.error))}`);
+  }
+
+  return parsed.data;
 }
 
-export const env: Env = parsed.data;
+// Backwards-compatible default for modules initialized outside a Worker request.
+export const env: Env = loadEnv(typeof process === 'undefined' ? {} : process.env);

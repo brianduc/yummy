@@ -5,14 +5,12 @@
  * GET aggregates request_logs by agent and returns the 50 most recent rows.
  * DELETE clears all logs.
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { type Bindings, createDb } from '../db/client.js';
 import { logsRepo } from '../db/repositories/logs.repo.js';
-import {
-  MetricsResponseSchema,
-  type RequestLogDto,
-} from '../schemas/metrics.schema.js';
+import { MetricsResponseSchema, type RequestLogDto } from '../schemas/metrics.schema.js';
 
-export const metricsRouter = new OpenAPIHono();
+export const metricsRouter = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const json = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
@@ -34,8 +32,9 @@ metricsRouter.openapi(
       200: { content: json(MetricsResponseSchema), description: 'Metrics' },
     },
   }),
-  (c) => {
-    const logs = logsRepo.list(); // newest-first
+  async (c) => {
+    const db = createDb(c.env.DB);
+    const logs = await logsRepo.list(db); // newest-first
     const totalCost = round(
       logs.reduce((sum, l) => sum + l.cost, 0),
       6,
@@ -44,7 +43,8 @@ metricsRouter.openapi(
     const breakdown: Record<string, AgentStats> = {};
     for (const log of logs) {
       const a = log.agent;
-      const stats = (breakdown[a] ??= { calls: 0, cost: 0, total_tokens: 0 });
+      breakdown[a] ??= { calls: 0, cost: 0, total_tokens: 0 };
+      const stats = breakdown[a];
       stats.calls += 1;
       stats.cost += log.cost;
       stats.total_tokens += log.inTokens + log.outTokens;
@@ -84,8 +84,9 @@ metricsRouter.openapi(
       },
     },
   }),
-  (c) => {
-    logsRepo.clear();
+  async (c) => {
+    const db = createDb(c.env.DB);
+    await logsRepo.clear(db);
     return c.json({ status: 'ok', message: 'Request logs cleared.' });
   },
 );

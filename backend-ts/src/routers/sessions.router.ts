@@ -2,19 +2,20 @@
  * Sessions router — /sessions/*.
  * Mirrors backend/routers/sessions_router.py.
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { type Bindings, createDb } from '../db/client.js';
 import { sessionsRepo } from '../db/repositories/sessions.repo.js';
-import { newSessionId } from '../lib/id.js';
 import { requireSession } from '../lib/guards.js';
+import { newSessionId } from '../lib/id.js';
 import { toSessionDetail, toSessionSummary } from '../lib/serializers.js';
+import { ErrorSchema } from '../schemas/common.schema.js';
 import {
   NewSessionRequestSchema,
   SessionDetailSchema,
   SessionSummarySchema,
 } from '../schemas/sessions.schema.js';
-import { ErrorSchema } from '../schemas/common.schema.js';
 
-export const sessionsRouter = new OpenAPIHono();
+export const sessionsRouter = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const json = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
@@ -31,11 +32,12 @@ sessionsRouter.openapi(
       200: { content: json(SessionDetailSchema), description: 'Created' },
     },
   }),
-  (c) => {
+  async (c) => {
+    const db = createDb(c.env.DB);
     const req = c.req.valid('json');
     const sid = newSessionId();
-    const name = req.name ?? `Session ${sessionsRepo.list().length + 1}`;
-    const session = sessionsRepo.create(sid, name);
+    const name = req.name ?? `Session ${(await sessionsRepo.list(db)).length + 1}`;
+    const session = await sessionsRepo.create(db, sid, name);
     return c.json(toSessionDetail(session));
   },
 );
@@ -50,7 +52,10 @@ sessionsRouter.openapi(
       200: { content: json(z.array(SessionSummarySchema)), description: 'List' },
     },
   }),
-  (c) => c.json(sessionsRepo.list().map(toSessionSummary)),
+  async (c) => {
+    const db = createDb(c.env.DB);
+    return c.json((await sessionsRepo.list(db)).map(toSessionSummary));
+  },
 );
 
 // ─── GET /sessions/{session_id} ──────────────────────────
@@ -65,9 +70,10 @@ sessionsRouter.openapi(
       404: { content: json(ErrorSchema), description: 'Not found' },
     },
   }),
-  (c) => {
+  async (c) => {
+    const db = createDb(c.env.DB);
     const { session_id } = c.req.valid('param');
-    return c.json(toSessionDetail(requireSession(session_id)), 200);
+    return c.json(toSessionDetail(await requireSession(db, session_id)), 200);
   },
 );
 
@@ -86,10 +92,11 @@ sessionsRouter.openapi(
       404: { content: json(ErrorSchema), description: 'Not found' },
     },
   }),
-  (c) => {
+  async (c) => {
+    const db = createDb(c.env.DB);
     const { session_id } = c.req.valid('param');
-    requireSession(session_id); // raises 404
-    sessionsRepo.delete(session_id);
+    await requireSession(db, session_id); // raises 404
+    await sessionsRepo.delete(db, session_id);
     return c.json({ status: 'deleted', session_id }, 200);
   },
 );
@@ -109,11 +116,12 @@ sessionsRouter.openapi(
       404: { content: json(ErrorSchema), description: 'Not found' },
     },
   }),
-  (c) => {
+  async (c) => {
+    const db = createDb(c.env.DB);
     const { session_id } = c.req.valid('param');
-    requireSession(session_id);
+    await requireSession(db, session_id);
     // Python only sets workflow_state to 'idle'; doesn't clear agent_outputs.
-    sessionsRepo.update(session_id, { workflowState: 'idle' });
+    await sessionsRepo.update(db, session_id, { workflowState: 'idle' });
     return c.json({ status: 'ok', workflow_state: 'idle' }, 200);
   },
 );

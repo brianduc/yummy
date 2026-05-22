@@ -2,22 +2,23 @@
  * Knowledge Base router — /kb/*.
  * Mirrors backend/routers/kb_router.py.
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { type Bindings, createDb } from '../db/client.js';
 import { kbRepo } from '../db/repositories/kb.repo.js';
 import { scanStatusRepo } from '../db/repositories/scan-status.repo.js';
 import { conflict, HttpError } from '../lib/errors.js';
 import { requireRepo } from '../lib/guards.js';
-import { runScan } from '../services/scan/scan.service.js';
-import { getRepoInfo, githubRaw } from '../services/github/github.service.js';
+import { ErrorSchema } from '../schemas/common.schema.js';
 import {
   FileContentSchema,
   FileQuerySchema,
   KnowledgeBaseSchema,
   ScanStatusResponseSchema,
 } from '../schemas/kb.schema.js';
-import { ErrorSchema } from '../schemas/common.schema.js';
+import { getRepoInfo, githubRaw } from '../services/github/github.service.js';
+import { runScan } from '../services/scan/scan.service.js';
 
-export const kbRouter = new OpenAPIHono();
+export const kbRouter = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const json = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
@@ -33,8 +34,9 @@ kbRouter.openapi(
       200: { content: json(KnowledgeBaseSchema), description: 'KB snapshot' },
     },
   }),
-  (c) => {
-    const snap = kbRepo.snapshot();
+  async (c) => {
+    const db = createDb(c.env.DB);
+    const snap = await kbRepo.snapshot(db);
     return c.json({
       file_count: snap.tree.length,
       insight_count: snap.insights.length,
@@ -61,18 +63,22 @@ kbRouter.openapi(
       409: { content: json(ErrorSchema), description: 'Already running' },
     },
   }),
-  (c) => {
-    requireRepo();
-    const cur = scanStatusRepo.get();
-    if (cur && cur.running) {
+  async (c) => {
+    const db = createDb(c.env.DB);
+    await requireRepo(db);
+    const cur = await scanStatusRepo.get(db);
+    if (cur?.running) {
       throw conflict('Scan is already running. Poll GET /kb/scan/status to track progress.');
     }
     // Fire-and-forget background task; matches FastAPI BackgroundTasks behaviour.
-    runScan().catch((e) => console.error('[scan]', e));
-    return c.json({
-      status: 'started',
-      message: 'Scan started in background. Poll GET /kb/scan/status to track progress.',
-    }, 200);
+    runScan(db).catch((e) => console.error('[scan]', e));
+    return c.json(
+      {
+        status: 'started',
+        message: 'Scan started in background. Poll GET /kb/scan/status to track progress.',
+      },
+      200,
+    );
   },
 );
 
@@ -86,8 +92,9 @@ kbRouter.openapi(
       200: { content: json(ScanStatusResponseSchema), description: 'Status' },
     },
   }),
-  (c) => {
-    const s = scanStatusRepo.get();
+  async (c) => {
+    const db = createDb(c.env.DB);
+    const s = await scanStatusRepo.get(db);
     if (!s) {
       return c.json({
         running: false,
@@ -115,18 +122,19 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
+    const db = createDb(c.env.DB);
     const { path } = c.req.valid('query');
-    const ri = requireRepo();
+    const ri = await requireRepo(db);
 
     let branch: string;
     try {
-      const repoData = await getRepoInfo(ri.owner, ri.repo);
+      const repoData = await getRepoInfo(db, ri.owner, ri.repo);
       branch = repoData.default_branch ?? 'main';
     } catch {
       throw new HttpError(502, 'Unable to connect to GitHub API.');
     }
 
-    const content = await githubRaw(ri.owner, ri.repo, branch, path);
+    const content = await githubRaw(db, ri.owner, ri.repo, branch, path);
     return c.json({ path, content, branch, repo: `${ri.owner}/${ri.repo}` }, 200);
   },
 );
@@ -144,9 +152,10 @@ kbRouter.openapi(
       },
     },
   }),
-  (c) => {
-    kbRepo.resetAll();
-    scanStatusRepo.clear();
+  async (c) => {
+    const db = createDb(c.env.DB);
+    await kbRepo.resetAll(db);
+    await scanStatusRepo.clear(db);
     return c.json({ status: 'ok', message: 'Knowledge base cleared.' });
   },
 );

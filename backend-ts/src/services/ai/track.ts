@@ -3,6 +3,7 @@
  * Mirrors Python `_track` in backend/services/ai_service.py.
  */
 import { runtimeConfig } from '../../config/runtime.js';
+import type { Db } from '../../db/client.js';
 import { logsRepo } from '../../db/repositories/logs.repo.js';
 import { nowHms } from '../../lib/time.js';
 import { estimateTokens, getPrice } from './pricing.js';
@@ -18,19 +19,17 @@ export interface TrackArgs {
   outTokens?: number | null | undefined;
 }
 
-export function track(args: TrackArgs): void {
-  const inTokens =
-    args.inTokens ?? estimateTokens(args.prompt + args.instruction);
+export async function track(db: Db, args: TrackArgs): Promise<void> {
+  const inTokens = args.inTokens ?? estimateTokens(args.prompt + args.instruction);
   const outTokens = args.outTokens ?? estimateTokens(args.resultText);
 
   const provider = runtimeConfig.provider;
   const modelKey = `${provider}_model` as const;
   const model = (runtimeConfig as unknown as Record<string, string>)[modelKey] ?? '';
   const price = getPrice(provider, model);
-  const cost =
-    (inTokens / 1_000_000) * price.in + (outTokens / 1_000_000) * price.out;
+  const cost = (inTokens / 1_000_000) * price.in + (outTokens / 1_000_000) * price.out;
 
-  logsRepo.add({
+  await logsRepo.add(db, {
     id: Date.now(),
     time: nowHms(),
     agent: args.agentRole,

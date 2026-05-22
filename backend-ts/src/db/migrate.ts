@@ -1,16 +1,27 @@
 /**
- * Apply pending Drizzle migrations from src/db/migrations.
- * Run via `pnpm db:migrate`.
+ * D1 migration helper — run via `pnpm db:migrate`.
+ * Applies SQL migrations from drizzle/ to the D1 database.
+ *
+ * Usage: npx tsx src/db/migrate.ts
+ * Or via wrangler: wrangler d1 migrations apply yummy-db --remote
+ *
+ * This script runs locally, not inside Cloudflare Workers, so Node.js fs/path
+ * imports are intentionally allowed here.
  */
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { db, rawDb } from './client.js';
+const MIGRATIONS_DIR = join(import.meta.dirname, '../../drizzle');
 
-const migrationsFolder = resolve(import.meta.dirname, 'migrations');
+const files = existsSync(MIGRATIONS_DIR)
+  ? readdirSync(MIGRATIONS_DIR)
+      .filter((file) => file.endsWith('.sql'))
+      .sort()
+  : [];
 
-console.log(`[migrate] Applying migrations from ${migrationsFolder}`);
-migrate(db, { migrationsFolder });
-console.log('[migrate] ✅ Done');
-
-rawDb.close();
+console.log(`Found ${files.length} migration(s) in ${MIGRATIONS_DIR}`);
+console.log('Run migrations with: npx wrangler d1 migrations apply yummy-db --local');
+console.log('Files:');
+for (const file of files) {
+  console.log(`  - ${file}`);
+}

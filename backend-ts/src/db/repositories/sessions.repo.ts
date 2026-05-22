@@ -3,10 +3,12 @@
  * Mirrors Python's DB["sessions"] dict with the make_session() shape.
  */
 import { eq } from 'drizzle-orm';
-import { db } from '../client.js';
-import { sessions, type SessionRow } from '../schema.js';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { nowIso } from '../../lib/time.js';
+import type * as schema from '../schema.js';
+import { type SessionRow, sessions } from '../schema.js';
 
+type DB = DrizzleD1Database<typeof schema>;
 export type Session = SessionRow;
 
 function defaultSystemLog(name: string): Session['logs'][number] {
@@ -17,15 +19,15 @@ function defaultSystemLog(name: string): Session['logs'][number] {
 }
 
 export const sessionsRepo = {
-  list(): Session[] {
-    return db.select().from(sessions).all();
+  async list(db: DB): Promise<Session[]> {
+    return await db.select().from(sessions).all();
   },
 
-  get(id: string): Session | undefined {
-    return db.select().from(sessions).where(eq(sessions.id, id)).get();
+  async get(db: DB, id: string): Promise<Session | undefined> {
+    return await db.select().from(sessions).where(eq(sessions.id, id)).get();
   },
 
-  create(id: string, name: string): Session {
+  async create(db: DB, id: string, name: string): Promise<Session> {
     const row: Session = {
       id,
       name,
@@ -37,24 +39,28 @@ export const sessionsRepo = {
       metrics: { tokens: 0 },
       workflowState: 'idle',
     };
-    db.insert(sessions).values(row).run();
+    await db.insert(sessions).values(row).run();
     return row;
   },
 
-  update(id: string, patch: Partial<Omit<Session, 'id'>>): Session | undefined {
-    if (Object.keys(patch).length === 0) return this.get(id);
-    db.update(sessions).set(patch).where(eq(sessions.id, id)).run();
-    return this.get(id);
+  async update(
+    db: DB,
+    id: string,
+    patch: Partial<Omit<Session, 'id'>>,
+  ): Promise<Session | undefined> {
+    if (Object.keys(patch).length === 0) return await this.get(db, id);
+    await db.update(sessions).set(patch).where(eq(sessions.id, id)).run();
+    return await this.get(db, id);
   },
 
-  delete(id: string): boolean {
-    const res = db.delete(sessions).where(eq(sessions.id, id)).run();
+  async delete(db: DB, id: string): Promise<boolean> {
+    const res = await db.delete(sessions).where(eq(sessions.id, id)).run();
     return res.changes > 0;
   },
 
   /** Reset agent outputs / jira backlog / workflow state — keeps logs + chat. */
-  reset(id: string): Session | undefined {
-    return this.update(id, {
+  async reset(db: DB, id: string): Promise<Session | undefined> {
+    return await this.update(db, id, {
       agentOutputs: {},
       jiraBacklog: [],
       workflowState: 'idle',

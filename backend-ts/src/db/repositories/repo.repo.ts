@@ -2,42 +2,47 @@
  * Repo info — singleton row id=1. Returns undefined if not configured.
  */
 import { eq } from 'drizzle-orm';
-import { db } from '../client.js';
-import { repoInfo, type RepoInfoRow } from '../schema.js';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import type * as schema from '../schema.js';
+import { type RepoInfoRow, repoInfo } from '../schema.js';
 
+type DB = DrizzleD1Database<typeof schema>;
 export type RepoInfo = RepoInfoRow;
 
 export const repoRepo = {
-  get(): RepoInfo | undefined {
-    return db.select().from(repoInfo).where(eq(repoInfo.id, 1)).get();
+  async get(db: DB): Promise<RepoInfo | undefined> {
+    return await db.select().from(repoInfo).where(eq(repoInfo.id, 1)).get();
   },
 
-  set(info: Omit<RepoInfo, 'id'>): RepoInfo {
-    const existing = this.get();
+  async set(db: DB, info: Omit<RepoInfo, 'id'>): Promise<RepoInfo> {
+    const existing = await this.get(db);
     if (existing) {
-      db.update(repoInfo).set(info).where(eq(repoInfo.id, 1)).run();
+      await db.update(repoInfo).set(info).where(eq(repoInfo.id, 1)).run();
     } else {
-      db.insert(repoInfo).values({ id: 1, ...info }).run();
+      await db
+        .insert(repoInfo)
+        .values({ id: 1, ...info })
+        .run();
     }
     return { id: 1, ...info };
   },
 
-  setBranch(branch: string): void {
-    db.update(repoInfo).set({ branch }).where(eq(repoInfo.id, 1)).run();
+  async setBranch(db: DB, branch: string): Promise<void> {
+    await db.update(repoInfo).set({ branch }).where(eq(repoInfo.id, 1)).run();
   },
 
   /** Token getter — returns "" when no repo configured. */
-  getGithubToken(): string {
-    return this.get()?.githubToken ?? '';
+  async getGithubToken(db: DB): Promise<string> {
+    return (await this.get(db))?.githubToken ?? '';
   },
 
   /** Update only the github token; no-op when no repo row exists. */
-  setGithubToken(token: string): void {
-    if (!this.get()) return;
-    db.update(repoInfo).set({ githubToken: token }).where(eq(repoInfo.id, 1)).run();
+  async setGithubToken(db: DB, token: string): Promise<void> {
+    if (!(await this.get(db))) return;
+    await db.update(repoInfo).set({ githubToken: token }).where(eq(repoInfo.id, 1)).run();
   },
 
-  clear(): void {
-    db.delete(repoInfo).run();
+  async clear(db: DB): Promise<void> {
+    await db.delete(repoInfo).run();
   },
 };

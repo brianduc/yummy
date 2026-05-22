@@ -1,29 +1,25 @@
 /**
- * SQLite client (better-sqlite3) + Drizzle wrapper.
- * Single shared instance; pragmas tuned for write-heavy + concurrent reads.
+ * D1 client — Cloudflare Workers compatible.
+ * Replaces the old better-sqlite3 client.
+ *
+ * Usage in Workers handler:
+ *   const db = createDb(c.env.DB);
+ *
+ * For tests that need a shared instance, call createDb() once and hold the reference.
  */
-import Database from 'better-sqlite3';
-import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
 
-import { env } from '../config/env.js';
+import type { D1Database } from '@cloudflare/workers-types';
+import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema.js';
 
-function resolveDbPath(): string {
-  const url = env.DATABASE_URL;
-  // Allow `:memory:` for tests
-  if (url === ':memory:') return url;
-  const abs = resolve(url);
-  mkdirSync(dirname(abs), { recursive: true });
-  return abs;
+export type Bindings = {
+  DB: D1Database;
+};
+
+export function createDb(d1: D1Database) {
+  return drizzle(d1, { schema });
 }
 
-const sqlite = new Database(resolveDbPath());
-sqlite.pragma('journal_mode = WAL');
-sqlite.pragma('synchronous = NORMAL');
-sqlite.pragma('foreign_keys = ON');
+export type Db = ReturnType<typeof createDb>;
 
-export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, { schema });
-export const rawDb: Database.Database = sqlite;
 export { schema };

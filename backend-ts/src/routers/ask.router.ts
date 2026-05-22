@@ -15,23 +15,20 @@
  * track() must be called explicitly here after the stream drains —
  * streamAI() does NOT track (Python parity).
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, type z } from '@hono/zod-openapi';
 import { stream } from 'hono/streaming';
-import { sessionsRepo } from '../db/repositories/sessions.repo.js';
+import { type Bindings, createDb } from '../db/client.js';
 import { repoRepo } from '../db/repositories/repo.repo.js';
+import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import { requireKnowledgeBase, requireSession } from '../lib/guards.js';
+import { type AskRequest, AskRequestSchema, AskSyncResponseSchema } from '../schemas/ask.schema.js';
+import { ErrorSchema } from '../schemas/common.schema.js';
 import { callAI, streamAI } from '../services/ai/dispatcher.js';
 import { track } from '../services/ai/track.js';
-import {
-  AskRequestSchema,
-  AskSyncResponseSchema,
-  type AskRequest,
-} from '../schemas/ask.schema.js';
-import { ErrorSchema } from '../schemas/common.schema.js';
 
-type KbSnapshot = ReturnType<typeof requireKnowledgeBase>;
+type KbSnapshot = Awaited<ReturnType<typeof requireKnowledgeBase>>;
 
-export const askRouter = new OpenAPIHono();
+export const askRouter = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const json = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
@@ -49,6 +46,7 @@ interface SessionLike {
 }
 
 function buildRagPrompt(
+  repoName: string,
   session: SessionLike,
   kb: KbSnapshot,
   req: AskRequest,
@@ -59,26 +57,20 @@ function buildRagPrompt(
     retrieval_method: 'top-k (k=2)',
     source_chunks: retrieved.map((c) => ({
       files: c.files,
-      summary_preview: c.summary.slice(0, 200) + '...',
+      summary_preview: `${c.summary.slice(0, 200)}...`,
     })),
   };
 
-  const kbContext =
-    kb.project_summary +
-    '\n\n=== TOP INSIGHTS ===\n' +
-    retrieved.map((c) => c.summary).join('\n');
+  const kbContext = `${kb.project_summary}\n\n=== TOP INSIGHTS ===\n${retrieved.map((c) => c.summary).join('\n')}`;
 
   let fileCtx = '';
   if (req.ide_file && req.ide_content) {
     fileCtx =
-      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` +
-      `${req.ide_content.slice(0, 4000)}\n`;
+      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` + `${req.ide_content.slice(0, 4000)}\n`;
   }
 
   const recent = session.chatHistory.slice(-8);
-  const history = recent
-    .map((m) => `${m.role.toUpperCase()}: ${m.text}`)
-    .join('\n');
+  const history = recent.map((m) => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
 
   const prompt =
     `=== REPO KNOWLEDGE (RAG Context) ===\n${kbContext}` +
@@ -86,7 +78,6 @@ function buildRagPrompt(
     `\n\n=== CHAT HISTORY ===\n${history}` +
     `\n\n=== QUESTION ===\n${req.question}`;
 
-  const repoName = repoRepo.get()?.repo ?? 'project';
   const instruction =
     `You are a technical expert on the '${repoName}' project. ` +
     'Answer the question based on the provided context. ' +
@@ -112,19 +103,18 @@ function sseLine(data: string): string {
 
 // ─── POST /ask  (SSE) ────────────────────────────────────
 askRouter.post('/ask', async (c) => {
+  const db = createDb(c.env.DB);
   const body = (await c.req.json()) as Partial<AskRequest>;
   const req = AskRequestSchema.parse(body);
 
-  const session = requireSession(req.session_id);
-  const kb = requireKnowledgeBase();
-  const { prompt, instruction, trace } = buildRagPrompt(session, kb, req);
+  const session = await requireSession(db, req.session_id);
+  const kb = await requireKnowledgeBase(db);
+  const repoName = (await repoRepo.get(db))?.repo ?? 'project';
+  const { prompt, instruction, trace } = buildRagPrompt(repoName, session, kb, req);
 
   // Persist user message immediately (matches Python).
-  const newHistory = [
-    ...session.chatHistory,
-    { role: 'user', text: req.question },
-  ];
-  sessionsRepo.update(req.session_id, { chatHistory: newHistory });
+  const newHistory = [...session.chatHistory, { role: 'user', text: req.question }];
+  await sessionsRepo.update(db, req.session_id, { chatHistory: newHistory });
 
   // Set SSE headers
   for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
@@ -146,18 +136,15 @@ askRouter.post('/ask', async (c) => {
     const answer = chunks.join('');
 
     // Persist assistant message + trace (re-fetch to avoid losing concurrent writes).
-    const fresh = sessionsRepo.get(req.session_id);
+    const fresh = await sessionsRepo.get(db, req.session_id);
     if (fresh) {
-      sessionsRepo.update(req.session_id, {
-        chatHistory: [
-          ...fresh.chatHistory,
-          { role: 'assistant', text: answer, trace },
-        ],
+      await sessionsRepo.update(db, req.session_id, {
+        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer, trace }],
       });
     }
 
     // Record metrics (streamAI does NOT track — Python parity).
-    track({
+    await track(db, {
       agentRole: 'EXPERT',
       prompt,
       instruction,
@@ -172,27 +159,23 @@ askRouter.post('/ask', async (c) => {
 
 // ─── POST /ask/free  (SSE, no KB) ────────────────────────
 askRouter.post('/ask/free', async (c) => {
+  const db = createDb(c.env.DB);
   const body = (await c.req.json()) as Partial<AskRequest>;
   const req = AskRequestSchema.parse(body);
 
-  const session = requireSession(req.session_id);
+  const session = await requireSession(db, req.session_id);
 
   const recent = session.chatHistory.slice(-8);
-  const history = recent
-    .map((m) => `${m.role.toUpperCase()}: ${m.text}`)
-    .join('\n');
+  const history = recent.map((m) => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
 
   let fileCtx = '';
   if (req.ide_file && req.ide_content) {
     fileCtx =
-      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` +
-      `${req.ide_content.slice(0, 4000)}\n`;
+      `\n\n=== FILE OPEN IN IDE: ${req.ide_file} ===\n` + `${req.ide_content.slice(0, 4000)}\n`;
   }
 
   const prompt =
-    `${fileCtx}` +
-    `\n\n=== CHAT HISTORY ===\n${history}` +
-    `\n\n=== QUESTION ===\n${req.question}`;
+    `${fileCtx}` + `\n\n=== CHAT HISTORY ===\n${history}` + `\n\n=== QUESTION ===\n${req.question}`;
 
   const instruction =
     'You are YUMMY, a helpful AI assistant for software development. ' +
@@ -200,7 +183,7 @@ askRouter.post('/ask/free', async (c) => {
     'You can discuss any topic — code, architecture, concepts, or general questions.';
 
   // Persist user message immediately.
-  sessionsRepo.update(req.session_id, {
+  await sessionsRepo.update(db, req.session_id, {
     chatHistory: [...session.chatHistory, { role: 'user', text: req.question }],
   });
 
@@ -222,17 +205,14 @@ askRouter.post('/ask/free', async (c) => {
 
     const answer = chunks.join('');
 
-    const fresh = sessionsRepo.get(req.session_id);
+    const fresh = await sessionsRepo.get(db, req.session_id);
     if (fresh) {
-      sessionsRepo.update(req.session_id, {
-        chatHistory: [
-          ...fresh.chatHistory,
-          { role: 'assistant', text: answer },
-        ],
+      await sessionsRepo.update(db, req.session_id, {
+        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer }],
       });
     }
 
-    track({
+    await track(db, {
       agentRole: 'EXPERT',
       prompt,
       instruction,
@@ -258,14 +238,16 @@ askRouter.openapi(
     },
   }),
   async (c) => {
+    const db = createDb(c.env.DB);
     const req = c.req.valid('json');
-    const session = requireSession(req.session_id);
-    const kb = requireKnowledgeBase();
-    const { prompt, instruction, trace } = buildRagPrompt(session, kb, req);
+    const session = await requireSession(db, req.session_id);
+    const kb = await requireKnowledgeBase(db);
+    const repoName = (await repoRepo.get(db))?.repo ?? 'project';
+    const { prompt, instruction, trace } = buildRagPrompt(repoName, session, kb, req);
 
-    const answer = await callAI('EXPERT', prompt, instruction);
+    const answer = await callAI('EXPERT', prompt, instruction, undefined, db);
 
-    sessionsRepo.update(req.session_id, {
+    await sessionsRepo.update(db, req.session_id, {
       chatHistory: [
         ...session.chatHistory,
         { role: 'user', text: req.question },

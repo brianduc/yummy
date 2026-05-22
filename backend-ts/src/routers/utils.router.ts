@@ -4,18 +4,17 @@
  *
  * /health/model branches per provider with a minimal "ping" prompt.
  */
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import {
-  BedrockRuntimeClient,
-  ConverseCommand,
-} from '@aws-sdk/client-bedrock-runtime';
+
+import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
 import { GoogleGenAI } from '@google/genai';
-import OpenAI from 'openai';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { Ollama } from 'ollama';
+import OpenAI from 'openai';
 import { runtimeConfig } from '../config/runtime.js';
+import type { Bindings } from '../db/client.js';
 import { ErrorSchema } from '../schemas/common.schema.js';
 
-export const utilsRouter = new OpenAPIHono();
+export const utilsRouter = new OpenAPIHono<{ Bindings: Bindings }>();
 
 // ─── GET / ───────────────────────────────────────────────
 const RootSchema = z
@@ -80,7 +79,10 @@ utilsRouter.openapi(
     tags: ['Utilities'],
     summary: 'Ping the configured AI provider with a minimal prompt.',
     responses: {
-      200: { content: { 'application/json': { schema: HealthModelSchema } }, description: 'Result' },
+      200: {
+        content: { 'application/json': { schema: HealthModelSchema } },
+        description: 'Result',
+      },
     },
   }),
   async (c) => {
@@ -92,7 +94,12 @@ utilsRouter.openapi(
       const key = runtimeConfig.gemini_key;
       const model = runtimeConfig.gemini_model;
       if (!key) {
-        return c.json({ status: 'error' as const, provider, model, error: 'GEMINI_API_KEY not configured.' });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          error: 'GEMINI_API_KEY not configured.',
+        });
       }
       try {
         const client = new GoogleGenAI({ apiKey: key });
@@ -103,7 +110,13 @@ utilsRouter.openapi(
         });
         return c.json({ status: 'ok' as const, provider, model, latency_ms: elapsed() });
       } catch (e) {
-        return c.json({ status: 'error' as const, provider, model, latency_ms: elapsed(), error: (e as Error).message });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          latency_ms: elapsed(),
+          error: (e as Error).message,
+        });
       }
     }
 
@@ -112,7 +125,12 @@ utilsRouter.openapi(
       const model = runtimeConfig.openai_model;
       const baseURL = runtimeConfig.openai_base_url || undefined; // Allow empty string to fallback to default
       if (!key) {
-        return c.json({ status: 'error' as const, provider, model, error: 'OPENAI_API_KEY not configured.' });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          error: 'OPENAI_API_KEY not configured.',
+        });
       }
       try {
         const client = new OpenAI({ apiKey: key, baseURL });
@@ -123,7 +141,13 @@ utilsRouter.openapi(
         });
         return c.json({ status: 'ok' as const, provider, model, latency_ms: elapsed() });
       } catch (e) {
-        return c.json({ status: 'error' as const, provider, model, latency_ms: elapsed(), error: (e as Error).message });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          latency_ms: elapsed(),
+          error: (e as Error).message,
+        });
       }
     }
 
@@ -131,13 +155,21 @@ utilsRouter.openapi(
       const token = runtimeConfig.copilot_token;
       const model = runtimeConfig.copilot_model;
       if (!token) {
-        return c.json({ status: 'error' as const, provider, model, error: 'Copilot token not configured.' });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          error: 'Copilot token not configured.',
+        });
       }
       try {
         const client = new OpenAI({
           apiKey: token,
           baseURL: 'https://api.githubcopilot.com',
-          defaultHeaders: { 'Editor-Version': 'vscode/1.0.0', 'Copilot-Integration-Id': 'vscode-chat' },
+          defaultHeaders: {
+            'Editor-Version': 'vscode/1.0.0',
+            'Copilot-Integration-Id': 'vscode-chat',
+          },
         });
         await client.chat.completions.create({
           model,
@@ -146,7 +178,13 @@ utilsRouter.openapi(
         });
         return c.json({ status: 'ok' as const, provider, model, latency_ms: elapsed() });
       } catch (e) {
-        return c.json({ status: 'error' as const, provider, model, latency_ms: elapsed(), error: (e as Error).message });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          latency_ms: elapsed(),
+          error: (e as Error).message,
+        });
       }
     }
 
@@ -156,7 +194,12 @@ utilsRouter.openapi(
       const region = runtimeConfig.bedrock_region;
       const model = runtimeConfig.bedrock_model;
       if (!accessKey || !secretKey) {
-        return c.json({ status: 'error' as const, provider, model, error: 'AWS credentials not configured.' });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          error: 'AWS credentials not configured.',
+        });
       }
       try {
         const client = new BedrockRuntimeClient({
@@ -171,7 +214,13 @@ utilsRouter.openapi(
         );
         return c.json({ status: 'ok' as const, provider, model, latency_ms: elapsed() });
       } catch (e) {
-        return c.json({ status: 'error' as const, provider, model, latency_ms: elapsed(), error: (e as Error).message });
+        return c.json({
+          status: 'error' as const,
+          provider,
+          model,
+          latency_ms: elapsed(),
+          error: (e as Error).message,
+        });
       }
     }
 
@@ -183,7 +232,12 @@ utilsRouter.openapi(
       await client.chat({ model, messages: [{ role: 'user', content: 'ping' }], stream: false });
       return c.json({ status: 'ok' as const, provider: 'ollama', model, latency_ms: elapsed() });
     } catch (e) {
-      return c.json({ status: 'error' as const, provider: 'ollama', model, error: (e as Error).message });
+      return c.json({
+        status: 'error' as const,
+        provider: 'ollama',
+        model,
+        error: (e as Error).message,
+      });
     }
   },
 );

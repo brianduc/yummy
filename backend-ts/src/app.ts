@@ -5,22 +5,24 @@
  * Mounted in the same order as backend/main.py:
  *   utils -> config -> sessions -> kb -> ask -> sdlc -> metrics
  */
+
+import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
-import { swaggerUI } from '@hono/swagger-ui';
 
+import type { Bindings } from './db/client.js';
 import { errorHandler } from './middleware/error-handler.js';
-import { utilsRouter } from './routers/utils.router.js';
-import { configRouter } from './routers/config.router.js';
-import { sessionsRouter } from './routers/sessions.router.js';
-import { kbRouter } from './routers/kb.router.js';
 import { askRouter } from './routers/ask.router.js';
-import { sdlcRouter } from './routers/sdlc.router.js';
+import { configRouter } from './routers/config.router.js';
+import { kbRouter } from './routers/kb.router.js';
 import { metricsRouter } from './routers/metrics.router.js';
+import { sdlcRouter } from './routers/sdlc.router.js';
+import { sessionsRouter } from './routers/sessions.router.js';
+import { utilsRouter } from './routers/utils.router.js';
 import { worldRouter } from './routers/world.router.js';
 
-export function createApp(): OpenAPIHono {
-  const app = new OpenAPIHono();
+export function createApp(): OpenAPIHono<{ Bindings: Bindings }> {
+  const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
   // ── CORS — matches Python (allow all) ─────────────────
   app.use(

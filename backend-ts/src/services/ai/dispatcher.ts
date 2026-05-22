@@ -4,6 +4,7 @@
  * Mirrors backend/services/ai_service.py `call_ai` and `stream_ai`.
  */
 import { runtimeConfig } from '../../config/runtime.js';
+import type { Db } from '../../db/client.js';
 import { callBedrock, streamBedrock } from './providers/bedrock.js';
 import { callCopilot, streamCopilot } from './providers/copilot.js';
 import { callGemini, streamGemini } from './providers/gemini.js';
@@ -45,6 +46,7 @@ export async function callAI(
   prompt: string,
   instruction: string,
   signal?: AbortSignal,
+  db?: Db,
 ): Promise<string> {
   const provider = runtimeConfig.provider;
   const start = Date.now();
@@ -52,33 +54,53 @@ export async function callAI(
   let result: CallResult;
   switch (provider) {
     case 'gemini':
-      result = await Promise.race([callGemini(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callGemini(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
       break;
     case 'openai':
-      result = await Promise.race([callOpenAI(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callOpenAI(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
       break;
     case 'ollama':
-      result = await Promise.race([callOllama(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callOllama(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
       break;
     case 'copilot':
-      result = await Promise.race([callCopilot(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callCopilot(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
       break;
     case 'bedrock':
-      result = await Promise.race([callBedrock(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callBedrock(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
       break;
     default:
-      result = await Promise.race([callGemini(agentRole, prompt, instruction), rejectOnAbort(signal)]);
+      result = await Promise.race([
+        callGemini(agentRole, prompt, instruction),
+        rejectOnAbort(signal),
+      ]);
   }
 
-  track({
-    agentRole,
-    prompt,
-    instruction,
-    resultText: result.text,
-    latencySeconds: (Date.now() - start) / 1000,
-    inTokens: result.inTokens,
-    outTokens: result.outTokens,
-  });
+  if (db) {
+    await track(db, {
+      agentRole,
+      prompt,
+      instruction,
+      resultText: result.text,
+      latencySeconds: (Date.now() - start) / 1000,
+      inTokens: result.inTokens,
+      outTokens: result.outTokens,
+    });
+  }
 
   return result.text;
 }
