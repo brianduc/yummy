@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
 import { runtimeConfig } from '../../src/config/runtime.js';
-import { db, getLocalDb } from '../../src/db/client.js';
+import { db, getLocalDb } from '../../src/db/client.local.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { estimateTokens, getPrice, PRICING } from '../../src/services/ai/pricing.js';
 import { track } from '../../src/services/ai/track.js';

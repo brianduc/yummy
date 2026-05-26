@@ -8,7 +8,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { getLocalDb } from './client.js';
+import { getLocalDb } from './client.local.js';
 
 const MIGRATIONS_DIR = join(import.meta.dirname, '../../drizzle');
 

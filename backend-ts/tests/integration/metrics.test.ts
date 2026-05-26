@@ -1,7 +1,7 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { db } from '../../src/db/client.js';
+import { db } from '../../src/db/client.local.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 
 const app = createApp();

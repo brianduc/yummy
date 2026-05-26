@@ -1,6 +1,6 @@
 {
   "name": "yummy-api",
-  "main": "src/index.ts",
+  "main": "src/worker.ts",
   "compatibility_date": "2025-05-05",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [

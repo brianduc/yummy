@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:next && opennextjs-cloudflare build --skipNextBuild",
+    "build:next": "next build",
+    "build:cloudflare": "npm run build",
     "start": "next start",
     "lint": "biome check app components hooks lib test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "preview": "opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare upload",
+    "preview": "npm run build && opennextjs-cloudflare preview",
+    "deploy": "npm run build && opennextjs-cloudflare deploy",
+    "upload": "npm run build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

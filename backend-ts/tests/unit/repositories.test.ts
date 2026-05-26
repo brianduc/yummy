@@ -6,7 +6,7 @@ process.env.DATABASE_URL = ':memory:';
 import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
-import { db, getLocalDb } from '../../src/db/client.js';
+import { db, getLocalDb } from '../../src/db/client.local.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
