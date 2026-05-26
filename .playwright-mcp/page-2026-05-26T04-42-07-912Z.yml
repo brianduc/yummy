@@ -1,0 +1,163 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic: YUMMY
+          - button:
+            - img
+        - navigation:
+          - link:
+            - /url: /workspace/1777491625415/explorer
+            - img
+            - generic: Explorer
+          - link:
+            - /url: /workspace/1777491625415/sdlc
+            - img
+            - generic: SDLC Pipeline
+          - link:
+            - /url: /workspace/1777491625415
+            - img
+            - generic: Dashboard
+          - link:
+            - /url: /workspace/1777491625415/tracing
+            - img
+            - generic: Tracing
+          - link:
+            - /url: /workspace/1777491625415/database
+            - img
+            - generic: Database
+          - link:
+            - /url: /workspace/1777491625415/settings
+            - img
+            - generic: Settings
+          - link:
+            - /url: /workspace/1777491625415/world
+            - img
+            - generic: World
+          - link:
+            - /url: /workspace/1777491625415/sessions
+            - img
+            - generic: Sessions
+          - link:
+            - /url: /workspace/1777491625415/graph
+            - img
+            - generic: Graph
+          - link:
+            - /url: /workspace/1777491625415/wiki
+            - img
+            - generic: Wiki
+          - link:
+            - /url: /workspace/1777491625415/insight
+            - img
+            - generic: Insight
+          - link:
+            - /url: /workspace/1777491625415/history
+            - img
+            - generic: History
+          - link:
+            - /url: /workspace/1777491625415/jira
+            - img
+            - generic: Jira
+      - generic:
+        - banner:
+          - generic:
+            - generic: Workspace
+            - img
+            - generic: Dashboard
+          - generic:
+            - button:
+              - img
+              - generic: Command
+              - generic:
+                - generic: Cmd/Ctrl
+                - text: +K
+            - button:
+              - img
+              - generic: AI Copilot
+        - generic:
+          - main:
+            - generic:
+              - generic:
+                - heading [level=1]: YUMMY Dashboard
+                - paragraph: "CR: X..."
+              - generic:
+                - generic:
+                  - paragraph: Repository
+                  - paragraph: brianduc/yummy
+                - generic:
+                  - paragraph: Files
+                  - paragraph: "110"
+                - generic:
+                  - paragraph: Scan
+                  - paragraph: Not started
+                - generic:
+                  - paragraph: SDLC
+                  - paragraph: idle
+                - generic:
+                  - paragraph: Chats
+                  - paragraph: "0"
+              - heading [level=2]: Tools
+              - generic:
+                - link:
+                  - /url: /workspace/1777491625415/explorer
+                  - img
+                  - generic: Explorer
+                - link:
+                  - /url: /workspace/1777491625415/graph
+                  - img
+                  - generic: Graph
+                - link:
+                  - /url: /workspace/1777491625415/wiki
+                  - img
+                  - generic: Wiki
+                - link:
+                  - /url: /workspace/1777491625415/insight
+                  - img
+                  - generic: Insight
+                - link:
+                  - /url: /workspace/1777491625415/history
+                  - img
+                  - generic: History
+                - link:
+                  - /url: /workspace/1777491625415/jira
+                  - img
+                  - generic: Jira
+                - link:
+                  - /url: /workspace/1777491625415/world
+                  - img
+                  - generic: World
+  - button "Open Next.js Dev Tools" [ref=e100] [cursor=pointer]:
+    - img [ref=e101]
+  - alert
+  - dialog "AI Copilot" [ref=e164]:
+    - generic [ref=e165]:
+      - heading "AI Copilot" [level=2] [ref=e166]
+      - paragraph [ref=e167]: AI Copilot chat panel and terminal logs
+    - generic [ref=e169]:
+      - generic [ref=e170]:
+        - generic [ref=e171]: AI Copilot
+        - generic [ref=e172]: "CR: X..."
+      - generic [ref=e177]:
+        - button "/scan" [active] [ref=e178] [cursor=pointer]:
+          - img [ref=e179]
+          - text: /scan
+        - button "/ask Explain the auth flow?" [ref=e181] [cursor=pointer]:
+          - img [ref=e182]
+          - text: /ask Explain the auth flow?
+        - button "/btw" [ref=e184] [cursor=pointer]:
+          - img [ref=e185]
+          - text: /btw
+        - button "/provider" [ref=e187] [cursor=pointer]:
+          - img [ref=e188]
+          - text: /provider
+        - button "/help" [ref=e190] [cursor=pointer]:
+          - img [ref=e191]
+          - text: /help
+      - generic [ref=e193]:
+        - textbox "Type /help for commands..." [ref=e194]
+        - button [disabled]:
+          - img
+    - button "Close" [ref=e195] [cursor=pointer]:
+      - img [ref=e196]
+      - generic [ref=e199]: Close

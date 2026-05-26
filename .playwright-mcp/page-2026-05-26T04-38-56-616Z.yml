@@ -1,0 +1,450 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e13] [cursor=pointer]:
+    - img [ref=e14]
+  - alert [ref=e17]
+  - generic [ref=e18]:
+    - navigation "workspace navigation"
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: YUMMY
+          - button "Collapse Sidebar" [ref=e23] [cursor=pointer]:
+            - img
+        - navigation [ref=e24]:
+          - link "Explorer" [ref=e25] [cursor=pointer]:
+            - /url: /workspace/1777491625415/explorer
+            - img [ref=e26]
+            - generic [ref=e31]: Explorer
+          - link "SDLC Pipeline" [ref=e32] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sdlc
+            - img [ref=e33]
+            - generic [ref=e37]: SDLC Pipeline
+          - link "Dashboard" [ref=e38] [cursor=pointer]:
+            - /url: /workspace/1777491625415
+            - img [ref=e39]
+            - generic [ref=e41]: Dashboard
+          - link "Tracing" [ref=e42] [cursor=pointer]:
+            - /url: /workspace/1777491625415/tracing
+            - img [ref=e43]
+            - generic [ref=e45]: Tracing
+          - link "Database" [ref=e46] [cursor=pointer]:
+            - /url: /workspace/1777491625415/database
+            - img [ref=e47]
+            - generic [ref=e51]: Database
+          - link "Settings" [ref=e52] [cursor=pointer]:
+            - /url: /workspace/1777491625415/settings
+            - img [ref=e53]
+            - generic [ref=e56]: Settings
+          - link "World" [ref=e57] [cursor=pointer]:
+            - /url: /workspace/1777491625415/world
+            - img [ref=e58]
+            - generic [ref=e61]: World
+          - link "Sessions" [ref=e62] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sessions
+            - img [ref=e63]
+            - generic [ref=e67]: Sessions
+          - link "Graph" [ref=e68] [cursor=pointer]:
+            - /url: /workspace/1777491625415/graph
+            - img [ref=e69]
+            - generic [ref=e74]: Graph
+          - link "Wiki" [ref=e75] [cursor=pointer]:
+            - /url: /workspace/1777491625415/wiki
+            - img [ref=e76]
+            - generic [ref=e78]: Wiki
+          - link "Insight" [ref=e79] [cursor=pointer]:
+            - /url: /workspace/1777491625415/insight
+            - img [ref=e80]
+            - generic [ref=e82]: Insight
+          - link "History" [ref=e83] [cursor=pointer]:
+            - /url: /workspace/1777491625415/history
+            - img [ref=e84]
+            - generic [ref=e88]: History
+          - link "Jira" [ref=e89] [cursor=pointer]:
+            - /url: /workspace/1777491625415/jira
+            - img [ref=e90]
+            - generic [ref=e92]: Jira
+      - generic [ref=e93]:
+        - banner [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Workspace
+            - img [ref=e97]
+            - generic [ref=e99]: Explorer
+          - generic [ref=e100]:
+            - button "Command Cmd/Ctrl +K" [ref=e101] [cursor=pointer]:
+              - img
+              - generic [ref=e102]: Command
+              - generic [ref=e103]:
+                - generic [ref=e104]: Cmd/Ctrl
+                - text: +K
+            - button "AI Copilot" [ref=e105] [cursor=pointer]:
+              - img
+              - generic [ref=e106]: AI Copilot
+        - main [ref=e108]:
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - generic [ref=e181]: FILE EXPLORER
+                - generic [ref=e182]: "110"
+              - generic [ref=e183]:
+                - generic [ref=e184]:
+                  - generic [ref=e185] [cursor=pointer]:
+                    - img [ref=e187]
+                    - img [ref=e190]
+                    - generic [ref=e192]: .vscode
+                  - generic [ref=e194] [cursor=pointer]:
+                    - img [ref=e196]
+                    - generic [ref=e198]: settings.json
+                - generic [ref=e199]:
+                  - generic [ref=e200] [cursor=pointer]:
+                    - img [ref=e202]
+                    - img [ref=e205]
+                    - generic [ref=e207]: backend-ts
+                  - generic [ref=e208]:
+                    - generic [ref=e209]:
+                      - generic [ref=e210] [cursor=pointer]:
+                        - img [ref=e212]
+                        - img [ref=e215]
+                        - generic [ref=e217]: src
+                      - generic [ref=e218]:
+                        - generic [ref=e220] [cursor=pointer]:
+                          - img [ref=e222]
+                          - img [ref=e225]
+                          - generic [ref=e227]: config
+                        - generic [ref=e229] [cursor=pointer]:
+                          - img [ref=e231]
+                          - img [ref=e234]
+                          - generic [ref=e236]: db
+                        - generic [ref=e238] [cursor=pointer]:
+                          - img [ref=e240]
+                          - img [ref=e243]
+                          - generic [ref=e245]: lib
+                        - generic [ref=e247] [cursor=pointer]:
+                          - img [ref=e249]
+                          - img [ref=e252]
+                          - generic [ref=e254]: middleware
+                        - generic [ref=e256] [cursor=pointer]:
+                          - img [ref=e258]
+                          - img [ref=e261]
+                          - generic [ref=e263]: routers
+                        - generic [ref=e265] [cursor=pointer]:
+                          - img [ref=e267]
+                          - img [ref=e270]
+                          - generic [ref=e272]: schemas
+                        - generic [ref=e274] [cursor=pointer]:
+                          - img [ref=e276]
+                          - img [ref=e279]
+                          - generic [ref=e281]: services
+                        - generic [ref=e282] [cursor=pointer]:
+                          - img [ref=e284]
+                          - generic [ref=e286]: app.ts
+                        - generic [ref=e287] [cursor=pointer]:
+                          - img [ref=e289]
+                          - generic [ref=e291]: index.ts
+                    - generic [ref=e292]:
+                      - generic [ref=e293] [cursor=pointer]:
+                        - img [ref=e295]
+                        - img [ref=e298]
+                        - generic [ref=e300]: tests
+                      - generic [ref=e301]:
+                        - generic [ref=e303] [cursor=pointer]:
+                          - img [ref=e305]
+                          - img [ref=e308]
+                          - generic [ref=e310]: integration
+                        - generic [ref=e312] [cursor=pointer]:
+                          - img [ref=e314]
+                          - img [ref=e317]
+                          - generic [ref=e319]: unit
+                    - generic [ref=e320] [cursor=pointer]:
+                      - img [ref=e322]
+                      - generic [ref=e324]: README.md
+                    - generic [ref=e325] [cursor=pointer]:
+                      - img [ref=e327]
+                      - generic [ref=e329]: biome.json
+                    - generic [ref=e330] [cursor=pointer]:
+                      - img [ref=e332]
+                      - generic [ref=e334]: drizzle.config.ts
+                    - generic [ref=e335] [cursor=pointer]:
+                      - img [ref=e337]
+                      - generic [ref=e339]: package.json
+                    - generic [ref=e340] [cursor=pointer]:
+                      - img [ref=e342]
+                      - generic [ref=e344]: tsconfig.json
+                    - generic [ref=e345] [cursor=pointer]:
+                      - img [ref=e347]
+                      - generic [ref=e349]: vitest.config.ts
+                - generic [ref=e350]:
+                  - generic [ref=e351] [cursor=pointer]:
+                    - img [ref=e353]
+                    - img [ref=e356]
+                    - generic [ref=e358]: docs
+                  - generic [ref=e359]:
+                    - generic [ref=e360]:
+                      - generic [ref=e361] [cursor=pointer]:
+                        - img [ref=e363]
+                        - img [ref=e366]
+                        - generic [ref=e368]: aws
+                      - generic [ref=e370] [cursor=pointer]:
+                        - img [ref=e372]
+                        - generic [ref=e374]: APP_RUNNER_AMPLIFY.md
+                    - generic [ref=e375]:
+                      - generic [ref=e376] [cursor=pointer]:
+                        - img [ref=e378]
+                        - img [ref=e381]
+                        - generic [ref=e383]: dev
+                      - generic [ref=e385] [cursor=pointer]:
+                        - img [ref=e387]
+                        - generic [ref=e389]: CONTRIBUTING.md
+                    - generic [ref=e390]:
+                      - generic [ref=e391] [cursor=pointer]:
+                        - img [ref=e393]
+                        - img [ref=e396]
+                        - generic [ref=e398]: requirements
+                      - generic [ref=e399]:
+                        - generic [ref=e400] [cursor=pointer]:
+                          - img [ref=e402]
+                          - generic [ref=e404]: README.md
+                        - generic [ref=e405] [cursor=pointer]:
+                          - img [ref=e407]
+                          - generic [ref=e409]: Requirements.md
+                    - generic [ref=e410] [cursor=pointer]:
+                      - img [ref=e412]
+                      - generic [ref=e414]: README.md
+                - generic [ref=e415]:
+                  - generic [ref=e416] [cursor=pointer]:
+                    - img [ref=e418]
+                    - img [ref=e421]
+                    - generic [ref=e423]: frontend
+                  - generic [ref=e424]:
+                    - generic [ref=e425]:
+                      - generic [ref=e426] [cursor=pointer]:
+                        - img [ref=e428]
+                        - img [ref=e431]
+                        - generic [ref=e433]: app
+                      - generic [ref=e434]:
+                        - generic [ref=e436] [cursor=pointer]:
+                          - img [ref=e438]
+                          - img [ref=e441]
+                          - generic [ref=e443]: workspace
+                        - generic [ref=e444] [cursor=pointer]:
+                          - img [ref=e446]
+                          - generic [ref=e448]: globals.css
+                        - generic [ref=e449] [cursor=pointer]:
+                          - img [ref=e451]
+                          - generic [ref=e453]: layout.tsx
+                        - generic [ref=e454] [cursor=pointer]:
+                          - img [ref=e456]
+                          - generic [ref=e458]: page.tsx
+                    - generic [ref=e459]:
+                      - generic [ref=e460] [cursor=pointer]:
+                        - img [ref=e462]
+                        - img [ref=e465]
+                        - generic [ref=e467]: components
+                      - generic [ref=e470] [cursor=pointer]:
+                        - img [ref=e472]
+                        - img [ref=e475]
+                        - generic [ref=e477]: workspace
+                    - generic [ref=e478]:
+                      - generic [ref=e479] [cursor=pointer]:
+                        - img [ref=e481]
+                        - img [ref=e484]
+                        - generic [ref=e486]: hooks
+                      - generic [ref=e488] [cursor=pointer]:
+                        - img [ref=e490]
+                        - generic [ref=e492]: useScanPoll.ts
+                    - generic [ref=e493]:
+                      - generic [ref=e494] [cursor=pointer]:
+                        - img [ref=e496]
+                        - img [ref=e499]
+                        - generic [ref=e501]: lib
+                      - generic [ref=e502]:
+                        - generic [ref=e503] [cursor=pointer]:
+                          - img [ref=e505]
+                          - generic [ref=e507]: api.ts
+                        - generic [ref=e508] [cursor=pointer]:
+                          - img [ref=e510]
+                          - generic [ref=e512]: mdToHtml.ts
+                        - generic [ref=e513] [cursor=pointer]:
+                          - img [ref=e515]
+                          - generic [ref=e517]: theme.ts
+                        - generic [ref=e518] [cursor=pointer]:
+                          - img [ref=e520]
+                          - generic [ref=e522]: types.ts
+                        - generic [ref=e523] [cursor=pointer]:
+                          - img [ref=e525]
+                          - generic [ref=e527]: uiSize.ts
+                    - generic [ref=e528]:
+                      - generic [ref=e529] [cursor=pointer]:
+                        - img [ref=e531]
+                        - img [ref=e534]
+                        - generic [ref=e536]: test
+                      - generic [ref=e538] [cursor=pointer]:
+                        - img [ref=e540]
+                        - generic [ref=e542]: setup.ts
+                    - generic [ref=e543] [cursor=pointer]:
+                      - img [ref=e545]
+                      - generic [ref=e547]: SETUP.md
+                    - generic [ref=e548] [cursor=pointer]:
+                      - img [ref=e550]
+                      - generic [ref=e552]: next-env.d.ts
+                    - generic [ref=e553] [cursor=pointer]:
+                      - img [ref=e555]
+                      - generic [ref=e557]: next.config.js
+                    - generic [ref=e558] [cursor=pointer]:
+                      - img [ref=e560]
+                      - generic [ref=e562]: package-lock.json
+                    - generic [ref=e563] [cursor=pointer]:
+                      - img [ref=e565]
+                      - generic [ref=e567]: package.json
+                    - generic [ref=e568] [cursor=pointer]:
+                      - img [ref=e570]
+                      - generic [ref=e572]: postcss.config.js
+                    - generic [ref=e573] [cursor=pointer]:
+                      - img [ref=e575]
+                      - generic [ref=e577]: tailwind.config.js
+                    - generic [ref=e578] [cursor=pointer]:
+                      - img [ref=e580]
+                      - generic [ref=e582]: tsconfig.json
+                    - generic [ref=e583] [cursor=pointer]:
+                      - img [ref=e585]
+                      - generic [ref=e587]: vitest.config.ts
+                - generic [ref=e588]:
+                  - generic [ref=e589] [cursor=pointer]:
+                    - img [ref=e591]
+                    - img [ref=e594]
+                    - generic [ref=e596]: resources
+                  - generic [ref=e598] [cursor=pointer]:
+                    - img [ref=e600]
+                    - generic [ref=e602]: YUMMY_PLATFORM_ARCHITECTURE.md
+                - generic [ref=e603] [cursor=pointer]:
+                  - img [ref=e605]
+                  - generic [ref=e607]: ARCHITECTURE.md
+                - generic [ref=e608] [cursor=pointer]:
+                  - img [ref=e610]
+                  - generic [ref=e612]: README.md
+            - generic [ref=e613]:
+              - generic [ref=e615]: Welcome
+              - generic [ref=e616]:
+                - generic [ref=e617]:
+                  - generic [ref=e618]: "1"
+                  - generic [ref=e619]: "2"
+                  - generic [ref=e620]: "3"
+                  - generic [ref=e621]: "4"
+                  - generic [ref=e622]: "5"
+                  - generic [ref=e623]: "6"
+                  - generic [ref=e624]: "7"
+                  - generic [ref=e625]: "8"
+                  - generic [ref=e626]: "9"
+                  - generic [ref=e627]: "10"
+                  - generic [ref=e628]: "11"
+                  - generic [ref=e629]: "12"
+                  - generic [ref=e630]: "13"
+                  - generic [ref=e631]: "14"
+                  - generic [ref=e632]: "15"
+                  - generic [ref=e633]: "16"
+                  - generic [ref=e634]: "17"
+                  - generic [ref=e635]: "18"
+                  - generic [ref=e636]: "19"
+                  - generic [ref=e637]: "20"
+                  - generic [ref=e638]: "21"
+                  - generic [ref=e639]: "22"
+                  - generic [ref=e640]: "23"
+                  - generic [ref=e641]: "24"
+                  - generic [ref=e642]: "25"
+                  - generic [ref=e643]: "26"
+                  - generic [ref=e644]: "27"
+                  - generic [ref=e645]: "28"
+                  - generic [ref=e646]: "29"
+                  - generic [ref=e647]: "30"
+                  - generic [ref=e648]: "31"
+                  - generic [ref=e649]: "32"
+                  - generic [ref=e650]: "33"
+                  - generic [ref=e651]: "34"
+                  - generic [ref=e652]: "35"
+                  - generic [ref=e653]: "36"
+                  - generic [ref=e654]: "37"
+                  - generic [ref=e655]: "38"
+                  - generic [ref=e656]: "39"
+                  - generic [ref=e657]: "40"
+                  - generic [ref=e658]: "41"
+                  - generic [ref=e659]: "42"
+                  - generic [ref=e660]: "43"
+                  - generic [ref=e661]: "44"
+                  - generic [ref=e662]: "45"
+                  - generic [ref=e663]: "46"
+                  - generic [ref=e664]: "47"
+                  - generic [ref=e665]: "48"
+                  - generic [ref=e666]: "49"
+                  - generic [ref=e667]: "50"
+                  - generic [ref=e668]: "51"
+                  - generic [ref=e669]: "52"
+                  - generic [ref=e670]: "53"
+                  - generic [ref=e671]: "54"
+                  - generic [ref=e672]: "55"
+                  - generic [ref=e673]: "56"
+                  - generic [ref=e674]: "57"
+                  - generic [ref=e675]: "58"
+                  - generic [ref=e676]: "59"
+                  - generic [ref=e677]: "60"
+                  - generic [ref=e678]: "61"
+                  - generic [ref=e679]: "62"
+                  - generic [ref=e680]: "63"
+                  - generic [ref=e681]: "64"
+                  - generic [ref=e682]: "65"
+                  - generic [ref=e683]: "66"
+                  - generic [ref=e684]: "67"
+                  - generic [ref=e685]: "68"
+                  - generic [ref=e686]: "69"
+                  - generic [ref=e687]: "70"
+                  - generic [ref=e688]: "71"
+                  - generic [ref=e689]: "72"
+                  - generic [ref=e690]: "73"
+                  - generic [ref=e691]: "74"
+                  - generic [ref=e692]: "75"
+                  - generic [ref=e693]: "76"
+                  - generic [ref=e694]: "77"
+                  - generic [ref=e695]: "78"
+                  - generic [ref=e696]: "79"
+                  - generic [ref=e697]: "80"
+                  - generic [ref=e698]: "81"
+                  - generic [ref=e699]: "82"
+                  - generic [ref=e700]: "83"
+                  - generic [ref=e701]: "84"
+                  - generic [ref=e702]: "85"
+                  - generic [ref=e703]: "86"
+                  - generic [ref=e704]: "87"
+                  - generic [ref=e705]: "88"
+                  - generic [ref=e706]: "89"
+                  - generic [ref=e707]: "90"
+                  - generic [ref=e708]: "91"
+                  - generic [ref=e709]: "92"
+                  - generic [ref=e710]: "93"
+                  - generic [ref=e711]: "94"
+                  - generic [ref=e712]: "95"
+                  - generic [ref=e713]: "96"
+                  - generic [ref=e714]: "97"
+                  - generic [ref=e715]: "98"
+                  - generic [ref=e716]: "99"
+                  - generic [ref=e717]: "100"
+                  - generic [ref=e718]: "101"
+                  - generic [ref=e719]: "102"
+                  - generic [ref=e720]: "103"
+                  - generic [ref=e721]: "104"
+                  - generic [ref=e722]: "105"
+                  - generic [ref=e723]: "106"
+                  - generic [ref=e724]: "107"
+                  - generic [ref=e725]: "108"
+                  - generic [ref=e726]: "109"
+                  - generic [ref=e727]: "110"
+                  - generic [ref=e728]: "111"
+                  - generic [ref=e729]: "112"
+                  - generic [ref=e730]: "113"
+                  - generic [ref=e731]: "114"
+                  - generic [ref=e732]: "115"
+                  - generic [ref=e733]: "116"
+                  - generic [ref=e734]: "117"
+                  - generic [ref=e735]: "118"
+                  - generic [ref=e736]: "119"
+                  - generic [ref=e737]: "120"
+                - generic [ref=e739]:
+                  - generic [ref=e740]: ⬡
+                  - paragraph [ref=e741]: IDE Ready.

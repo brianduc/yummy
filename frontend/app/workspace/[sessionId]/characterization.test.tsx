@@ -147,7 +147,7 @@ beforeEach(() => {
 })
 
 describe('WorkspacePage characterization', () => {
-  it('renders the current workspace shell with the default IDE panel and workspace chrome', async () => {
+  it('renders the current workspace shell with the dashboard chrome', async () => {
     vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
 
     render(
@@ -156,15 +156,14 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.getByRole('button', { name: 'AI Copilot' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'IDE Simulator' })).toBeInTheDocument()
-    expect(screen.getByTestId('ide-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument()
     expect(screen.getByText('Workspace Baseline')).toBeInTheDocument()
   })
 
-  it('documents that the default render shows the IDE panel and not SDLC', async () => {
+  it('documents that the default render shows the dashboard shell and not SDLC', async () => {
     vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
 
     render(
@@ -173,9 +172,9 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
-    expect(screen.getByTestId('ide-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument()
     expect(screen.queryByTestId('sdlc-panel')).toBeNull()
   })
 
@@ -188,7 +187,7 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.getAllByTestId('dashboard-shell')).toHaveLength(1)
     expect(screen.getAllByTestId('app-sidebar')).toHaveLength(1)
@@ -196,7 +195,7 @@ describe('WorkspacePage characterization', () => {
 
     const dashboardContent = screen.getByTestId('dashboard-content')
     expect(within(dashboardContent).getByTestId('workspace-main-slot')).toBeInTheDocument()
-    expect(within(dashboardContent).getByTestId('ide-panel')).toBeInTheDocument()
+    expect(within(dashboardContent).getByTestId('dashboard-page')).toBeInTheDocument()
   })
 
   it('keeps the shell header breadcrumb and command palette trigger wired on the index route', async () => {
@@ -208,7 +207,7 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.getByText('Workspace Baseline')).toBeInTheDocument()
     expect(screen.getByTestId('command-palette-trigger')).toBeInTheDocument()
@@ -223,7 +222,7 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.queryByTestId('copilot-sheet')).toBeNull()
 
@@ -241,7 +240,7 @@ describe('WorkspacePage characterization', () => {
       </WorkspaceRouteLayout>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('ide-panel')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.getAllByTestId('ai-copilot-trigger')).toHaveLength(1)
     expect(screen.queryByTestId('copilot-sheet')).toBeNull()

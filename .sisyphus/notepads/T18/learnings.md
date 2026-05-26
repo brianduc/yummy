@@ -1,1 +1,2 @@
 - Successfully created dropdown-menu wrapper using Radix UI.
+- Updated `frontend/app/workspace/[sessionId]/page.tsx` scan completion to refresh KB/status, print completion, then `router.push(`/workspace/${sessionId}/wiki`)` instead of changing local tab state. `useRouter` was already imported; `setActiveTab` is not present in this page.

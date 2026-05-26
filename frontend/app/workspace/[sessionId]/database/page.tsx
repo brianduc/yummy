@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { useParams } from 'next/navigation'
 import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
 import { useWorkspaceStatus } from '@/hooks/useWorkspaceStatus'

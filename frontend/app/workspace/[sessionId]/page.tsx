@@ -1,63 +1,32 @@
 'use client'
-
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
-import { api } from '@/lib/api'
-import { useScanPoll } from '@/hooks/useScanPoll'
+import Link from 'next/link'
+import { FolderTree, BookOpen, Zap, History, Columns2, Globe, Network } from 'lucide-react'
+import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
+import { useWorkspaceStatus } from '@/hooks/useWorkspaceStatus'
 import { useChat } from '@/hooks/useWorkspaceChat'
-import { useWorkspaceSdlc } from '@/hooks/useWorkspaceSdlc'
 import { loadSavedTheme } from '@/lib/theme'
 import { loadSavedUiSize } from '@/lib/uiSize'
-
-import type { ActivityId } from '@/components/workspace/ActivityBar'
-import MainStage, { type MainTabId } from '@/components/workspace/MainStage'
-import CommandPalette, { createDefaultCommands } from '@/components/workspace/CommandPalette'
-
-import IdePanel from '@/components/workspace/IdePanel'
-import NodeGraph from '@/components/workspace/NodeGraph'
-import WikiPanel from '@/components/workspace/WikiPanel'
-import InsightsPanel from '@/components/workspace/InsightsPanel'
-import RagPanel from '@/components/workspace/RagPanel'
-import SdlcPanel from '@/components/workspace/SdlcPanel'
-import BacklogPanel from '@/components/workspace/BacklogPanel'
-import DbPanel from '@/components/workspace/DbPanel'
-import WorldPanel from '@/components/workspace/WorldPanel'
-import SessionsPanel from '@/components/workspace/SessionsPanel'
-import TracingPanel from '@/components/workspace/TracingPanel'
-import SettingsPanel from '@/components/workspace/SettingsPanel'
 import OnboardingWizard from '@/components/workspace/OnboardingWizard'
 
-import type {
-  Session, SystemStatus, KnowledgeBase,
-  ScanStatus, MetricsData,
-} from '@/lib/types'
-
-export default function WorkspacePage({ params }: { params: Promise<{ sessionId: string }> }) {
+export default function WorkspaceDashboard({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = React.use(params)
   const router = useRouter()
-
-  const [activeActivity, setActiveActivity] = useState<ActivityId>('explorer')
-  const [activeTab, setActiveTab] = useState<MainTabId>('ide')
-  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const chat = useChat()
 
-  // Server data
-  const [session,  setSession]  = useState<Session | null>(null)
-  const [status,   setStatus]   = useState<SystemStatus | null>(null)
-  const [kb,       setKb]       = useState<KnowledgeBase | null>(null)
-  const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null)
-  const [metrics,  setMetrics]  = useState<MetricsData | null>(null)
-  const [sessions, setSessions] = useState<Session[]>([])
-
-  // IDE
-  const [ideFile,    setIdeFile]    = useState('')
-  const [ideContent, setIdeContent] = useState('')
-  const [ideLoading, setIdeLoading] = useState(false)
+  const { session } = useWorkspaceSession(sessionId)
+  const { status, kb, scanStatus, fetchStatus, fetchKb, setScanStatus, startScanPoll } = useWorkspaceStatus({
+    onScanMessage: chat.print,
+    onScanComplete: async () => {
+      await fetchKb()
+      await fetchStatus()
+      chat.print('✅ Scan complete.')
+      router.push(`/workspace/${sessionId}/wiki`)
+    }
+  })
 
   // UI helpers
-  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
   const [onboardingState, setOnboardingState] = useState<'asking' | 'wizard' | 'dismissed'>(() => {
     if (typeof window === 'undefined') return 'dismissed'
     const stored = localStorage.getItem('yummy_onboarding')
@@ -65,50 +34,11 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     return 'asking'
   })
 
-
-  // Fetchers
-  const fetchSession = useCallback(async () => {
-    try {
-      setSession(await api.sessions.get(sessionId) as Session)
-    } catch (e: any) {
-      if (e.message?.includes('404')) {
-        try {
-          const fresh = await api.sessions.create() as Session
-          router.replace(`/workspace/${fresh.id}`)
-        } catch { }
-      }
-    }
-  }, [sessionId, router])
-
-  const fetchStatus   = useCallback(async () => { try { setStatus(await api.config.status() as SystemStatus) } catch { } }, [])
-  const fetchKb       = useCallback(async () => { try { setKb(await api.kb.get() as KnowledgeBase) } catch { } }, [])
-  const fetchSessions = useCallback(async () => { try { setSessions(await api.sessions.list() as Session[]) } catch { } }, [])
-  const fetchMetrics  = useCallback(async () => { try { setMetrics(await api.metrics() as MetricsData) } catch { } }, [])
-
-  // Bootstrap + polling
+  // Bootstrap
   useEffect(() => {
-    fetchSession(); fetchStatus(); fetchKb(); fetchSessions()
     loadSavedTheme()
     loadSavedUiSize()
-    const iv = setInterval(() => { fetchSession(); fetchStatus() }, 4000)
-    return () => clearInterval(iv)
-  }, [sessionId, fetchSession, fetchStatus, fetchKb, fetchSessions])
-
-  // Scan polling
-  const { startScanPoll } = useScanPoll({
-    onStatusUpdate: setScanStatus,
-    onMessage: chat.print,
-    onComplete: async () => {
-      await fetchKb(); await fetchStatus()
-      chat.print('✅ Scan complete.')
-      setActiveTab('wiki')
-    },
-  })
-
-
-  useEffect(() => {
-    if (activeActivity === 'tracing') fetchMetrics()
-  }, [activeActivity, fetchMetrics])
+  }, [])
 
   const prevId = useRef('')
   useEffect(() => {
@@ -118,71 +48,6 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     }
   }, [session, chat])
 
-  // IDE file open
-  const openFile = useCallback(async (path: string) => {
-    setIdeFile(path); setActiveTab('ide'); setIdeLoading(true); setIdeContent('')
-    try {
-      const res = await api.kb.file(path) as any
-      setIdeContent(res.content || '// (empty)')
-    } catch (e: any) {
-      setIdeContent(`// [ERROR LOADING FILE]: ${e.message}`)
-    } finally { setIdeLoading(false) }
-  }, [])
-
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 3000)
-  }
-
-  // RAG ask (streaming)
-  // Session delete
-  const deleteSession = async (targetId: string) => {
-    try {
-      await api.sessions.delete(targetId)
-      await fetchSessions()
-      showToast('🗑 Session deleted.')
-      if (targetId === sessionId) {
-        const fresh = await api.sessions.create() as Session
-        await fetchSessions()
-        router.replace(`/workspace/${fresh.id}`)
-      }
-    } catch (e: any) {
-      showToast(`❌ ${e.message}`)
-    }
-  }
-
-  const sdlc = useWorkspaceSdlc(sessionId, {
-    session,
-    setSession,
-    print: chat.print,
-    setBusy: chat.setBusy,
-  })
-  const { sdlcState } = sdlc
-
-
-
-  // Command palette commands
-  const commandItems = createDefaultCommands({
-    onScan: () => {
-      if (status?.repo) {
-        chat.handleCmd('/scan')
-      } else {
-        chat.print('No repo configured. Use /setup <github-url> to configure.')
-      }
-    },
-    onNewSession: () => chat.handleCmd('/new'),
-    onNavigateSettings: () => router.push(`/workspace/${sessionId}/settings`),
-    onNavigateTracing: () => router.push(`/workspace/${sessionId}/tracing`),
-    onShowInfo: () => chat.handleCmd('/info'),
-    onHealthcheck: () => chat.handleCmd('/healthcheck'),
-    onStartSDLC: () => {
-      chat.print('Use /cr <requirement> in the chat to start the SDLC pipeline.')
-    },
-  })
-
-  // Derived state
-  const isSDLCDone = session?.workflow_state === 'done'
-
   if (!session) {
     return (
       <div className="h-screen flex items-center justify-center font-mono text-sm" style={{ color: 'var(--text-3)' }}>
@@ -191,82 +56,81 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
     )
   }
 
+  const { chatHistory } = chat
+
   return (
     <>
-      <MainStage
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        sessionName={session.name}
-        session={session}
-        workflowState={session.workflow_state}
-        streamingAgent={sdlcState.streamingAgent}
-        isSDLCDone={isSDLCDone}
-        workflowRunning={!!session.workflow_state?.includes('running')}
-        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-        onApproveBA={sdlc.approveBA}
-        onApproveSA={sdlc.approveSA}
-        onApproveDevLead={sdlc.approveDevLead}
-        onStop={sdlc.abort}
-      >
-          <>
-            {activeTab === 'ide'      && <IdePanel tree={kb?.tree || []} ideFile={ideFile} ideContent={ideContent} ideLoading={ideLoading} onFileOpen={openFile} />}
-            {activeTab === 'graph'    && (
-              <div className="p-6 h-full flex flex-col">
-                <h2 className="font-display font-extrabold text-xl mb-4" style={{ color: 'var(--green)' }}>⬡ Node Architecture Graph</h2>
-                <div className="flex-1 border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                  <NodeGraph tree={kb?.tree || []} repoInfo={status?.repo ?? null} />
-                </div>
-              </div>
-            )}
-            {activeTab === 'wiki'     && <WikiPanel kb={kb} />}
-            {activeTab === 'insights' && <InsightsPanel kb={kb} />}
-            {activeTab === 'rag'      && <RagPanel chatHistory={chat?.chatHistory || []} />}
-            {activeTab === 'sdlc'     && (
-              <SdlcPanel
-                session={session}
-                editBA={sdlcState.editBA} editSA={sdlcState.editSA} editDevLead={sdlcState.editDevLead}
-                        busy={chat?.busy || false}
-                        workflowRunning={!!session.workflow_state?.includes('running')}
-                streamingAgent={sdlcState.streamingAgent}
-                streamingText={sdlcState.streamingText}
-                toolCalls={sdlcState.toolCalls}
-                onEditBA={sdlc.setEditBA} onEditSA={sdlc.setEditSA} onEditDevLead={sdlc.setEditDevLead}
-                onApproveBA={sdlc.approveBA} onApproveSA={sdlc.approveSA} onApproveDevLead={sdlc.approveDevLead}
-                onStop={sdlc.abort}
-                onRestore={sdlc.restore}
-              />
-            )}
-            {activeTab === 'backlog'  && <BacklogPanel backlog={session.jira_backlog || []} />}
-            {activeTab === 'db'       && <DbPanel sessions={sessions} currentSessionId={sessionId} status={status} />}
-            {activeTab === 'world'    && <WorldPanel />}
-          </>
-      </MainStage>
+      <div data-testid="dashboard-page" className="h-full overflow-auto p-6 md:p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="font-display font-extrabold text-2xl md:text-3xl" style={{ color: 'var(--green)' }}>
+            YUMMY Dashboard
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
+            {session?.name ?? 'Workspace'}
+          </p>
+        </div>
 
-      {activeActivity === 'tracing' && (
-        <TracingPanel metrics={metrics} onLoad={fetchMetrics} />
-      )}
-      {activeActivity === 'settings' && (
-        <SettingsPanel status={status} onStatusRefresh={fetchStatus} />
-      )}
-      {activeActivity === 'chat' && (
-        <SessionsPanel
-          sessions={sessions}
-          currentSessionId={sessionId}
-          onNew={async () => {
-            const s = await api.sessions.create() as Session
-            await fetchSessions()
-            router.push(`/workspace/${s.id}`)
-          }}
-          onDeleteRequest={setDeleteTarget}
-        />
-      )}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+          {/* Repo */}
+          <div className="rounded-lg border p-4" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Repository</p>
+            <p className="font-mono text-sm font-bold truncate" style={{ color: 'var(--text)' }} data-testid="dashboard-stat-repo">
+              {status?.repo ? `${status.repo.owner}/${status.repo.repo}` : 'No repo'}
+            </p>
+          </div>
+          {/* Files */}
+          <div className="rounded-lg border p-4" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Files</p>
+            <p className="font-mono text-lg font-bold" style={{ color: 'var(--green)' }} data-testid="dashboard-stat-files">
+              {kb?.tree?.length ?? 0}
+            </p>
+          </div>
+          {/* Scan */}
+          <div className="rounded-lg border p-4" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Scan</p>
+            <p className="font-mono text-sm font-bold" style={{ color: scanStatus?.running ? 'var(--amber)' : 'var(--text)' }} data-testid="dashboard-stat-scan">
+              {scanStatus?.running ? 'Scanning...' : scanStatus?.text ? 'Complete' : 'Not started'}
+            </p>
+          </div>
+          {/* SDLC */}
+          <div className="rounded-lg border p-4" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>SDLC</p>
+            <p className="font-mono text-sm font-bold" style={{ color: 'var(--text)' }} data-testid="dashboard-stat-sdlc">
+              {session?.workflow_state ?? 'No pipeline'}
+            </p>
+          </div>
+          {/* Chats */}
+          <div className="rounded-lg border p-4" style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Chats</p>
+            <p className="font-mono text-lg font-bold" style={{ color: 'var(--green)' }} data-testid="dashboard-stat-chats">
+              {chatHistory?.length ?? 0}
+            </p>
+          </div>
+        </div>
 
-      {/* Command Palette */}
-      <CommandPalette
-        open={commandPaletteOpen}
-        onOpenChange={setCommandPaletteOpen}
-        commands={commandItems}
-      />
+        {/* Navigation Cards */}
+        <h2 className="font-display font-extrabold text-lg mb-4" style={{ color: 'var(--text-2)' }}>Tools</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {[
+            { route: 'explorer', icon: FolderTree, label: 'Explorer', color: 'var(--green)' },
+            { route: 'graph', icon: Network, label: 'Graph', color: '#00aaff' },
+            { route: 'wiki', icon: BookOpen, label: 'Wiki', color: 'var(--green)' },
+            { route: 'insight', icon: Zap, label: 'Insight', color: 'var(--amber)' },
+            { route: 'history', icon: History, label: 'History', color: 'var(--text-2)' },
+            { route: 'jira', icon: Columns2, label: 'Jira', color: '#ff6644' },
+            { route: 'world', icon: Globe, label: 'World', color: '#00ccaa' },
+          ].map(({ route, icon: Icon, label, color }) => (
+            <Link key={route} href={`/workspace/${sessionId}/${route}`} data-testid={`dashboard-card-${route}`}
+              className="rounded-lg border p-4 flex flex-col items-center gap-2 hover:border-[var(--green-dim)] transition-colors cursor-pointer text-center no-underline"
+              style={{ background: 'var(--bg-1)', borderColor: 'var(--border)' }}>
+              <Icon size={24} style={{ color }} />
+              <span className="font-mono text-xs font-bold" style={{ color: 'var(--text)' }}>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* Onboarding */}
       {onboardingState === 'asking' && (
@@ -308,68 +172,10 @@ export default function WorkspacePage({ params }: { params: Promise<{ sessionId:
           onScanStart={() => {
             setScanStatus({ running: true, text: 'Starting scan...', progress: 0 })
             chat.print('🔍 Starting codebase scan...')
-            setActiveTab('ide')
             startScanPoll()
           }}
         />
       )}
-
-      {/* Delete Confirm Modal */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setDeleteTarget(null)}>
-          <div className="border rounded-xl" onClick={e => e.stopPropagation()}
-            style={{ background: 'var(--bg-1)', borderColor: '#ff664455', padding: '1.75rem 2rem', width: 360, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
-            <div className="flex items-center gap-2.5 mb-4">
-              <Trash2 size={22} style={{ color: '#ff6644' }} />
-              <span className="font-display font-extrabold text-lg" style={{ color: '#ff6644' }}>Delete Session</span>
-            </div>
-            <p className="text-base leading-relaxed mb-2" style={{ color: 'var(--text-2)' }}>
-              Are you sure you want to delete this workspace?
-            </p>
-            <p className="text-sm border rounded px-3 py-2 mb-6 font-mono truncate"
-              style={{ color: 'var(--text-3)', background: 'var(--bg)', borderColor: 'var(--border)' }}>
-              {deleteTarget.name}
-            </p>
-            <p className="text-xs mb-6" style={{ color: 'rgba(255,100,68,.7)' }}>This action cannot be undone.</p>
-            <div className="flex gap-2.5 justify-end">
-              <button onClick={() => setDeleteTarget(null)}
-                className="border rounded-lg cursor-pointer font-mono text-base"
-                style={{ padding: '.5rem 1.2rem', background: 'none', borderColor: 'var(--border)', color: 'var(--text-2)' }}>
-                Cancel
-              </button>
-              <button
-                onClick={async () => { const t = deleteTarget; setDeleteTarget(null); await deleteSession(t.id) }}
-                className="border-none rounded-lg cursor-pointer font-mono text-base font-bold"
-                style={{ padding: '.5rem 1.2rem', background: '#ff6644', color: '#fff' }}>
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-[300] border rounded-lg flex items-center gap-2 font-mono text-base"
-          style={{ background: 'var(--bg-1)', borderColor: 'var(--green-dim)', padding: '.65rem 1.1rem', color: 'var(--green)', boxShadow: '0 8px 32px rgba(0,0,0,.4)' }}>
-          {toast}
-        </div>
-      )}
-
-      {/* Global prose styles */}
-      <style>{`
-        .prose { font-family: var(--font-mono); font-size: .85rem; line-height: 1.7; color: var(--text); }
-        .prose h1,.prose h2,.prose h3 { font-family: var(--font-display); }
-        .prose code { background: var(--bg-2); border: 1px solid var(--border); color: var(--amber); padding: .1rem .3rem; border-radius: 3px; font-size: .8rem; }
-        .prose pre { background: var(--bg-1) !important; }
-        .prose ul { padding-left: 1.2rem; }
-        .prose li { margin-bottom: .2rem; }
-        .prose table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .8rem; }
-        .prose th,.prose td { border: 1px solid var(--border); padding: .4rem .65rem; }
-        .prose th { background: var(--bg-2); color: var(--text-2); }
-      `}</style>
     </>
   )
 }

@@ -1,0 +1,2432 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e13] [cursor=pointer]:
+    - img [ref=e14]
+  - alert [ref=e17]
+  - generic [ref=e18]:
+    - navigation "workspace navigation"
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: YUMMY
+          - button "Collapse Sidebar" [ref=e23] [cursor=pointer]:
+            - img
+        - navigation [ref=e24]:
+          - link "Explorer" [ref=e25] [cursor=pointer]:
+            - /url: /workspace/1777491625415/explorer
+            - img [ref=e26]
+            - generic [ref=e31]: Explorer
+          - link "SDLC Pipeline" [ref=e32] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sdlc
+            - img [ref=e33]
+            - generic [ref=e37]: SDLC Pipeline
+          - link "Dashboard" [ref=e38] [cursor=pointer]:
+            - /url: /workspace/1777491625415
+            - img [ref=e39]
+            - generic [ref=e41]: Dashboard
+          - link "Tracing" [ref=e42] [cursor=pointer]:
+            - /url: /workspace/1777491625415/tracing
+            - img [ref=e43]
+            - generic [ref=e45]: Tracing
+          - link "Database" [ref=e46] [cursor=pointer]:
+            - /url: /workspace/1777491625415/database
+            - img [ref=e47]
+            - generic [ref=e51]: Database
+          - link "Settings" [ref=e52] [cursor=pointer]:
+            - /url: /workspace/1777491625415/settings
+            - img [ref=e53]
+            - generic [ref=e56]: Settings
+          - link "World" [ref=e57] [cursor=pointer]:
+            - /url: /workspace/1777491625415/world
+            - img [ref=e58]
+            - generic [ref=e61]: World
+          - link "Sessions" [ref=e62] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sessions
+            - img [ref=e63]
+            - generic [ref=e67]: Sessions
+          - link "Graph" [ref=e68] [cursor=pointer]:
+            - /url: /workspace/1777491625415/graph
+            - img [ref=e69]
+            - generic [ref=e74]: Graph
+          - link "Wiki" [ref=e75] [cursor=pointer]:
+            - /url: /workspace/1777491625415/wiki
+            - img [ref=e76]
+            - generic [ref=e78]: Wiki
+          - link "Insight" [active] [ref=e79] [cursor=pointer]:
+            - /url: /workspace/1777491625415/insight
+            - img [ref=e80]
+            - generic [ref=e82]: Insight
+          - link "History" [ref=e83] [cursor=pointer]:
+            - /url: /workspace/1777491625415/history
+            - img [ref=e84]
+            - generic [ref=e88]: History
+          - link "Jira" [ref=e89] [cursor=pointer]:
+            - /url: /workspace/1777491625415/jira
+            - img [ref=e90]
+            - generic [ref=e92]: Jira
+      - generic [ref=e93]:
+        - banner [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Workspace
+            - img [ref=e97]
+            - generic [ref=e99]: AI Insights
+          - generic [ref=e100]:
+            - button "Command Cmd/Ctrl +K" [ref=e101] [cursor=pointer]:
+              - img
+              - generic [ref=e102]: Command
+              - generic [ref=e103]:
+                - generic [ref=e104]: Cmd/Ctrl
+                - text: +K
+            - button "AI Copilot" [ref=e105] [cursor=pointer]:
+              - img
+              - generic [ref=e106]: AI Copilot
+        - main [ref=e108]:
+          - generic [ref=e1007]:
+            - heading "AI Project Insights" [level=2] [ref=e1008]:
+              - img [ref=e1009]
+              - text: AI Project Insights
+            - generic [ref=e1011]:
+              - generic [ref=e1012]:
+                - generic [ref=e1013]:
+                  - generic [ref=e1014]: settings.json
+                  - generic [ref=e1015]: ARCHITECTURE.md
+                  - generic [ref=e1016]: README.md
+                  - generic [ref=e1017]: README.md
+                  - generic [ref=e1018]: biome.json
+                  - generic [ref=e1019]: drizzle.config.ts
+                  - generic [ref=e1020]: package.json
+                  - generic [ref=e1021]: app.ts
+                  - generic [ref=e1022]: constants.ts
+                  - generic [ref=e1023]: env.ts
+                  - generic [ref=e1024]: runtime.ts
+                  - generic [ref=e1025]: client.ts
+                  - generic [ref=e1026]: migrate.ts
+                  - generic [ref=e1027]: 0000_snapshot.json
+                - generic [ref=e1028]:
+                  - paragraph [ref=e1029]: Here is a concise summary of the provided files, covering functionality, patterns, dependencies, and architecture.
+                  - paragraph [ref=e1030]: "---"
+                  - heading "Project Overview (ARCHITECTURE.md, README.md, .vscode/settings.json)" [level=3] [ref=e1031]
+                  - paragraph [ref=e1032]:
+                    - text: These files describe the
+                    - strong [ref=e1033]: YUMMY
+                    - text: platform — an AI-powered multi-agent SDLC tool. It consists of a Python FastAPI backend and a Next.js frontend. The
+                    - code [ref=e1034]: backend-ts/
+                    - text: directory contains a TypeScript port using
+                    - strong [ref=e1035]: Hono
+                    - text: +
+                    - strong [ref=e1036]: Drizzle (SQLite)
+                    - text: for strict API parity. The project uses a knowledge graph (GitNexus) to track relationships and flows. The
+                    - code [ref=e1037]: .vscode/settings.json
+                    - text: disables a specific extension (kiroAgent MCP). The README provides quick start instructions, Docker setup, and configuration via
+                    - code [ref=e1038]: .env
+                    - text: .
+                  - paragraph [ref=e1039]: "---"
+                  - heading "Biome Configuration (biome.json)" [level=3] [ref=e1040]
+                  - paragraph [ref=e1041]:
+                    - text: Formatter and linter configuration for the TypeScript codebase. Uses spaces, a line width of 100, double quotes in JSON but single quotes in JS/TS, semicolons always, and trailing commas always. Linter rules include
+                    - code [ref=e1042]: noNonNullAssertion=warn
+                    - text: ","
+                    - code [ref=e1043]: useImportType=error
+                    - text: ","
+                    - code [ref=e1044]: noExplicitAny=warn
+                    - text: .
+                  - paragraph [ref=e1045]: "---"
+                  - heading "Drizzle Configuration (drizzle.config.ts)" [level=3] [ref=e1046]
+                  - paragraph [ref=e1047]:
+                    - text: Defines the SQLite database schema location (
+                    - code [ref=e1048]: ./src/db/schema.ts
+                    - text: ), output directory for migrations (
+                    - code [ref=e1049]: ./src/db/migrations
+                    - text: ), dialect SQLite, database URL from environment or default
+                    - code [ref=e1050]: ./data/yummy.db
+                    - text: . Enables verbose and strict mode.
+                  - paragraph [ref=e1051]: "---"
+                  - heading "Package.json (package.json)" [level=3] [ref=e1052]
+                  - paragraph [ref=e1053]: Node.js 20+ project using Hono v4, Drizzle ORM v0.38.4, OpenAI, Google GenAI, AWS Bedrock SDK, Ollama client, and Zod. Dev dependencies include Biome, TypeScript, Vitest, and tsx. Scripts cover dev, build, test, lint, format, DB migration, and Drizzle Studio.
+                  - paragraph [ref=e1054]: "---"
+                  - heading "Application Entry (app.ts)" [level=3] [ref=e1055]
+                  - paragraph [ref=e1056]:
+                    - text: Creates the Hono app via
+                    - code [ref=e1057]: createApp()
+                    - text: ":"
+                  - listitem [ref=e1058]: Configures CORS (allow all origins, methods, headers) — matches Python behavior.
+                  - listitem [ref=e1059]: "Registers 7 routers in order: utils, config, sessions, kb, ask, sdlc, metrics."
+                  - listitem [ref=e1060]:
+                    - text: Generates OpenAPI 3.1.0 doc at
+                    - code [ref=e1061]: /openapi.json
+                    - text: .
+                  - listitem [ref=e1062]:
+                    - text: Serves Swagger UI at
+                    - code [ref=e1063]: /docs
+                    - text: .
+                  - listitem [ref=e1064]: Attaches a global error handler.
+                  - paragraph
+                  - strong [ref=e1065]: "Pattern:"
+                  - text: Composition of middleware and routers on an
+                  - code [ref=e1066]: OpenAPIHono
+                  - text: instance, mirroring Python's FastAPI structure.
+                  - strong [ref=e1067]: "Dependencies:"
+                  - text: All routers,
+                  - code [ref=e1068]: "@hone/zod-openapi"
+                  - text: ","
+                  - code [ref=e1069]: hono/cors
+                  - text: ","
+                  - code [ref=e1070]: "@hono/swagger-ui"
+                  - text: .
+                  - paragraph [ref=e1071]: "---"
+                  - heading "Environment Configuration (constants.ts, env.ts, runtime.ts)" [level=3] [ref=e1072]
+                  - strong [ref=e1073]: "constants.ts:"
+                  - text: Defines allowed file extensions for scanning, default max scan limit (10,000), and chunk byte size (35,000).
+                  - strong [ref=e1074]: "env.ts:"
+                  - text: Loads
+                  - code [ref=e1075]: .env
+                  - text: via
+                  - code [ref=e1076]: dotenv
+                  - text: ", validates with Zod schema, exports a frozen"
+                  - code [ref=e1077]: env
+                  - text: object. Fields include port, host, DB URL, AI provider selection (gemini/openai/ollama/copilot/bedrock), and provider-specific keys/models. On validation failure, prints Zod error tree and exits.
+                  - strong [ref=e1078]: "runtime.ts:"
+                  - text: Holds mutable provider configuration that can be changed at runtime via
+                  - code [ref=e1079]: /config
+                  - text: endpoints. Initialized from
+                  - code [ref=e1080]: env
+                  - text: ", then"
+                  - strong [ref=e1081]: overwritten by persisted values from SQLite
+                  - text: (DB wins over env). Uses a
+                  - code [ref=e1082]: providerConfigRepo
+                  - text: to load saved settings. Exports
+                  - code [ref=e1083]: runtimeConfig
+                  - text: (mutable) and
+                  - code [ref=e1084]: envDefaults
+                  - text: (frozen snapshot of initial values).
+                  - strong [ref=e1085]: "Pattern:"
+                  - text: "Two-tier config: env for defaults at boot, DB for user overrides. Env validation with Zod + early exit. Runtime config is a plain object, mutated by routers."
+                  - strong [ref=e1086]: "Dependencies:"
+                  - code [ref=e1087]: dotenv
+                  - text: ","
+                  - code [ref=e1088]: zod
+                  - text: ","
+                  - code [ref=e1089]: providerConfigRepo
+                  - text: from DB layer.
+                  - paragraph [ref=e1090]: "---"
+                  - heading "Database Layer (client.ts, migrate.ts, schema, migrations)" [level=3] [ref=e1091]
+                  - strong [ref=e1092]: "client.ts:"
+                  - text: Creates a single
+                  - code [ref=e1093]: better-sqlite3
+                  - text: instance with WAL mode, synchronous NORMAL, foreign keys ON. Resolves DB path from
+                  - code [ref=e1094]: DATABASE_URL
+                  - text: (allows
+                  - code [ref=e1095]: ":memory:"
+                  - text: for tests). Creates the directory if needed. Exports
+                  - code [ref=e1096]: db
+                  - text: (Drizzle wrapper),
+                  - code [ref=e1097]: rawDb
+                  - text: ", and"
+                  - code [ref=e1098]: schema
+                  - text: .
+                  - strong [ref=e1099]: "migrate.ts:"
+                  - text: Applies Drizzle migrations from
+                  - code [ref=e1100]: src/db/migrations
+                  - text: folder using the
+                  - code [ref=e1101]: migrate
+                  - text: function. Used in
+                  - code [ref=e1102]: pnpm db:migrate
+                  - text: .
+                  - strong [ref=e1103]: "schema & migrations:"
+                  - text: The snapshot (
+                  - code [ref=e1104]: 0000_snapshot.json
+                  - text: ) shows the schema includes tables for
+                  - code [ref=e1105]: kb_insights
+                  - text: ","
+                  - code [ref=e1106]: kb_meta
+                  - text: ","
+                  - code [ref=e1107]: kb_tree
+                  - text: ","
+                  - code [ref=e1108]: repo_info
+                  - text: ","
+                  - code [ref=e1109]: request_logs
+                  - text: ","
+                  - code [ref=e1110]: scan_status
+                  - text: ","
+                  - code [ref=e1111]: sessions
+                  - text: . All use integer primary keys (autoincrement for some) and appropriate text/integer columns. Sessions store chat history, agent outputs, JIRA backlog, and workflow state as JSON strings.
+                  - strong [ref=e1112]: "Pattern:"
+                  - text: Singleton database client, Drizzle ORM with schema inference, migrations folder with versioned snapshots. Repositories (like
+                  - code [ref=e1113]: provider-config.repo
+                  - text: ) abstract DB operations.
+                  - strong [ref=e1114]: "Dependencies:"
+                  - code [ref=e1115]: better-sqlite3
+                  - text: ","
+                  - code [ref=e1116]: drizzle-orm/better-sqlite3
+                  - text: ","
+                  - code [ref=e1117]: drizzle-orm/migrator
+                  - text: .
+                  - paragraph [ref=e1118]: "---"
+                  - heading "Key Patterns & Dependencies Summary" [level=3] [ref=e1119]
+                  - listitem [ref=e1120]:
+                    - strong [ref=e1121]: "Framework:"
+                    - text: Hono + OpenAPI + Swagger UI.
+                  - listitem [ref=e1122]:
+                    - strong [ref=e1123]: "Database:"
+                    - text: SQLite via better-sqlite3 + Drizzle ORM + migrations.
+                  - listitem [ref=e1124]:
+                    - strong [ref=e1125]: "Validation:"
+                    - text: Zod for env, request/response schemas.
+                  - listitem [ref=e1126]:
+                    - strong [ref=e1127]: "Config:"
+                    - text: Two-tier (env + DB override), mutable runtime config object.
+                  - listitem [ref=e1128]:
+                    - strong [ref=e1129]: "AI Providers:"
+                    - text: Abstracted via providers (gemini, openai, ollama, copilot, bedrock), each implementing call/stream functions.
+                  - listitem [ref=e1130]:
+                    - strong [ref=e1131]: "Streaming:"
+                    - text: SSE for RAG endpoints.
+                  - listitem [ref=e1132]:
+                    - strong [ref=e1133]: "Modular routing:"
+                    - text: 7 routers mirroring Python FastAPI structure.
+                  - listitem [ref=e1134]:
+                    - strong [ref=e1135]: "Error handling:"
+                    - text: Global
+                    - code [ref=e1136]: onError
+                    - text: middleware.
+                  - listitem [ref=e1137]:
+                    - strong [ref=e1138]: "External dependencies:"
+                    - text: OpenAI JS SDK, Google GenAI, AWS Bedrock SDK, Ollama npm client, GitHub Copilot SDK.
+              - generic [ref=e1139]:
+                - generic [ref=e1140]:
+                  - generic [ref=e1141]: 0001_snapshot.json
+                  - generic [ref=e1142]: _journal.json
+                  - generic [ref=e1143]: kb.repo.ts
+                  - generic [ref=e1144]: logs.repo.ts
+                  - generic [ref=e1145]: provider-config.repo.ts
+                  - generic [ref=e1146]: repo.repo.ts
+                  - generic [ref=e1147]: scan-status.repo.ts
+                  - generic [ref=e1148]: sessions.repo.ts
+                  - generic [ref=e1149]: schema.ts
+                  - generic [ref=e1150]: index.ts
+                  - generic [ref=e1151]: abortRegistry.ts
+                  - generic [ref=e1152]: errors.ts
+                  - generic [ref=e1153]: guards.ts
+                  - generic [ref=e1154]: id.ts
+                  - generic [ref=e1155]: serializers.ts
+                - generic [ref=e1156]:
+                  - paragraph [ref=e1157]: "The codebase implements a TypeScript backend (likely for the \"YUMMY\" project) using Hono for HTTP routing and Drizzle ORM for SQLite persistence. Here’s a breakdown of the logic across the provided files:"
+                  - strong [ref=e1158]: Database Schema & Migrations
+                  - listitem [ref=e1159]:
+                    - text: The migration snapshot (
+                    - code [ref=e1160]: 0001_snapshot.json
+                    - text: ") defines eight tables:"
+                    - code [ref=e1161]: kb_insights
+                    - text: ","
+                    - code [ref=e1162]: kb_meta
+                    - text: ","
+                    - code [ref=e1163]: kb_tree
+                    - text: ","
+                    - code [ref=e1164]: provider_config
+                    - text: ","
+                    - code [ref=e1165]: repo_info
+                    - text: ","
+                    - code [ref=e1166]: request_logs
+                    - text: ","
+                    - code [ref=e1167]: scan_status
+                    - text: ", and"
+                    - code [ref=e1168]: sessions
+                    - text: .
+                  - listitem [ref=e1169]:
+                    - text: Several tables (e.g.,
+                    - code [ref=e1170]: kb_meta
+                    - text: ","
+                    - code [ref=e1171]: repo_info
+                    - text: ","
+                    - code [ref=e1172]: scan_status
+                    - text: ","
+                    - code [ref=e1173]: provider_config
+                    - text: ) use a singleton pattern (row
+                    - code [ref=e1174]: id=1
+                    - text: ) for global configuration or state.
+                  - listitem [ref=e1175]: JSON columns store complex objects (chat history, agent outputs, logs, insights file lists).
+                  - listitem [ref=e1176]:
+                    - text: The
+                    - code [ref=e1177]: _journal.json
+                    - text: tracks two migrations, confirming the schema evolves via Drizzle’s versioned snapshots.
+                  - strong [ref=e1178]: Repository Pattern
+                  - listitem [ref=e1179]:
+                    - text: Each table has a corresponding repository in
+                    - code [ref=e1180]: src/db/repositories/
+                    - text: .
+                  - listitem [ref=e1181]: Repositories provide CRUD operations and encapsulate all Drizzle queries.
+                  - listitem [ref=e1182]: "Examples:"
+                  - text: "-"
+                  - code [ref=e1183]: kb.repo.ts
+                  - text: – manages tree, insights, and project summary (combined “knowledge base”). -
+                  - code [ref=e1184]: sessions.repo.ts
+                  - text: – creates sessions with a default system log, supports partial updates, reset. -
+                  - code [ref=e1185]: logs.repo.ts
+                  - text: – stores request logs ordered by descending ID (newest first). -
+                  - code [ref=e1186]: provider-config.repo.ts
+                  - text: – persists runtime AI provider settings, handling the case where the table may not exist. -
+                  - code [ref=e1187]: scan-status.repo.ts
+                  - text: – singleton; returns
+                  - code [ref=e1188]: undefined
+                  - text: if no scan has been initialized.
+                  - listitem [ref=e1189]:
+                    - text: Transactions are used for bulk operations (e.g.,
+                    - code [ref=e1190]: kbRepo.replaceTree
+                    - text: ","
+                    - code [ref=e1191]: kbRepo.resetAll
+                    - text: ).
+                  - strong [ref=e1192]: Schema Definitions
+                  - listitem [ref=e1193]:
+                    - code [ref=e1194]: schema.ts
+                    - text: defines all tables with explicit column types, defaults, and JSON mode for certain columns.
+                  - listitem [ref=e1195]: Inferred row/insert types are exported for type-safety across repositories.
+                  - strong [ref=e1196]: Entry Point & Server
+                  - listitem [ref=e1197]:
+                    - code [ref=e1198]: index.ts
+                    - text: starts a Hono HTTP server on the configured port (default 8000), with Swagger UI and OpenAPI endpoint logging.
+                  - strong [ref=e1199]: Utility Libraries
+                  - listitem [ref=e1200]:
+                    - strong [ref=e1201]: Error handling
+                    - text: (
+                    - code [ref=e1202]: errors.ts
+                    - text: "): Custom"
+                    - code [ref=e1203]: HttpError
+                    - text: class with factory functions (
+                    - code [ref=e1204]: badRequest
+                    - text: ","
+                    - code [ref=e1205]: notFound
+                    - text: ", etc.) for consistent JSON error responses."
+                  - listitem [ref=e1206]:
+                    - strong [ref=e1207]: Guards
+                    - text: (
+                    - code [ref=e1208]: guards.ts
+                    - text: "): Functions that validate session existence, repo configuration, knowledge base availability, and workflow state; throw"
+                    - code [ref=e1209]: HttpError
+                    - text: on failure.
+                  - listitem [ref=e1210]:
+                    - strong [ref=e1211]: ID generation
+                    - text: (
+                    - code [ref=e1212]: id.ts
+                    - text: "): Timestamp‑based IDs ("
+                    - code [ref=e1213]: newSessionId
+                    - text: as string,
+                    - code [ref=e1214]: newLogId
+                    - text: as number).
+                  - listitem [ref=e1215]:
+                    - strong [ref=e1216]: Serializers
+                    - text: (
+                    - code [ref=e1217]: serializers.ts
+                    - text: "): Convert internal camelCase Drizzle rows into snake_case API DTOs (e.g.,"
+                    - code [ref=e1218]: toSessionDetail
+                    - text: ).
+                  - listitem [ref=e1219]:
+                    - strong [ref=e1220]: Abort registry
+                    - text: (
+                    - code [ref=e1221]: abortRegistry.ts
+                    - text: "): Manages per‑session"
+                    - code [ref=e1222]: AbortController
+                    - text: s for cancelling long‑running SDLC pipeline steps.
+                  - strong [ref=e1223]: Dependencies & Patterns
+                  - listitem [ref=e1224]:
+                    - strong [ref=e1225]: OR/M
+                    - text: ": Drizzle ORM with SQLite driver."
+                  - listitem [ref=e1226]:
+                    - strong [ref=e1227]: HTTP framework
+                    - text: ": Hono (with"
+                    - code [ref=e1228]: "@hono/node-server"
+                    - text: ).
+                  - listitem [ref=e1229]:
+                    - strong [ref=e1230]: Config
+                    - text: ": Environment variables ("
+                    - code [ref=e1231]: env.ts
+                    - text: ) and runtime mutable config (
+                    - code [ref=e1232]: runtime.ts
+                    - text: ) are imported but not included in the provided files.
+                  - listitem [ref=e1233]:
+                    - strong [ref=e1234]: Imports
+                    - text: ": Repositories import"
+                    - code [ref=e1235]: db
+                    - text: from
+                    - code [ref=e1236]: ../client.js
+                    - text: (the Drizzle client), schema types from
+                    - code [ref=e1237]: ../schema.ts
+                    - text: ", and occasionally utility libraries like"
+                    - code [ref=e1238]: time.ts
+                    - text: .
+                  - listitem [ref=e1239]:
+                    - strong [ref=e1240]: Consistency
+                    - text: ": The codebase mirrors a Python in‑memory version, using singleton tables to persist state that was previously held in dictionaries. The JSON columns replace Python’s lists/dicts."
+                  - listitem [ref=e1241]:
+                    - strong [ref=e1242]: Separation
+                    - text: ": Repositories handle raw DB access; serializers decouple DB models from API responses; guards centralize precondition checks."
+                  - paragraph [ref=e1243]: Overall, the logic establishes a clean, typed persistence layer with a repository pattern, HTTP error handling, and utilities that support a multi‑session, LLM‑driven code analysis workflow (KB scanning, SDLC pipelines, model provider configuration).
+              - generic [ref=e1244]:
+                - generic [ref=e1245]:
+                  - generic [ref=e1246]: time.ts
+                  - generic [ref=e1247]: error-handler.ts
+                  - generic [ref=e1248]: ask.router.ts
+                  - generic [ref=e1249]: config.router.ts
+                  - generic [ref=e1250]: kb.router.ts
+                  - generic [ref=e1251]: metrics.router.ts
+                  - generic [ref=e1252]: sdlc.router.ts
+                - generic [ref=e1253]:
+                  - strong [ref=e1254]:
+                    - text: "File:"
+                    - code [ref=e1255]: backend-ts/src/lib/time.ts
+                  - listitem [ref=e1256]:
+                    - strong [ref=e1257]: Functionality
+                    - text: ": Provides two utility functions"
+                    - code [ref=e1258]: nowIso()
+                    - text: and
+                    - code [ref=e1259]: nowHms()
+                    - text: that output timestamps matching Python's
+                    - code [ref=e1260]: datetime.now().isoformat()
+                    - text: (local time, no timezone, with milliseconds) and
+                    - code [ref=e1261]: strftime("%H:%M:%S")
+                    - text: .
+                  - listitem [ref=e1262]:
+                    - strong [ref=e1263]: Patterns
+                    - text: ": Pure functions with manual padding to match Python's exact format (e.g.,"
+                    - code [ref=e1264]: .
+                    - text: as decimal separator, zero-filled ms).
+                  - listitem [ref=e1265]:
+                    - strong [ref=e1266]: Dependencies
+                    - text: ": None beyond global"
+                    - code [ref=e1267]: Date
+                    - text: .
+                  - paragraph [ref=e1268]: "---"
+                  - strong [ref=e1269]:
+                    - text: "File:"
+                    - code [ref=e1270]: backend-ts/src/middleware/error-handler.ts
+                  - listitem [ref=e1271]:
+                    - strong [ref=e1272]: Functionality
+                    - text: ": Global error-handling middleware for Hono that returns JSON responses matching FastAPI’s"
+                    - code [ref=e1273]: HTTPException
+                    - text: "shape:"
+                    - code [ref=e1274]: "{ \"detail\": \"\" }"
+                    - text: . Handles
+                    - code [ref=e1275]: HttpError
+                    - text: (custom),
+                    - code [ref=e1276]: ZodError
+                    - text: (returns 422 with
+                    - code [ref=e1277]: "path: message"
+                    - text: ), and unknown errors (500).
+                  - listitem [ref=e1278]:
+                    - strong [ref=e1279]: Patterns
+                    - text: ": Single function exported as"
+                    - code [ref=e1280]: errorHandler
+                    - text: ", used as"
+                    - code [ref=e1281]: app.onError(errorHandler)
+                    - text: . Maps error types to HTTP status codes.
+                  - listitem [ref=e1282]:
+                    - strong [ref=e1283]: Dependencies
+                    - text: ":"
+                    - code [ref=e1284]: HttpError
+                    - text: from
+                    - code [ref=e1285]: ../lib/errors.js
+                    - text: ","
+                    - code [ref=e1286]: ZodError
+                    - text: from
+                    - code [ref=e1287]: zod
+                    - text: ", Hono"
+                    - code [ref=e1288]: Context
+                    - text: .
+                  - paragraph [ref=e1289]: "---"
+                  - strong [ref=e1290]:
+                    - text: "File:"
+                    - code [ref=e1291]: backend-ts/src/routers/ask.router.ts
+                  - listitem [ref=e1292]:
+                    - strong [ref=e1293]: Functionality
+                    - text: ": Three endpoints for RAG-based Q&A:"
+                  - text: "-"
+                  - code [ref=e1294]: POST /ask
+                  - text: (SSE stream) – builds a RAG prompt with KB context, session history, optional IDE file content; streams AI tokens; persists user/assistant messages; tracks metrics. -
+                  - code [ref=e1295]: POST /ask/free
+                  - text: (SSE stream) – same but without KB context (freeform chat). -
+                  - code [ref=e1296]: POST /ask/sync
+                  - text: (JSON, non‑streaming) – returns answer, trace, and session_id in one response.
+                  - listitem [ref=e1297]:
+                    - strong [ref=e1298]: Patterns
+                    - text: ": SSE using"
+                    - code [ref=e1299]: hono/streaming
+                    - text: with
+                    - code [ref=e1300]: "data: ...\\n\\n"
+                    - text: protocol matching Python. Uses
+                    - code [ref=e1301]: requireKnowledgeBase
+                    - text: and
+                    - code [ref=e1302]: requireSession
+                    - text: guard functions. Separate
+                    - code [ref=e1303]: buildRagPrompt
+                    - text: helper. Explicitly calls
+                    - code [ref=e1304]: track()
+                    - text: after stream drains (parity with Python). Uses
+                    - code [ref=e1305]: sessionRepo.update
+                    - text: for persistence.
+                  - listitem [ref=e1306]:
+                    - strong [ref=e1307]: Dependencies
+                    - text: ":"
+                    - code [ref=e1308]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1309]: zod
+                    - text: ","
+                    - code [ref=e1310]: hono/streaming
+                    - text: ","
+                    - code [ref=e1311]: ../db/repositories/sessions.repo
+                    - text: ","
+                    - code [ref=e1312]: ../db/repositories/repo.repo
+                    - text: ","
+                    - code [ref=e1313]: ../lib/guards
+                    - text: ","
+                    - code [ref=e1314]: ../services/ai/dispatcher
+                    - text: (
+                    - code [ref=e1315]: callAI
+                    - text: ","
+                    - code [ref=e1316]: streamAI
+                    - text: ),
+                    - code [ref=e1317]: ../services/ai/track
+                    - text: ", schemas ("
+                    - code [ref=e1318]: AskRequestSchema
+                    - text: ","
+                    - code [ref=e1319]: AskSyncResponseSchema
+                    - text: ","
+                    - code [ref=e1320]: ErrorSchema
+                    - text: ).
+                  - paragraph [ref=e1321]: "---"
+                  - strong [ref=e1322]:
+                    - text: "File:"
+                    - code [ref=e1323]: backend-ts/src/routers/config.router.ts
+                  - listitem [ref=e1324]:
+                    - strong [ref=e1325]: Functionality
+                    - text: ": API endpoints for configuring the AI provider, API keys, models, and repo setup:"
+                  - text: "-"
+                  - code [ref=e1326]: POST /config/api-key
+                  - text: (Gemini),
+                  - code [ref=e1327]: /config/ollama
+                  - text: ","
+                  - code [ref=e1328]: /config/openai
+                  - text: ","
+                  - code [ref=e1329]: /config/bedrock
+                  - text: ","
+                  - code [ref=e1330]: /config/copilot
+                  - text: – each updates
+                  - code [ref=e1331]: runtimeConfig
+                  - text: and persists via
+                  - code [ref=e1332]: providerConfigRepo.upsert
+                  - text: . -
+                  - code [ref=e1333]: POST /config/provider
+                  - text: – switches the active provider. -
+                  - code [ref=e1334]: POST /config/setup
+                  - text: – parses GitHub URL, saves repo info to
+                  - code [ref=e1335]: repoRepo
+                  - text: . -
+                  - code [ref=e1336]: GET /config/status
+                  - text: – returns all config, KB stats, scan status, session/cost metrics.
+                  - listitem [ref=e1337]:
+                    - strong [ref=e1338]: Patterns
+                    - text: ": Uses OpenAPI route definitions with Zod schemas. Each config endpoint updates in‑memory"
+                    - code [ref=e1339]: runtimeConfig
+                    - text: (a global mutable object) and persists to SQLite via repository pattern.
+                    - code [ref=e1340]: keySource
+                    - text: helper determines source of a key (
+                    - code [ref=e1341]: env
+                    - text: ","
+                    - code [ref=e1342]: ui
+                    - text: ","
+                    - code [ref=e1343]: none
+                    - text: ).
+                  - listitem [ref=e1344]:
+                    - strong [ref=e1345]: Dependencies
+                    - text: ":"
+                    - code [ref=e1346]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1347]: zod
+                    - text: ","
+                    - code [ref=e1348]: ../config/runtime
+                    - text: (
+                    - code [ref=e1349]: runtimeConfig
+                    - text: ","
+                    - code [ref=e1350]: envDefaults
+                    - text: ","
+                    - code [ref=e1351]: Provider
+                    - text: ),
+                    - code [ref=e1352]: ../config/env
+                    - text: ", multiple DB repositories ("
+                    - code [ref=e1353]: repoRepo
+                    - text: ","
+                    - code [ref=e1354]: kbRepo
+                    - text: ","
+                    - code [ref=e1355]: sessionsRepo
+                    - text: ","
+                    - code [ref=e1356]: scanStatusRepo
+                    - text: ","
+                    - code [ref=e1357]: logsRepo
+                    - text: ","
+                    - code [ref=e1358]: providerConfigRepo
+                    - text: ),
+                    - code [ref=e1359]: ../lib/errors
+                    - text: (
+                    - code [ref=e1360]: badRequest
+                    - text: ), schemas for config and common errors.
+                  - paragraph [ref=e1361]: "---"
+                  - strong [ref=e1362]:
+                    - text: "File:"
+                    - code [ref=e1363]: backend-ts/src/routers/kb.router.ts
+                  - listitem [ref=e1364]:
+                    - strong [ref=e1365]: Functionality
+                    - text: ": Knowledge Base management endpoints:"
+                  - text: "-"
+                  - code [ref=e1366]: GET /kb
+                  - text: – returns snapshot (tree, insights, project_summary). -
+                  - code [ref=e1367]: POST /kb/scan
+                  - text: – triggers a background scan of the repo (fire‑and‑forget via
+                  - code [ref=e1368]: runScan()
+                  - text: ). -
+                  - code [ref=e1369]: GET /kb/scan/status
+                  - text: – returns current scan status. -
+                  - code [ref=e1370]: GET /kb/file?path=...
+                  - text: – fetches file content from GitHub API (with branch detection). -
+                  - code [ref=e1371]: DELETE /kb
+                  - text: – clears KB and scan status.
+                  - listitem [ref=e1372]:
+                    - strong [ref=e1373]: Patterns
+                    - text: ": OpenAPI routes; uses guards"
+                    - code [ref=e1374]: requireRepo
+                    - text: and
+                    - code [ref=e1375]: requireKnowledgeBase
+                    - text: . Background scan runs with
+                    - code [ref=e1376]: runScan().catch(...)
+                    - text: . GitHub requests use
+                    - code [ref=e1377]: getRepoInfo
+                    - text: and
+                    - code [ref=e1378]: githubRaw
+                    - text: .
+                  - listitem [ref=e1379]:
+                    - strong [ref=e1380]: Dependencies
+                    - text: ":"
+                    - code [ref=e1381]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1382]: zod
+                    - text: ","
+                    - code [ref=e1383]: ../db/repositories/kb.repo
+                    - text: ","
+                    - code [ref=e1384]: scanStatusRepo
+                    - text: ","
+                    - code [ref=e1385]: ../lib/errors
+                    - text: (
+                    - code [ref=e1386]: conflict
+                    - text: ","
+                    - code [ref=e1387]: HttpError
+                    - text: ),
+                    - code [ref=e1388]: ../lib/guards
+                    - text: ","
+                    - code [ref=e1389]: ../services/scan/scan.service
+                    - text: (
+                    - code [ref=e1390]: runScan
+                    - text: ),
+                    - code [ref=e1391]: ../services/github/github.service
+                    - text: (
+                    - code [ref=e1392]: getRepoInfo
+                    - text: ","
+                    - code [ref=e1393]: githubRaw
+                    - text: ), schemas for KB and common errors.
+                  - paragraph [ref=e1394]: "---"
+                  - strong [ref=e1395]:
+                    - text: "File:"
+                    - code [ref=e1396]: backend-ts/src/routers/metrics.router.ts
+                  - listitem [ref=e1397]:
+                    - strong [ref=e1398]: Functionality
+                    - text: ":"
+                  - text: "-"
+                  - code [ref=e1399]: GET /metrics
+                  - text: – aggregates
+                  - code [ref=e1400]: request_logs
+                  - text: by agent (calls, cost, tokens), returns total counts and last 50 rows. -
+                  - code [ref=e1401]: DELETE /metrics
+                  - text: – clears all logs.
+                  - listitem [ref=e1402]:
+                    - strong [ref=e1403]: Patterns
+                    - text: ": Simple CRUD over a repository ("
+                    - code [ref=e1404]: logsRepo
+                    - text: ). Computes
+                    - code [ref=e1405]: agent_breakdown
+                    - text: by iterating through logs. Uses a
+                    - code [ref=e1406]: round
+                    - text: helper for cost formatting.
+                  - listitem [ref=e1407]:
+                    - strong [ref=e1408]: Dependencies
+                    - text: ":"
+                    - code [ref=e1409]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1410]: zod
+                    - text: ","
+                    - code [ref=e1411]: ../db/repositories/logs.repo
+                    - text: ", schemas ("
+                    - code [ref=e1412]: MetricsResponseSchema
+                    - text: ","
+                    - code [ref=e1413]: RequestLogDto
+                    - text: ).
+                  - paragraph [ref=e1414]: "---"
+                  - strong [ref=e1415]:
+                    - text: "File:"
+                    - code [ref=e1416]: backend-ts/src/routers/sdlc.router.ts
+                  - listitem [ref=e1417]:
+                    - strong [ref=e1418]: Functionality
+                    - text: ": Multi‑agent SDLC pipeline (change request → BA → SA + PM → Dev Lead → Dev → Security → QA → SRE) with SSE streaming:"
+                  - text: "-"
+                  - code [ref=e1419]: POST /sdlc/start
+                  - text: – starts BA stream, yields
+                  - code [ref=e1420]: waiting_ba_approval
+                  - text: . -
+                  - code [ref=e1421]: POST /sdlc/approve-ba
+                  - text: – streams SA, runs PM (blocking JSON call) to produce JIRA backlog, yields
+                  - code [ref=e1422]: waiting_sa_approval
+                  - text: . -
+                  - code [ref=e1423]: POST /sdlc/approve-sa
+                  - text: – streams Dev Lead, yields
+                  - code [ref=e1424]: waiting_dev_lead_approval
+                  - text: . -
+                  - code [ref=e1425]: POST /sdlc/approve-dev-lead
+                  - text: – sequentially streams DEV, SECURITY, QA, SRE with
+                  - code [ref=e1426]: agent_done
+                  - text: events, finishes with
+                  - code [ref=e1427]: done
+                  - text: state. -
+                  - code [ref=e1428]: "POST /sdlc/{session_id}/stop"
+                  - text: – aborts streaming and sets state to
+                  - code [ref=e1429]: idle
+                  - text: . -
+                  - code [ref=e1430]: "POST /sdlc/{session_id}/restore"
+                  - text: – rolls back to a checkpoint (
+                  - code [ref=e1431]: ba
+                  - text: ","
+                  - code [ref=e1432]: sa
+                  - text: ","
+                  - code [ref=e1433]: dev_lead
+                  - text: ) and clears later outputs. -
+                  - code [ref=e1434]: "GET /sdlc/{session_id}/state"
+                  - text: – returns current workflow state, outputs, backlog. -
+                  - code [ref=e1435]: "GET /sdlc/{session_id}/history"
+                  - text: – returns chat history. -
+                  - code [ref=e1436]: "POST /sdlc/{session_id}/export-prompt"
+                  - text: – distills completed outputs into a concise implementation prompt using
+                  - code [ref=e1437]: callAI
+                  - text: .
+                  - listitem [ref=e1438]:
+                    - strong [ref=e1439]: Patterns
+                    - text: ": Complex state machine with workflow states persisted per session. SSE protocol uses JSON objects per line ("
+                    - code [ref=e1440]: "{\"t\":\"start\",...}"
+                    - text: ). Uses
+                    - code [ref=e1441]: registerAbort
+                    - text: /
+                    - code [ref=e1442]: clearAbort
+                    - text: for cancellation of in‑flight streams. Each agent has a hardcoded system instruction (matching Python). Pipeline progression is driven by explicit approve endpoints.
+                  - listitem [ref=e1443]:
+                    - strong [ref=e1444]: Dependencies
+                    - text: ":"
+                    - code [ref=e1445]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1446]: zod
+                    - text: ","
+                    - code [ref=e1447]: hono/streaming
+                    - text: ","
+                    - code [ref=e1448]: ../db/repositories/sessions.repo
+                    - text: ","
+                    - code [ref=e1449]: ../lib/guards
+                    - text: (
+                    - code [ref=e1450]: requireKnowledgeBase
+                    - text: ","
+                    - code [ref=e1451]: requireSession
+                    - text: ","
+                    - code [ref=e1452]: requireWorkflowState
+                    - text: ),
+                    - code [ref=e1453]: ../services/ai/dispatcher
+                    - text: (
+                    - code [ref=e1454]: callAI
+                    - text: ","
+                    - code [ref=e1455]: streamAI
+                    - text: ),
+                    - code [ref=e1456]: ../lib/abortRegistry
+                    - text: (
+                    - code [ref=e1457]: registerAbort
+                    - text: ","
+                    - code [ref=e1458]: abortSession
+                    - text: ","
+                    - code [ref=e1459]: clearAbort
+                    - text: ), schemas for SDLC and common errors.
+                  - paragraph [ref=e1460]: "---"
+                  - strong [ref=e1461]: Overall Dependencies & Patterns observed across these files
+                  - text: ":"
+                  - listitem [ref=e1462]:
+                    - text: All routers use
+                    - code [ref=e1463]: "@hono/zod-openapi"
+                    - text: with
+                    - code [ref=e1464]: OpenAPIHono
+                    - text: and
+                    - code [ref=e1465]: createRoute
+                    - text: for typed endpoints, except SSE endpoints (which use plain
+                    - code [ref=e1466]: app.post
+                    - text: due to streaming).
+                  - listitem [ref=e1467]: Zod is used for request validation (body, query, params) and response schemas.
+                  - listitem [ref=e1468]:
+                    - text: Repository pattern for SQLite persistence (e.g.,
+                    - code [ref=e1469]: sessionsRepo
+                    - text: ","
+                    - code [ref=e1470]: kbRepo
+                    - text: ","
+                    - code [ref=e1471]: logsRepo
+                    - text: ).
+                  - listitem [ref=e1472]:
+                    - text: SSE streaming via
+                    - code [ref=e1473]: hono/streaming
+                    - text: with manual
+                    - code [ref=e1474]: "data: ...\\n\\n"
+                    - text: formatting.
+                  - listitem [ref=e1475]:
+                    - text: Custom error types (
+                    - code [ref=e1476]: HttpError
+                    - text: ","
+                    - code [ref=e1477]: badRequest
+                    - text: ","
+                    - code [ref=e1478]: conflict
+                    - text: ) thrown to global handler.
+                  - listitem [ref=e1479]:
+                    - text: Runtime configuration is in‑memory (
+                    - code [ref=e1480]: runtimeConfig
+                    - text: ), with some persistence via
+                    - code [ref=e1481]: providerConfigRepo
+                    - text: .
+                  - listitem [ref=e1482]: GitHub integration uses separate GitHub service functions.
+                  - listitem [ref=e1483]: SDLC pipeline uses an abort registry to cancel long‑running AI streams.
+              - generic [ref=e1484]:
+                - generic [ref=e1485]:
+                  - generic [ref=e1486]: sessions.router.ts
+                  - generic [ref=e1487]: utils.router.ts
+                  - generic [ref=e1488]: ask.schema.ts
+                  - generic [ref=e1489]: common.schema.ts
+                  - generic [ref=e1490]: config.schema.ts
+                  - generic [ref=e1491]: kb.schema.ts
+                  - generic [ref=e1492]: metrics.schema.ts
+                  - generic [ref=e1493]: sdlc.schema.ts
+                  - generic [ref=e1494]: sessions.schema.ts
+                  - generic [ref=e1495]: dispatcher.ts
+                  - generic [ref=e1496]: pricing.ts
+                  - generic [ref=e1497]: bedrock.ts
+                - generic [ref=e1498]:
+                  - paragraph [ref=e1499]:
+                    - text: These files implement a
+                    - strong [ref=e1500]: backend API
+                    - text: for an AI-powered SDLC platform (YUMMY). They are written in TypeScript and use the Hono framework with OpenAPI support.
+                  - strong [ref=e1501]: "Functionality:"
+                  - listitem [ref=e1502]:
+                    - code [ref=e1503]: sessions.router.ts
+                    - text: ": Handles CRUD operations for \"sessions\" (workspaces). Supports creating, listing, retrieving, deleting, and resetting sessions. Uses a repository pattern ("
+                    - code [ref=e1504]: sessionsRepo
+                    - text: ), generates unique IDs (
+                    - code [ref=e1505]: newSessionId
+                    - text: ), and validates via Zod schemas.
+                  - listitem [ref=e1506]:
+                    - code [ref=e1507]: utils.router.ts
+                    - text: ": Provides utility endpoints: root (API info), health (simple status), health/model (pings the configured AI provider—Gemini, OpenAI, Copilot, Bedrock, or Ollama—with a \"ping\" prompt and reports latency), and help (lists available commands, agent pipeline, and workflow steps)."
+                  - listitem [ref=e1508]:
+                    - code [ref=e1509]: schemas/
+                    - text: "directory: Contains Zod schemas for request/response validation and OpenAPI documentation. All schemas use"
+                    - code [ref=e1510]: "@hono/zod-openapi"
+                    - text: and preserve snake_case field names for Python/frontend parity. Includes schemas for ask, common (error, OK), config, KB, metrics, SDLC, and sessions.
+                  - listitem [ref=e1511]:
+                    - code [ref=e1512]: services/ai/dispatcher.ts
+                    - text: ":"
+                    - strong [ref=e1513]: Central AI dispatcher
+                    - text: . Selects the active provider from
+                    - code [ref=e1514]: runtimeConfig.provider
+                    - text: ", delegates to the corresponding provider implementation ("
+                    - code [ref=e1515]: callGemini
+                    - text: ","
+                    - code [ref=e1516]: callOpenAI
+                    - text: ", etc.), tracks token usage via"
+                    - code [ref=e1517]: track()
+                    - text: ", and supports cancellation with"
+                    - code [ref=e1518]: AbortSignal
+                    - text: . Also exports a streaming variant (
+                    - code [ref=e1519]: streamAI
+                    - text: ).
+                  - listitem [ref=e1520]:
+                    - code [ref=e1521]: services/ai/pricing.ts
+                    - text: ": Hardcoded pricing table (USD per million tokens) for many models across providers. Falls back to provider defaults. Includes"
+                    - code [ref=e1522]: estimateTokens()
+                    - text: helper.
+                  - listitem [ref=e1523]:
+                    - code [ref=e1524]: services/ai/providers/bedrock.ts
+                    - text: ": Provider implementation for AWS Bedrock. Uses"
+                    - code [ref=e1525]: "@aws-sdk/client-bedrock-runtime"
+                    - text: (ConverseCommand/ConverseStreamCommand) with system instructions. Throws
+                    - code [ref=e1526]: HttpError
+                    - text: on configuration or API errors.
+                  - strong [ref=e1527]: "Patterns:"
+                  - listitem [ref=e1528]:
+                    - strong [ref=e1529]: OpenAPI First
+                    - text: ": All routes are defined via"
+                    - code [ref=e1530]: "@hono/zod-openapi"
+                    - code [ref=e1531]: createRoute
+                    - text: ", enabling automatic OpenAPI spec generation and request validation."
+                  - listitem [ref=e1532]:
+                    - strong [ref=e1533]: Repository Pattern
+                    - text: ": Data access is abstracted behind repositories (e.g.,"
+                    - code [ref=e1534]: sessionsRepo
+                    - text: ). Not shown in detail but used in routers.
+                  - listitem [ref=e1535]:
+                    - strong [ref=e1536]: Provider Pattern
+                    - text: ": AI providers are encapsulated in independent modules under"
+                    - code [ref=e1537]: services/ai/providers/
+                    - text: ", each exporting"
+                    - code [ref=e1538]:
+                      - text: call
+                      - emphasis
+                    - emphasis [ref=e1539]:
+                      - text: and
+                      - code [ref=e1540]: stream
+                    - text: functions. The dispatcher selects the appropriate one without coupling to implementation details.
+                  - listitem [ref=e1541]:
+                    - strong [ref=e1542]: Error Handling
+                    - text: ": Custom"
+                    - code [ref=e1543]: HttpError
+                    - text: (from
+                    - code [ref=e1544]: lib/errors.ts
+                    - text: ) is used in provider code to return meaningful HTTP errors. Guards like
+                    - code [ref=e1545]: requireSession
+                    - text: raise 404s.
+                  - listitem [ref=e1546]:
+                    - strong [ref=e1547]: Configuration via Runtime Config
+                    - text: ": Everything from provider choice to API keys is read from"
+                    - code [ref=e1548]: runtimeConfig
+                    - text: (config/runtime.js), which aggregates environment variables and UI-set values.
+                  - listitem [ref=e1549]:
+                    - strong [ref=e1550]: Snake_case Consistency
+                    - text: ": All API fields and database columns use snake_case to match the existing Python backend."
+                  - strong [ref=e1551]: "Dependencies:"
+                  - listitem [ref=e1552]:
+                    - text: "External:"
+                    - code [ref=e1553]: "@hono/zod-openapi"
+                    - text: ","
+                    - code [ref=e1554]: zod
+                    - text: ","
+                    - code [ref=e1555]: openai
+                    - text: ","
+                    - code [ref=e1556]: "@aws-sdk/client-bedrock-runtime"
+                    - text: ","
+                    - code [ref=e1557]: "@google/genai"
+                    - text: ","
+                    - code [ref=e1558]: ollama
+                    - text: ","
+                    - code [ref=e1559]: hono
+                    - text: .
+                  - listitem [ref=e1560]:
+                    - text: "Internal:"
+                    - code [ref=e1561]: config/runtime.js
+                    - text: ","
+                    - code [ref=e1562]: lib/id.js
+                    - text: ","
+                    - code [ref=e1563]: lib/guards.js
+                    - text: ","
+                    - code [ref=e1564]: lib/serializers.js
+                    - text: ","
+                    - code [ref=e1565]: lib/errors.js
+                    - text: ","
+                    - code [ref=e1566]: db/repositories/sessions.repo.js
+                    - text: ","
+                    - code [ref=e1567]: services/ai/providers/*
+                    - text: ","
+                    - code [ref=e1568]: services/ai/track.js
+                    - text: .
+                  - listitem [ref=e1569]:
+                    - text: Schema files import each other minimally;
+                    - code [ref=e1570]: ErrorSchema
+                    - text: is reused across routers.
+              - generic [ref=e1571]:
+                - generic [ref=e1572]:
+                  - generic [ref=e1573]: copilot.ts
+                  - generic [ref=e1574]: gemini.ts
+                  - generic [ref=e1575]: ollama.ts
+                  - generic [ref=e1576]: openai.ts
+                  - generic [ref=e1577]: types.ts
+                  - generic [ref=e1578]: track.ts
+                  - generic [ref=e1579]: github.service.ts
+                  - generic [ref=e1580]: scan.service.ts
+                  - generic [ref=e1581]: _setup.ts
+                  - generic [ref=e1582]: ask.test.ts
+                  - generic [ref=e1583]: config-sessions.test.ts
+                  - generic [ref=e1584]: kb.test.ts
+                - generic [ref=e1585]:
+                  - paragraph [ref=e1586]: "These files implement an AI-powered code indexing system for YUMMY backend, with the following functionality and patterns:"
+                  - strong [ref=e1587]: Core AI Providers
+                  - text: (
+                  - code [ref=e1588]: copilot.ts
+                  - text: ","
+                  - code [ref=e1589]: gemini.ts
+                  - text: ","
+                  - code [ref=e1590]: ollama.ts
+                  - text: ","
+                  - code [ref=e1591]: openai.ts
+                  - text: "):"
+                  - listitem [ref=e1592]:
+                    - text: "Each provider exposes two async functions: a blocking"
+                    - code [ref=e1593]: callXxx(agentRole, prompt, instruction) → CallResult
+                    - text: and a streaming
+                    - code [ref=e1594]: streamXxx(prompt, instruction) → StreamChunks
+                    - text: (async generator).
+                  - listitem [ref=e1595]:
+                    - text: "They share common patterns: read credentials/model from"
+                    - code [ref=e1596]: runtimeConfig
+                    - text: ", throw"
+                    - code [ref=e1597]: HttpError
+                    - text: for missing config or API errors, wrap SDK calls in try/catch, and return token counts (input/output) if available.
+                  - listitem [ref=e1598]:
+                    - strong [ref=e1599]: "Dependencies:"
+                    - text: Each uses the respective official SDK (
+                    - code [ref=e1600]: openai
+                    - text: ","
+                    - code [ref=e1601]: "@google/genai"
+                    - text: ","
+                    - code [ref=e1602]: ollama
+                    - text: ) or direct REST call (Copilot via OpenAI SDK configured with GitHub Copilot base URL).
+                  - listitem [ref=e1603]:
+                    - strong [ref=e1604]: Types
+                    - text: (
+                    - code [ref=e1605]: types.ts
+                    - text: "):"
+                    - code [ref=e1606]: CallResult
+                    - text: (text, inTokens, outTokens) and
+                    - code [ref=e1607]: StreamChunks
+                    - text: (AsyncGenerator of strings).
+                  - strong [ref=e1608]: Tracking
+                  - text: (
+                  - code [ref=e1609]: track.ts
+                  - text: "):"
+                  - listitem [ref=e1610]:
+                    - text: Logs each AI request to
+                    - code [ref=e1611]: request_logs
+                    - text: "table: calculates cost using pricing estimates, token counts (or estimates if missing), latency, and provider/model info."
+                  - listitem [ref=e1612]:
+                    - text: Uses
+                    - code [ref=e1613]: estimateTokens
+                    - text: and
+                    - code [ref=e1614]: getPrice
+                    - text: from
+                    - code [ref=e1615]: pricing.js
+                    - text: .
+                  - strong [ref=e1616]: GitHub Service
+                  - text: (
+                  - code [ref=e1617]: github.service.ts
+                  - text: "):"
+                  - listitem [ref=e1618]:
+                    - text: Wraps GitHub REST API (
+                    - code [ref=e1619]: githubFetch
+                    - text: ) and raw content fetch (
+                    - code [ref=e1620]: githubRaw
+                    - text: ) with auth headers from repo config.
+                  - listitem [ref=e1621]:
+                    - text: Provides
+                    - code [ref=e1622]: getRepoInfo
+                    - text: (metadata) and
+                    - code [ref=e1623]: getRepoTree
+                    - text: (recursive file tree).
+                  - listitem [ref=e1624]:
+                    - text: Uses
+                    - code [ref=e1625]: timedFetch
+                    - text: with AbortController for 30s timeout.
+                  - strong [ref=e1626]: Scan Service
+                  - text: (
+                  - code [ref=e1627]: scan.service.ts
+                  - text: "):"
+                  - listitem [ref=e1628]: "Background task that: ① fetches repo metadata and file tree, ② filters files by extension (excluding node_modules/.git), ③ groups files into ~35KB chunks, ④ sends each chunk to an INDEXER AI agent for summarization, ⑤ feeds all insights to an ARCHITECT agent to produce a Project Wiki."
+                  - listitem [ref=e1629]:
+                    - text: Stores progress/status in
+                    - code [ref=e1630]: scanStatusRepo
+                    - text: (polled by client), populates
+                    - code [ref=e1631]: kbRepo
+                    - text: (tree, insights, project summary).
+                  - listitem [ref=e1632]:
+                    - text: Calls
+                    - code [ref=e1633]: callAI
+                    - text: from the dispatcher (which routes to the configured provider).
+                  - listitem [ref=e1634]:
+                    - strong [ref=e1635]: "Dependencies:"
+                    - code [ref=e1636]: callAI
+                    - text: ","
+                    - code [ref=e1637]: github.service
+                    - text: ","
+                    - code [ref=e1638]: kbRepo
+                    - text: ","
+                    - code [ref=e1639]: scanStatusRepo
+                    - text: ","
+                    - code [ref=e1640]: repoRepo
+                    - text: .
+                  - strong [ref=e1641]: Integration Test Setup
+                  - text: (
+                  - code [ref=e1642]: _setup.ts
+                  - text: "):"
+                  - listitem [ref=e1643]: In-memory SQLite, runs migrations before all tests, resets tables before each test.
+                  - listitem [ref=e1644]:
+                    - text: Mocks
+                    - code [ref=e1645]: callAI
+                    - text: /
+                    - code [ref=e1646]: streamAI
+                    - text: (dispatcher) and all GitHub service functions (no real network).
+                  - listitem [ref=e1647]:
+                    - text: Exports helpers (
+                    - code [ref=e1648]: setAIResponse
+                    - text: ","
+                    - code [ref=e1649]: clearAIResponses
+                    - text: ) for test control.
+                  - strong [ref=e1650]: Test Files
+                  - text: (
+                  - code [ref=e1651]: ask.test.ts
+                  - text: ","
+                  - code [ref=e1652]: config-sessions.test.ts
+                  - text: ","
+                  - code [ref=e1653]: kb.test.ts
+                  - text: "):"
+                  - listitem [ref=e1654]:
+                    - code [ref=e1655]: ask.test.ts
+                    - text: ": Tests synchronous ask endpoint with mocked AI response, verifies chat history appending and session validation."
+                  - listitem [ref=e1656]:
+                    - code [ref=e1657]: config-sessions.test.ts
+                    - text: ": Tests health, API info, config endpoints (api-key, provider, setup), and full sessions CRUD."
+                  - listitem [ref=e1658]:
+                    - code [ref=e1659]: kb.test.ts
+                    - text: ": Tests scan status, full scan flow (with mock AI/GitHub), file retrieval, and KB deletion."
+                  - strong [ref=e1660]: "Overall Pattern:"
+                  - listitem [ref=e1661]: All providers follow a uniform interface (blocking + streaming), allowing the dispatcher to switch providers transparently.
+                  - listitem [ref=e1662]:
+                    - text: "Error handling is consistent: missing config →"
+                    - code [ref=e1663]: HttpError(400)
+                    - text: ", API errors →"
+                    - code [ref=e1664]: HttpError(502)
+                    - text: .
+                  - listitem [ref=e1665]: Scan service orchestrates a multi-step pipeline with progress tracking and uses AI agents for code summarization and project documentation.
+                  - listitem [ref=e1666]: Tests use full integration setup with mocked external dependencies, ensuring fast and isolated tests.
+              - generic [ref=e1667]:
+                - generic [ref=e1668]:
+                  - generic [ref=e1669]: metrics.test.ts
+                  - generic [ref=e1670]: sdlc.test.ts
+                  - generic [ref=e1671]: ai-pricing.test.ts
+                  - generic [ref=e1672]: github-service.test.ts
+                  - generic [ref=e1673]: guards.test.ts
+                  - generic [ref=e1674]: repositories.test.ts
+                  - generic [ref=e1675]: tsconfig.json
+                  - generic [ref=e1676]: vitest.config.ts
+                  - generic [ref=e1677]: README.md
+                  - generic [ref=e1678]: APP_RUNNER_AMPLIFY.md
+                - generic [ref=e1679]:
+                  - listitem [ref=e1680]:
+                    - strong [ref=e1681]:
+                      - code [ref=e1682]: backend-ts/tests/integration/metrics.test.ts
+                    - text: ": Integration tests for the"
+                    - code [ref=e1683]: /metrics
+                    - text: endpoint. Seeds log entries via
+                    - code [ref=e1684]: logsRepo
+                    - text: ", then verifies GET returns zero state on empty DB, aggregated metrics (total requests, cost, agent breakdown) with proper newest-first ordering, and snake_case field names. DELETE clears all logs and subsequent GET returns zero. Depends on"
+                    - code [ref=e1685]: logsRepo
+                    - text: ","
+                    - code [ref=e1686]: createApp
+                    - text: ", and the in-memory test setup ("
+                    - code [ref=e1687]: _setup.ts
+                    - text: ).
+                  - listitem [ref=e1688]:
+                    - strong [ref=e1689]:
+                      - code [ref=e1690]: backend-ts/tests/integration/sdlc.test.ts
+                    - text: ": End-to-end integration tests for the SDLC workflow pipeline (BA → SA → Dev Lead → DEV/SEC/QA/SRE). Mocks AI responses per agent role via"
+                    - code [ref=e1691]: setAIResponse
+                    - text: ", seeds knowledge base ("
+                    - code [ref=e1692]: kbRepo
+                    - text: ","
+                    - code [ref=e1693]: repoRepo
+                    - text: ), and creates session via POST
+                    - code [ref=e1694]: /sessions
+                    - text: . Validates state transitions, approval endpoints,
+                    - code [ref=e1695]: edited_content
+                    - text: override for BA output, and PM JSON parse fallback to empty array. Uses
+                    - code [ref=e1696]: createApp
+                    - text: and
+                    - code [ref=e1697]: _setup.ts
+                    - text: . Checks 404/400 error cases.
+                  - listitem [ref=e1698]:
+                    - strong [ref=e1699]:
+                      - code [ref=e1700]: backend-ts/tests/unit/ai-pricing.test.ts
+                    - text: ": Unit tests for pricing utilities:"
+                    - code [ref=e1701]: PRICING
+                    - text: map,
+                    - code [ref=e1702]: getPrice
+                    - text: (known model + fallback),
+                    - code [ref=e1703]: estimateTokens
+                    - text: (floor division by 4, min 1), and
+                    - code [ref=e1704]: track
+                    - text: function (writes log entry with computed cost). Tests token estimation formula and cost calculation per model. Mocks
+                    - code [ref=e1705]: runtimeConfig
+                    - text: provider/model. Requires in-memory SQLite with migrations, uses
+                    - code [ref=e1706]: logsRepo
+                    - text: .
+                  - listitem [ref=e1707]:
+                    - strong [ref=e1708]:
+                      - code [ref=e1709]: backend-ts/tests/unit/github-service.test.ts
+                    - text: ": Tests for GitHub API service:"
+                    - code [ref=e1710]: githubFetch
+                    - text: (base URL, auth header from
+                    - code [ref=e1711]: repoRepo
+                    - text: token),
+                    - code [ref=e1712]: githubRaw
+                    - text: (returns text on 200, throws 404 with path in error on non-200),
+                    - code [ref=e1713]: getRepoInfo
+                    - text: (parses JSON, throws on API error), and
+                    - code [ref=e1714]: getRepoTree
+                    - text: . Mocks
+                    - code [ref=e1715]: fetch
+                    - text: ", clears"
+                    - code [ref=e1716]: repoRepo
+                    - text: between tests, requires DB migration.
+                  - listitem [ref=e1717]:
+                    - strong [ref=e1718]:
+                      - code [ref=e1719]: backend-ts/tests/unit/guards.test.ts
+                    - text: ": Unit tests for guard functions that throw"
+                    - code [ref=e1720]: HttpError
+                    - text: "(404/400) with descriptive details:"
+                    - code [ref=e1721]: requireSession
+                    - text: (session not found),
+                    - code [ref=e1722]: requireRepo
+                    - text: (not configured),
+                    - code [ref=e1723]: requireKnowledgeBase
+                    - text: (empty),
+                    - code [ref=e1724]: requireWorkflowState
+                    - text: (state mismatch). Seeds session/knowledge base data as needed. Requires DB migration and all in-memory repos.
+                  - listitem [ref=e1725]:
+                    - strong [ref=e1726]:
+                      - code [ref=e1727]: backend-ts/tests/unit/repositories.test.ts
+                    - text: ": Tests all repository modules ("
+                    - code [ref=e1728]: sessionsRepo
+                    - text: ","
+                    - code [ref=e1729]: kbRepo
+                    - text: ","
+                    - code [ref=e1730]: repoRepo
+                    - text: ","
+                    - code [ref=e1731]: scanStatusRepo
+                    - text: ","
+                    - code [ref=e1732]: logsRepo
+                    - text: ) for CRUD, reset, clear, and ordering behaviors. Verifies session creation/update/reset/delete, KB tree/insight/summary management, singleton repo config, scan status patching, and logs newest-first ordering. DB migration required; each
+                    - code [ref=e1733]: beforeEach
+                    - text: clears all repos.
+                  - listitem [ref=e1734]:
+                    - strong [ref=e1735]:
+                      - code [ref=e1736]: backend-ts/tsconfig.json
+                    - text: ": TypeScript config targeting ES2022 with NodeNext module resolution. Strict mode enabled,"
+                    - code [ref=e1737]: noUncheckedIndexedAccess
+                    - text: ","
+                    - code [ref=e1738]: exactOptionalPropertyTypes
+                    - text: ","
+                    - code [ref=e1739]: sourceMap
+                    - text: ","
+                    - code [ref=e1740]: verbatimModuleSyntax
+                    - text: disabled. Includes
+                    - code [ref=e1741]:
+                      - text: src/
+                      - emphasis
+                      - text: /*.ts
+                    - text: ", excludes"
+                    - code [ref=e1742]: node_modules
+                    - text: ","
+                    - code [ref=e1743]: dist
+                    - text: ","
+                    - code [ref=e1744]: tests
+                    - text: .
+                  - listitem [ref=e1745]:
+                    - strong [ref=e1746]:
+                      - code [ref=e1747]: backend-ts/vitest.config.ts
+                    - text: ": Vitest configuration for backend tests: node environment, globals enabled, test file pattern"
+                    - code [ref=e1748]:
+                      - text: tests/
+                      - emphasis
+                      - text: /*.test.ts
+                    - text: ", 15-second timeouts,"
+                    - code [ref=e1749]: forks
+                    - text: pool with isolation and no parallelism. Resolves
+                    - code [ref=e1750]: "@"
+                    - text: alias to
+                    - code [ref=e1751]: ./src
+                    - text: .
+                  - listitem [ref=e1752]:
+                    - strong [ref=e1753]:
+                      - code [ref=e1754]: docs/README.md
+                    - text: ": Documentation index file. Links to product features, user guide, AWS deployment docs (recommended App Runner + Amplify path), architecture overview, feature backlog, roadmap, open-core monetization strategy, and contributing guidelines."
+                  - listitem [ref=e1755]:
+                    - strong [ref=e1756]:
+                      - code [ref=e1757]: docs/aws/APP_RUNNER_AMPLIFY.md
+                    - text: ": Step-by-step guide for deploying YUMMY on AWS using App Runner (backend) and Amplify Hosting (frontend) with Route 53 custom domains. Covers prerequisites, optional skip for pending domains, hosted zone creation, App Runner service from GitHub (using"
+                    - code [ref=e1758]: apprunner.yaml
+                    - text: ), environment variables (including Secrets Manager for API keys), custom domain linking, Amplify app setup, smoke test procedure, known risks (in-memory state, no auth, cost), update/rollback instructions, and graduation criteria to ECS/Fargate.
+              - generic [ref=e1759]:
+                - generic [ref=e1760]:
+                  - generic [ref=e1761]: CONTRIBUTING.md
+                  - generic [ref=e1762]: README.md
+                - generic [ref=e1763]:
+                  - paragraph [ref=e1764]: "The repository documents an AI-native SDLC platform named \"YUMMY\" with a backend (FastAPI) and frontend (Next.js) structure. The two files provided are:"
+                  - listitem [ref=e1765]:
+                    - code [ref=e1766]: CONTRIBUTING.md
+                    - text: ": describes project setup, local development (Python/Node), PR guidelines, and code style (small functions, cohesive components)."
+                  - listitem [ref=e1767]:
+                    - code [ref=e1768]: docs/requirements/README.md
+                    - text: ": outlines 500 user stories across 20 epics, split into platform stories (Epics 1-10) and role-specific stories (Epics 11-20). Each story follows an identical template: a guided intake flow, smart template, contextual recommendations, collaboration, approval routing, artifact generation, progress timeline, risk alerts, accessibility, personalization, error recovery, notifications, bulk operations, search, audit, mobile responsiveness, keyboard navigation, localization, role-based permissions, SLA signaling, webhooks, IDE-agnosticism, deterministic validation gates, retry/rollback, and feedback loops. Every story has the same implementation breakdown (5 tasks with subtasks) and acceptance criteria (success + recoverable failure patterns)."
+                  - paragraph [ref=e1769]: "Key patterns:"
+                  - listitem [ref=e1770]: Standardized workflow building blocks repeated across all capabilities.
+                  - listitem [ref=e1771]: Clear separation of platform capabilities (Epics 1-10) from role-specific experiences (Epics 11-20) to avoid duplication.
+                  - listitem [ref=e1772]: Heavy emphasis on observability, auditability, error recovery, and deterministic validation.
+                  - listitem [ref=e1773]:
+                    - text: Frontend components (e.g.,
+                    - code [ref=e1774]: OnboardingWizard
+                    - text: ","
+                    - code [ref=e1775]: SettingsPanel
+                    - text: ","
+                    - code [ref=e1776]: ChatPanel
+                    - text: ","
+                    - code [ref=e1777]: BacklogPanel
+                    - text: ) map to backend routers (e.g.,
+                    - code [ref=e1778]: config_router.py
+                    - text: ","
+                    - code [ref=e1779]: kb_router.py
+                    - text: ","
+                    - code [ref=e1780]: sdlc_router.py
+                    - text: ).
+                  - listitem [ref=e1781]:
+                    - text: "Dependencies: frontend consumes backend APIs, backend models ("
+                    - code [ref=e1782]: models.py
+                    - text: ) and routers handle domain logic.
+                  - paragraph
+                  - paragraph [ref=e1783]: The logic is highly template-driven, suggesting automated generation of stub implementations. The actual code logic lies in the referenced backend routers and frontend components, which implement the standard patterns described in the user stories.
+              - generic [ref=e1784]:
+                - generic [ref=e1786]: Requirements.md
+                - generic [ref=e1787]:
+                  - paragraph [ref=e1788]:
+                    - text: This document is a comprehensive requirements backlog (500 user stories) for the
+                    - strong [ref=e1789]: YUMMY AI-NATIVE SOFTWARE ENGINEERING
+                    - text: "platform. It defines a platform-first, IDE-agnostic, end-to-end SDLC scope covering business case, product vision, architecture, build/test/release, operations, and community. The document is structured into two main sections:"
+                  - listitem [ref=e1790]:
+                    - strong [ref=e1791]: "Section A: Platform Stories (250 stories)"
+                    - text: – core platform capabilities across 25 epics (e.g., Business Case Intake, Product Vision, Requirements Intelligence, Agent Orchestration, etc.). Each epic contains 10 stories.
+                  - listitem [ref=e1792]:
+                    - strong [ref=e1793]: "Section B: Role-Specific Stories (250 stories)"
+                    - text: – role-tailored experiences for Business Analyst, System Analyst, Solution Architect, Product Owner, Project Manager, Developer, Operations/SRE, Security, IT Service Desk Admin, and Governance/Compliance. Each role has 5 epics with 5 stories each (25 stories per role).
+                  - strong [ref=e1794]: "Patterns:"
+                  - text: "Every story follows an identical template: epic goal, user story with UX focus, 5 tasks (each with 2 subtasks), and a Gherkin scenario. Across all stories, the tasks are identical (only the story name and scenario output change). This indicates a systematic, template-driven approach to requirements generation."
+                  - strong [ref=e1795]: "Key design decisions:"
+                  - listitem [ref=e1796]:
+                    - strong [ref=e1797]: Language-agnostic backend contracts
+                    - text: – all APIs/events use OpenAPI/AsyncAPI, correlation IDs, and idempotency keys.
+                  - listitem [ref=e1798]:
+                    - strong [ref=e1799]: Frontend bound to Next.js
+                    - text: with responsive, accessible patterns.
+                  - listitem [ref=e1800]:
+                    - strong [ref=e1801]: Extensible adapters
+                    - text: for Python, data, AI, plugins, etc.
+                  - listitem [ref=e1802]:
+                    - strong [ref=e1803]: Quality gates
+                    - text: mandate testability (Gherkin), telemetry, and auditability.
+                  - strong [ref=e1804]: "Dependencies:"
+                  - text: The document is self-contained; no external code files are referenced. Each story is independent but collectively defines a monolithic backlog. The “code logic” is the systematic decomposition of platform and role capabilities into uniformly structured, executable increments.
+              - generic [ref=e1805]:
+                - generic [ref=e1806]:
+                  - generic [ref=e1807]: SETUP.md
+                  - generic [ref=e1808]: globals.css
+                  - generic [ref=e1809]: layout.tsx
+                  - generic [ref=e1810]: page.tsx
+                  - generic [ref=e1811]: page.tsx
+                - generic [ref=e1812]:
+                  - heading "Summary of Frontend Code" [level=1] [ref=e1813]
+                  - heading "Files Overview" [level=2] [ref=e1814]
+                  - heading "frontend/SETUP.md" [level=3] [ref=e1815]:
+                    - code [ref=e1816]: frontend/SETUP.md
+                  - listitem [ref=e1817]:
+                    - strong [ref=e1818]: Purpose
+                    - text: ": Provides setup instructions for the Next.js frontend."
+                  - listitem [ref=e1819]:
+                    - strong [ref=e1820]: Key points
+                    - text: ": Commands to install and run ("
+                    - code [ref=e1821]: npm install
+                    - text: ","
+                    - code [ref=e1822]: npm run dev
+                    - text: ), environment variable
+                    - code [ref=e1823]: NEXT_PUBLIC_API_URL
+                    - text: ", and note on production build with"
+                    - code [ref=e1824]: "output: 'standalone'"
+                    - text: .
+                  - heading "frontend/app/globals.css" [level=3] [ref=e1825]:
+                    - code [ref=e1826]: frontend/app/globals.css
+                  - listitem [ref=e1827]:
+                    - strong [ref=e1828]: Purpose
+                    - text: ": Global styles and CSS custom properties for the entire application."
+                  - listitem [ref=e1829]:
+                    - strong [ref=e1830]: Key aspects
+                    - text: ":"
+                  - text: "- Dark theme with a \"phosphor green\" accent ("
+                  - code [ref=e1831]: "--green: #00ff88"
+                  - text: ") and amber/red for states. - Custom fonts: JetBrains Mono (monospace) and Syne (display). - Restyled scrollbar, selection colors, and subtle scanline background. - Rich"
+                  - code [ref=e1832]: .prose
+                  - text: "class for Markdown rendering (headings, code blocks, tables, blockquotes). - Utility classes:"
+                  - code [ref=e1833]: .blink
+                  - text: ","
+                  - code [ref=e1834]: .glow-text
+                  - text: ","
+                  - code [ref=e1835]: .fade-in
+                  - text: ","
+                  - code [ref=e1836]: .slide-in
+                  - text: . - Button variants (
+                  - code [ref=e1837]: .btn
+                  - text: ","
+                  - code [ref=e1838]: .btn-primary
+                  - text: ","
+                  - code [ref=e1839]: .btn-ghost
+                  - text: ","
+                  - code [ref=e1840]: .btn-danger
+                  - text: ","
+                  - code [ref=e1841]: .btn-amber
+                  - text: ). - Input, panel, and tag/badge styles.
+                  - heading "frontend/app/layout.tsx" [level=3] [ref=e1842]:
+                    - code [ref=e1843]: frontend/app/layout.tsx
+                  - listitem [ref=e1844]:
+                    - strong [ref=e1845]: Purpose
+                    - text: ": Root layout for the Next.js app."
+                  - listitem [ref=e1846]:
+                    - strong [ref=e1847]: Key aspects
+                    - text: ": Sets metadata (title: \"YUMMY — AI SDLC Platform\"), imports global CSS, wraps children in basic HTML/CSS."
+                  - heading "frontend/app/page.tsx" [level=3] [ref=e1848]:
+                    - code [ref=e1849]: frontend/app/page.tsx
+                  - listitem [ref=e1850]:
+                    - strong [ref=e1851]: Purpose
+                    - text: ": Home/Splash page."
+                  - listitem [ref=e1852]:
+                    - strong [ref=e1853]: Key aspects
+                    - text: ":"
+                  - text: "- Client component with three hooks:"
+                  - code [ref=e1854]: useState
+                  - text: for loading state,
+                  - code [ref=e1855]: useRouter
+                  - text: for navigation, and
+                  - code [ref=e1856]: useEffect
+                  - text: "for auto-redirect. - On mount: checks for existing sessions via"
+                  - code [ref=e1857]: api.sessions.list()
+                  - text: ", then either navigates to first session or creates a new default workspace. - Displays ASCII logo, status messages, and a fallback error if backend unreachable. - Animated loading dots. - Imports"
+                  - code [ref=e1858]: api
+                  - text: from
+                  - code [ref=e1859]: "@/lib/api"
+                  - text: and
+                  - code [ref=e1860]: loadSavedTheme
+                  - text: from
+                  - code [ref=e1861]: "@/lib/theme"
+                  - text: .
+                  - heading "frontend/app/workspace/[sessionId]/page.tsx" [level=3] [ref=e1862]:
+                    - code [ref=e1863]: frontend/app/workspace/[sessionId]/page.tsx
+                  - listitem [ref=e1864]:
+                    - strong [ref=e1865]: Purpose
+                    - text: ": Main workspace page with split-panel layout (left panel with tabs, right panel with tabs)."
+                  - listitem [ref=e1866]:
+                    - strong [ref=e1867]: Key aspects
+                    - text: ":"
+                  - text: "-"
+                  - strong [ref=e1868]: State management
+                  - text: ": Extensive use of"
+                  - code [ref=e1869]: useState
+                  - text: for session, status, knowledge base, scan status, metrics, chat history, IDE file/content, SDLC editing buffers, and streaming states. -
+                  - strong [ref=e1870]: API calls
+                  - text: ": Fetches session, status, KB, sessions list, metrics via"
+                  - code [ref=e1871]: "@/lib/api"
+                  - text: functions. Polls session and status every 4 seconds. -
+                  - strong [ref=e1872]: SDLC streaming
+                  - text: ": Implements"
+                  - code [ref=e1873]: runSdlcStream
+                  - text: to consume AsyncGenerator events (
+                  - code [ref=e1874]: start
+                  - text: ","
+                  - code [ref=e1875]: c
+                  - text: (chunk),
+                  - code [ref=e1876]: agent_done
+                  - text: ","
+                  - code [ref=e1877]: done
+                  - text: ","
+                  - code [ref=e1878]: stopped
+                  - text: ","
+                  - code [ref=e1879]: error
+                  - text: ) from the API, updating UI incrementally with a 60ms flush timer. -
+                  - strong [ref=e1880]: RAG streaming
+                  - text: ":"
+                  - code [ref=e1881]: sendAsk
+                  - text: and
+                  - code [ref=e1882]: sendBtw
+                  - text: consume streaming chunks from
+                  - code [ref=e1883]: api.askStream
+                  - text: ", updating chat history in real-time. -"
+                  - strong [ref=e1884]: Command handler
+                  - text: ":"
+                  - code [ref=e1885]: handleCmd
+                  - text: interprets slash commands (e.g.,
+                  - code [ref=e1886]: /help
+                  - text: ","
+                  - code [ref=e1887]: /setup
+                  - text: ","
+                  - code [ref=e1888]: /scan
+                  - text: ","
+                  - code [ref=e1889]: /ask
+                  - text: ","
+                  - code [ref=e1890]: /btw
+                  - text: ","
+                  - code [ref=e1891]: /cr
+                  - text: ","
+                  - code [ref=e1892]: /stop
+                  - text: ","
+                  - code [ref=e1893]: /provider
+                  - text: ","
+                  - code [ref=e1894]: /new
+                  - text: ","
+                  - code [ref=e1895]: /healthcheck
+                  - text: ","
+                  - code [ref=e1896]: /info
+                  - text: ", theme commands). Some commands trigger streaming pipelines (e.g.,"
+                  - code [ref=e1897]: /cr
+                  - text: starts SDLC;
+                  - code [ref=e1898]: /ask
+                  - text: starts RAG). While pipeline is running, only
+                  - code [ref=e1899]: /btw
+                  - text: and
+                  - code [ref=e1900]: /stop
+                  - text: are allowed. -
+                  - strong [ref=e1901]: Resizable layout
+                  - text: ": Left panel width adjustable via mouse drag on a divider (4px wide). -"
+                  - strong [ref=e1902]: Tabs
+                  - text: ": Left tabs (chat, sessions, tracing, settings) and right tabs (ide, node graph, wiki, insights, rag, sdlc, backlog, db) with tab-specific sub-components. -"
+                  - strong [ref=e1903]: Onboarding
+                  - text: ": Modal wizard for first-time users (asking if guide needed, then showing setup steps). State persisted in"
+                  - code [ref=e1904]: localStorage
+                  - text: . -
+                  - strong [ref=e1905]: Delete session modal
+                  - text: ": Confirmation dialog before deleting a session; automatically creates a new session if the current one is deleted. -"
+                  - strong [ref=e1906]: Toast notifications
+                  - text: ": Temporary bottom-right messages. -"
+                  - strong [ref=e1907]: Edge cases
+                  - text: ": Handles 404 when fetching session (redirects to a fresh one); disables most commands during pipeline run; optimistic UI updates for SDLC states before streaming starts. -"
+                  - strong [ref=e1908]: Dependencies
+                  - text: ": Many custom workspace components (ChatPanel, SessionsPanel, TracingPanel, SettingsPanel, OnboardingWizard, IdePanel, NodeGraph, WikiPanel, InsightsPanel, RagPanel, SdlcPanel, BacklogPanel, DbPanel) and hooks ("
+                  - code [ref=e1909]: useScanPoll
+                  - text: ). Also imports types from
+                  - code [ref=e1910]: "@/lib/types"
+                  - text: and API functions from
+                  - code [ref=e1911]: "@/lib/api"
+                  - text: . Theme utilities from
+                  - code [ref=e1912]: "@/lib/theme"
+                  - text: ", UI size from"
+                  - code [ref=e1913]: "@/lib/uiSize"
+                  - text: .
+                  - heading "Overall Patterns" [level=2] [ref=e1914]
+                  - listitem [ref=e1915]:
+                    - strong [ref=e1916]: Client-side rendering
+                    - text: ": All workspace logic is in a client component ("
+                    - code [ref=e1917]: "'use client'"
+                    - text: ).
+                  - listitem [ref=e1918]:
+                    - strong [ref=e1919]: Real-time updates
+                    - text: ": Uses polling (4s interval) for session/status, and SSE/streaming for SDLC and RAG responses."
+                  - listitem [ref=e1920]:
+                    - strong [ref=e1921]: State synchronization
+                    - text: ": Chat history and SDLC edit buffers are synced from the"
+                    - code [ref=e1922]: session
+                    - text: object on initial load and after mutations.
+                  - listitem [ref=e1923]:
+                    - strong [ref=e1924]: Debounced flushing
+                    - text: ": Streaming text is accumulated and flushed every 60ms to avoid excessive re-renders."
+                  - listitem [ref=e1925]:
+                    - strong [ref=e1926]: Layered busy states
+                    - text: ":"
+                    - code [ref=e1927]: busy
+                    - text: (for SDLC pipeline) and
+                    - code [ref=e1928]: btwBusy
+                    - text: (for
+                    - code [ref=e1929]: /btw
+                    - text: while SDLC runs) allow independent concurrency.
+                  - listitem [ref=e1930]:
+                    - strong [ref=e1931]: Custom CSS variables
+                    - text: ": Consistent theming via CSS custom properties defined in"
+                    - code [ref=e1932]: globals.css
+                    - text: .
+                  - heading "Dependencies" [level=2] [ref=e1933]
+                  - listitem [ref=e1934]:
+                    - strong [ref=e1935]:
+                      - code [ref=e1936]: next
+                    - text: (Next.js framework)
+                  - listitem [ref=e1937]:
+                    - strong [ref=e1938]:
+                      - code [ref=e1939]: lucide-react
+                    - text: (icons)
+                  - listitem [ref=e1940]:
+                    - strong [ref=e1941]:
+                      - code [ref=e1942]: "@/lib/api"
+                    - text: (API client with methods for sessions, config, KB, SDLC, health, etc.)
+                  - listitem [ref=e1943]:
+                    - strong [ref=e1944]:
+                      - code [ref=e1945]: "@/lib/types"
+                    - text: (TypeScript types for Session, SystemStatus, KnowledgeBase, etc.)
+                  - listitem [ref=e1946]:
+                    - strong [ref=e1947]:
+                      - code [ref=e1948]: "@/lib/theme"
+                    - text: (Theme switching – dark, light, dracula, etc.)
+                  - listitem [ref=e1949]:
+                    - strong [ref=e1950]:
+                      - code [ref=e1951]: "@/lib/uiSize"
+                    - text: (UI size persistence)
+                  - listitem [ref=e1952]:
+                    - strong [ref=e1953]:
+                      - code [ref=e1954]: "@/hooks/useScanPoll"
+                    - text: (Hook for polling scan progress)
+                  - listitem [ref=e1955]:
+                    - strong [ref=e1956]: Workspace components
+                    - text: (ChatPanel, SessionsPanel, TracingPanel, SettingsPanel, OnboardingWizard, IdePanel, NodeGraph, WikiPanel, InsightsPanel, RagPanel, SdlcPanel, BacklogPanel, DbPanel)
+              - generic [ref=e1957]:
+                - generic [ref=e1958]:
+                  - generic [ref=e1959]: settingsSync.test.tsx
+                  - generic [ref=e1960]: AgentCard.tsx
+                  - generic [ref=e1961]: BacklogPanel.tsx
+                  - generic [ref=e1962]: ChatPanel.tsx
+                  - generic [ref=e1963]: DbPanel.tsx
+                - generic [ref=e1964]:
+                  - heading "Summary of Files" [level=2] [ref=e1965]
+                  - heading "1. settingsSync.test.tsx" [level=3] [ref=e1966]:
+                    - text: "1."
+                    - code [ref=e1967]: settingsSync.test.tsx
+                  - listitem [ref=e1968]:
+                    - strong [ref=e1969]: Functionality
+                    - text: ": Tests a fix for a race condition where a polling effect in the settings tab would overwrite the user's in-flight AI provider selection with stale server data."
+                  - listitem [ref=e1970]:
+                    - strong [ref=e1971]: Key logic
+                    - text: ": The fix wraps state sync in a guard"
+                    - code [ref=e1972]: prevLeftTabRef.current !== 'settings'
+                    - text: (using a ref to track previous tab), so
+                    - code [ref=e1973]: setCfgProvider
+                    - text: only runs when the user
+                    - strong [ref=e1974]: switches to
+                    - text: the settings tab, not on every poll tick.
+                  - listitem [ref=e1975]:
+                    - strong [ref=e1976]: Tests
+                    - text: ": Seeds provider on tab switch, preserves user selection during poll cycles, re-seeds on re-entering tab, handles null status."
+                  - listitem [ref=e1977]:
+                    - strong [ref=e1978]: Dependencies
+                    - text: ": React,"
+                    - code [ref=e1979]: "@testing-library/react"
+                    - text: .
+                  - heading "2. AgentCard.tsx" [level=3] [ref=e1980]:
+                    - text: "2."
+                    - code [ref=e1981]: AgentCard.tsx
+                  - listitem [ref=e1982]:
+                    - strong [ref=e1983]: Functionality
+                    - text: ": Displays a timeline card for an AI agent action. Shows a title bar, loading spinner, rendered markdown content, or an editable textarea with an approve button."
+                  - listitem [ref=e1984]:
+                    - strong [ref=e1985]: Key patterns
+                    - text: ": Auto-scrolls content box to bottom on content update (via"
+                    - code [ref=e1986]: useRef
+                    - text: +
+                    - code [ref=e1987]: useEffect
+                    - text: ). Uses
+                    - code [ref=e1988]: dangerouslySetInnerHTML
+                    - text: with
+                    - code [ref=e1989]: mdToHtml
+                    - text: for markdown rendering. Conditional rendering based on
+                    - code [ref=e1990]: loading
+                    - text: ","
+                    - code [ref=e1991]: editable
+                    - text: ", and"
+                    - code [ref=e1992]: content
+                    - text: props.
+                  - listitem [ref=e1993]:
+                    - strong [ref=e1994]: Dependencies
+                    - text: ": React,"
+                    - code [ref=e1995]: lucide-react
+                    - text: (Loader2, Check),
+                    - code [ref=e1996]: "@/lib/mdToHtml"
+                    - text: .
+                  - heading "3. BacklogPanel.tsx" [level=3] [ref=e1997]:
+                    - text: "3."
+                    - code [ref=e1998]: BacklogPanel.tsx
+                  - listitem [ref=e1999]:
+                    - strong [ref=e2000]: Functionality
+                    - text: ": Renders a JIRA Kanban backlog from an array of"
+                    - code [ref=e2001]: JiraEpic
+                    - text: objects. Shows epic headers, task cards with type-specific colors, story points, and subtasks.
+                  - listitem [ref=e2002]:
+                    - strong [ref=e2003]: Key patterns
+                    - text: ": Empty state fallback. Color map ("
+                    - code [ref=e2004]: TASK_TYPE_STYLE
+                    - text: ) for task type badges. Nested mapping over epics → tasks → subtasks.
+                  - listitem [ref=e2005]:
+                    - strong [ref=e2006]: Dependencies
+                    - text: ": React,"
+                    - code [ref=e2007]: "@/lib/types"
+                    - text: (JiraEpic).
+                  - heading "4. ChatPanel.tsx" [level=3] [ref=e2008]:
+                    - text: "4."
+                    - code [ref=e2009]: ChatPanel.tsx
+                  - listitem [ref=e2010]:
+                    - strong [ref=e2011]: Functionality
+                    - text: ": Main chat UI with:"
+                  - text: "- Command input with autocomplete (suggestions filtered during pipeline execution). - API key detection (regex patterns) and a modal to set provider keys. - Message feed (term logs + chat history with markdown and RAG trace). - Scan progress bar, busy states, and quick command chips."
+                  - listitem [ref=e2012]:
+                    - strong [ref=e2013]: Key patterns
+                    - text: ":"
+                  - text: "- Memoized"
+                  - code [ref=e2014]: TermLogRow
+                  - text: and
+                  - code [ref=e2015]: ChatMessageRow
+                  - text: (React.memo). - Input disabled during scan or
+                  - code [ref=e2016]: /btw
+                  - text: streaming. - Key detection triggers modal; key saved via
+                  - code [ref=e2017]: api.config
+                  - text: methods. - Autocomplete uses
+                  - code [ref=e2018]: ArrowUp/Down/Tab/Enter
+                  - text: navigation. - Uses refs for input focus and scroll anchor.
+                  - listitem [ref=e2019]:
+                    - strong [ref=e2020]: Dependencies
+                    - text: ": React,"
+                    - code [ref=e2021]: lucide-react
+                    - text: (Zap, Loader2, Send, X, Check),
+                    - code [ref=e2022]: "@/lib/mdToHtml"
+                    - text: ","
+                    - code [ref=e2023]: "@/lib/api"
+                    - text: ","
+                    - code [ref=e2024]: "@/lib/types"
+                    - text: .
+                  - heading "5. DbPanel.tsx" [level=3] [ref=e2025]:
+                    - text: "5."
+                    - code [ref=e2026]: DbPanel.tsx
+                  - listitem [ref=e2027]:
+                    - strong [ref=e2028]: Functionality
+                    - text: ": Displays backend database stats (file count, chunks, sessions) and a table of active workspaces with navigation."
+                  - listitem [ref=e2029]:
+                    - strong [ref=e2030]: Key patterns
+                    - text: ": Stats grid with color-coded values. Sessions table with row highlighting for current session. Clicking a row navigates to that workspace via"
+                    - code [ref=e2031]: router.push
+                    - text: .
+                  - listitem [ref=e2032]:
+                    - strong [ref=e2033]: Dependencies
+                    - text: ": React,"
+                    - code [ref=e2034]: next/navigation
+                    - text: (useRouter),
+                    - code [ref=e2035]: "@/lib/types"
+                    - text: .
+                  - paragraph [ref=e2036]: "---"
+                  - strong [ref=e2037]: Common patterns across files
+                  - text: ":"
+                  - listitem [ref=e2038]:
+                    - text: All components are
+                    - code [ref=e2039]: "'use client'"
+                    - text: (Next.js client components).
+                  - listitem [ref=e2040]:
+                    - text: Inline styles using CSS variables (
+                    - code [ref=e2041]: var(--bg)
+                    - text: ","
+                    - code [ref=e2042]: var(--border)
+                    - text: ","
+                    - code [ref=e2043]: var(--text)
+                    - text: ", etc.) for theme support."
+                  - listitem [ref=e2044]: Lucide icons for UI elements.
+                  - listitem [ref=e2045]:
+                    - text: Type imports from
+                    - code [ref=e2046]: "@/lib/types"
+                    - text: .
+                  - listitem [ref=e2047]:
+                    - text: Heavy use of
+                    - code [ref=e2048]: useRef
+                    - text: ","
+                    - code [ref=e2049]: useMemo
+                    - text: ","
+                    - code [ref=e2050]: useEffect
+                    - text: ", and conditional rendering."
+                  - listitem [ref=e2051]:
+                    - text: The test file uses
+                    - code [ref=e2052]: renderHook
+                    - text: from
+                    - code [ref=e2053]: "@testing-library/react"
+                    - text: .
+              - generic [ref=e2054]:
+                - generic [ref=e2055]:
+                  - generic [ref=e2056]: FileTree.tsx
+                  - generic [ref=e2057]: IdePanel.tsx
+                  - generic [ref=e2058]: InsightsPanel.tsx
+                  - generic [ref=e2059]: NodeGraph.tsx
+                  - generic [ref=e2060]: OnboardingWizard.tsx
+                - generic [ref=e2061]:
+                  - heading "FileTree.tsx" [level=3] [ref=e2062]
+                  - listitem [ref=e2063]:
+                    - text: Builds a hierarchical file tree from a flat list of
+                    - code [ref=e2064]: FileNode
+                    - text: objects using
+                    - code [ref=e2065]: buildFileTree()
+                    - text: .
+                  - listitem [ref=e2066]:
+                    - code [ref=e2067]: TreeNode
+                    - text: is a recursive component that renders files with status indicators (spinner/check/circle) and directories that are collapsible.
+                  - listitem [ref=e2068]:
+                    - text: Used by
+                    - code [ref=e2069]: IdePanel.tsx
+                    - text: . Depends on
+                    - code [ref=e2070]: "@/lib/types"
+                    - text: for
+                    - code [ref=e2071]: FileNode
+                    - text: .
+                  - heading "IdePanel.tsx" [level=3] [ref=e2072]
+                  - listitem [ref=e2073]: Main IDE-like panel with a left file explorer sidebar (28% width) and a right code editor pane.
+                  - listitem [ref=e2074]:
+                    - text: The sidebar displays the file tree from
+                    - code [ref=e2075]: FileTree
+                    - text: (sorted, directories first) and shows file count.
+                  - listitem [ref=e2076]: The editor pane shows a filename tab, line numbers (1–120), and file content or loading/welcome state.
+                  - listitem [ref=e2077]:
+                    - text: "\"IdePanelProps\" include"
+                    - code [ref=e2078]: tree
+                    - text: ","
+                    - code [ref=e2079]: ideFile
+                    - text: ","
+                    - code [ref=e2080]: ideContent
+                    - text: ","
+                    - code [ref=e2081]: ideLoading
+                    - text: ", and"
+                    - code [ref=e2082]: onFileOpen
+                    - text: callback.
+                  - listitem [ref=e2083]:
+                    - text: Uses
+                    - code [ref=e2084]: buildFileTree
+                    - text: from
+                    - code [ref=e2085]: FileTree
+                    - text: ", and types from"
+                    - code [ref=e2086]: "@/lib/types"
+                    - text: .
+                  - heading "InsightsPanel.tsx" [level=3] [ref=e2087]
+                  - listitem [ref=e2088]:
+                    - text: Displays AI-generated insights from a
+                    - code [ref=e2089]: KnowledgeBase
+                    - text: object.
+                  - listitem [ref=e2090]:
+                    - text: Shows a grid of insight cards, each with file tags (last segment of path) and a markdown-rendered summary (
+                    - code [ref=e2091]: mdToHtml
+                    - text: ).
+                  - listitem [ref=e2092]: Handles empty/no-insights state.
+                  - listitem [ref=e2093]:
+                    - text: Depends on
+                    - code [ref=e2094]: "@/lib/mdToHtml"
+                    - text: and
+                    - code [ref=e2095]: "@/lib/types"
+                    - text: (
+                    - code [ref=e2096]: KnowledgeBase
+                    - text: ).
+                  - listitem [ref=e2097]:
+                    - text: Icons from
+                    - code [ref=e2098]: lucide-react
+                    - text: (Zap).
+                  - heading "NodeGraph.tsx" [level=3] [ref=e2099]
+                  - listitem [ref=e2100]: Renders an SVG topology graph of project files using a central node (repo name) and satellite nodes for top-level directories.
+                  - listitem [ref=e2101]:
+                    - text: Files are grouped by first directory (or second if first is
+                    - code [ref=e2102]: src
+                    - text: /
+                    - code [ref=e2103]: app
+                    - text: ). Top 7 directories are shown.
+                  - listitem [ref=e2104]: Each node has a color and type (e.g., Data Layer, Presentation, API Gateway) based on directory name patterns.
+                  - listitem [ref=e2105]: Edges are labeled "IMPORTS" or "REST/gRPC".
+                  - listitem [ref=e2106]: Hover shows a tooltip with node details (type, entities, file count, description).
+                  - listitem [ref=e2107]:
+                    - text: Handles empty
+                    - code [ref=e2108]: tree
+                    - text: state.
+                  - listitem [ref=e2109]:
+                    - text: Uses
+                    - code [ref=e2110]: "@/lib/types"
+                    - text: (
+                    - code [ref=e2111]: FileNode
+                    - text: ).
+                  - heading "OnboardingWizard.tsx" [level=3] [ref=e2112]
+                  - listitem [ref=e2113]: "Multi-step setup wizard: \"provider\" → \"repo\" → \"scan\"."
+                  - listitem [ref=e2114]: "Step 1: Choose AI provider (Gemini, OpenAI, Ollama, Copilot, Bedrock) with provider-specific credential fields and model selection dropdowns. Models are hardcoded per provider."
+                  - listitem [ref=e2115]: "Step 2: Enter GitHub repo URL and optional GitHub token."
+                  - listitem [ref=e2116]:
+                    - text: "Step 3: Confirm choices and start scan via"
+                    - code [ref=e2117]: api.kb.scan()
+                    - text: .
+                  - listitem [ref=e2118]:
+                    - text: Calls
+                    - code [ref=e2119]: api.config
+                    - text: methods to save provider config, repo setup, and trigger scan.
+                  - listitem [ref=e2120]: Includes error handling, saving state, and a skip button.
+                  - listitem [ref=e2121]:
+                    - text: Uses
+                    - code [ref=e2122]: "@/lib/api"
+                    - text: and
+                    - code [ref=e2123]: "@/lib/types"
+                    - text: (
+                    - code [ref=e2124]: SystemStatus
+                    - text: ).
+                  - listitem [ref=e2125]:
+                    - text: Icons from
+                    - code [ref=e2126]: lucide-react
+                    - text: (Check, X, ArrowLeft, ArrowRight, Loader2, Search, ExternalLink).
+                  - heading "Common patterns and dependencies" [level=3] [ref=e2127]
+                  - listitem [ref=e2128]:
+                    - text: All are client components (
+                    - code [ref=e2129]: "'use client'"
+                    - text: ).
+                  - listitem [ref=e2130]:
+                    - text: All use custom CSS variables (e.g.,
+                    - code [ref=e2131]: var(--green)
+                    - text: ","
+                    - code [ref=e2132]: var(--text)
+                    - text: ","
+                    - code [ref=e2133]: var(--border)
+                    - text: ) and inline styles.
+                  - listitem [ref=e2134]:
+                    - text: State managed with
+                    - code [ref=e2135]: useState
+                    - text: .
+                  - listitem [ref=e2136]: Graceful handling of empty/loading states (empty trees, no insights, loading content).
+                  - listitem [ref=e2137]:
+                    - text: Depend on
+                    - code [ref=e2138]: "@/lib/types"
+                    - text: (
+                    - code [ref=e2139]: FileNode
+                    - text: ","
+                    - code [ref=e2140]: KnowledgeBase
+                    - text: ","
+                    - code [ref=e2141]: SystemStatus
+                    - text: ) and various
+                    - code [ref=e2142]: "@/lib"
+                    - text: utilities (
+                    - code [ref=e2143]: api
+                    - text: ","
+                    - code [ref=e2144]: mdToHtml
+                    - text: ).
+                  - listitem [ref=e2145]:
+                    - text: Icons from
+                    - code [ref=e2146]: lucide-react
+                    - text: .
+              - generic [ref=e2147]:
+                - generic [ref=e2148]:
+                  - generic [ref=e2149]: RagPanel.tsx
+                  - generic [ref=e2150]: SdlcPanel.tsx
+                  - generic [ref=e2151]: SessionsPanel.tsx
+                  - generic [ref=e2152]: SettingsPanel.tsx
+                - generic [ref=e2153]:
+                  - heading "RagPanel.tsx" [level=3] [ref=e2154]:
+                    - strong [ref=e2155]: RagPanel.tsx
+                  - listitem [ref=e2156]:
+                    - strong [ref=e2157]: Functionality
+                    - text: ": Displays RAG (Retrieval-Augmented Generation) chat history. Shows messages with role-based styling (user queries vs. AI responses). For AI responses, supports Markdown rendering via"
+                    - code [ref=e2158]: mdToHtml
+                    - text: . Optionally expands detailed RAG trace information (intent, source chunks) in a collapsible
+                    - code [ref=e2159]
+                    - group [ref=e2160]: element.
+                  - listitem [ref=e2161]:
+                    - strong [ref=e2162]: Patterns
+                    - text: ": Pure functional component; receives"
+                    - code [ref=e2163]: chatHistory
+                    - text: as prop. Uses inline styles and CSS variables for theming. No state—purely presentational.
+                  - listitem [ref=e2164]:
+                    - strong [ref=e2165]: Dependencies
+                    - text: ": Imports"
+                    - code [ref=e2166]: mdToHtml
+                    - text: from
+                    - code [ref=e2167]: "@/lib/mdToHtml"
+                    - text: and
+                    - code [ref=e2168]: ChatMessage
+                    - text: type from
+                    - code [ref=e2169]: "@/lib/types"
+                    - text: .
+                  - heading "SdlcPanel.tsx" [level=3] [ref=e2170]:
+                    - strong [ref=e2171]: SdlcPanel.tsx
+                  - listitem [ref=e2172]:
+                    - strong [ref=e2173]: Functionality
+                    - text: ": Multi-agent SDLC (Software Development Life Cycle) brainstorming panel. Displays outputs from agents (BA, SA, Dev Lead, Dev, Security, QA, SRE) in a timeline with editable approvals and streaming support. Includes a"
+                    - strong [ref=e2174]: SkillExporter
+                    - text: subcomponent that builds a
+                    - code [ref=e2175]: SKILL.md
+                    - text: or a distilled implementation prompt (chat format) from pipeline outputs. Also provides checkpoint restore buttons.
+                  - listitem [ref=e2176]:
+                    - strong [ref=e2177]: Patterns
+                    - text: ": Uses"
+                    - code [ref=e2178]: useRef
+                    - text: and
+                    - code [ref=e2179]: useEffect
+                    - text: for auto-scroll to bottom when streaming text updates. Manages local state for export format, chat prompt generation, and copy/download actions. Conditional rendering based on workflow state (
+                    - code [ref=e2180]: state
+                    - text: prop) and streaming agent. Heavily styled with inline CSS variables.
+                  - listitem [ref=e2181]:
+                    - strong [ref=e2182]: Dependencies
+                    - text: ": Imports"
+                    - code [ref=e2183]: mdToHtml
+                    - text: from
+                    - code [ref=e2184]: "@/lib/mdToHtml"
+                    - text: ","
+                    - code [ref=e2185]: api
+                    - text: from
+                    - code [ref=e2186]: "@/lib/api"
+                    - text: ", and types ("
+                    - code [ref=e2187]: Session
+                    - text: ","
+                    - code [ref=e2188]: AgentOutputs
+                    - text: ) from
+                    - code [ref=e2189]: "@/lib/types"
+                    - text: . Also uses Lucide icons.
+                  - heading "SessionsPanel.tsx" [level=3] [ref=e2190]:
+                    - strong [ref=e2191]: SessionsPanel.tsx
+                  - listitem [ref=e2192]:
+                    - strong [ref=e2193]: Functionality
+                    - text: ": Sidebar listing all workspaces (sessions). Allows creating a new workspace, clicking to navigate to a session via router, and deleting a session via a trash button."
+                  - listitem [ref=e2194]:
+                    - strong [ref=e2195]: Patterns
+                    - text: ": Simple list with conditional styling for the currently active session."
+                    - code [ref=e2196]: onNew
+                    - text: and
+                    - code [ref=e2197]: onDeleteRequest
+                    - text: are callbacks passed from parent. Uses
+                    - code [ref=e2198]: useRouter
+                    - text: for navigation.
+                  - listitem [ref=e2199]:
+                    - strong [ref=e2200]: Dependencies
+                    - text: ": Imports"
+                    - code [ref=e2201]: useRouter
+                    - text: from
+                    - code [ref=e2202]: next/navigation
+                    - text: and
+                    - code [ref=e2203]: Session
+                    - text: type from
+                    - code [ref=e2204]: "@/lib/types"
+                    - text: . Uses
+                    - code [ref=e2205]: Trash2
+                    - text: icon from Lucide.
+                  - heading "SettingsPanel.tsx" [level=3] [ref=e2206]:
+                    - strong [ref=e2207]: SettingsPanel.tsx
+                  - listitem [ref=e2208]:
+                    - strong [ref=e2209]: Functionality
+                    - text: ": Configuration panel for AI provider (Gemini, OpenAI, Bedrock, Copilot, Ollama) with credential forms and model selection. Includes a GitHub token form and a UI size preference slider. Status bar shows active provider and save feedback."
+                  - listitem [ref=e2210]:
+                    - strong [ref=e2211]: Patterns
+                    - text: ": Complex component with multiple sub-forms (per provider) and reusable primitives ("
+                    - code [ref=e2212]: FieldLabel
+                    - text: ","
+                    - code [ref=e2213]: KeySourceBadge
+                    - text: ","
+                    - code [ref=e2214]: SaveButton
+                    - text: ). Manages local state for active provider, form fields, saving status, and messages. Uses
+                    - code [ref=e2215]: useEffect
+                    - text: to sync provider dropdown when status loads. Prevents full page refresh—all saves go through
+                    - code [ref=e2216]: api.config.*
+                    - text: methods.
+                  - listitem [ref=e2217]:
+                    - strong [ref=e2218]: Dependencies
+                    - text: ": Imports"
+                    - code [ref=e2219]: api
+                    - text: from
+                    - code [ref=e2220]: "@/lib/api"
+                    - text: ","
+                    - code [ref=e2221]: applyUiSize
+                    - text: and constants from
+                    - code [ref=e2222]: "@/lib/uiSize"
+                    - text: ", and"
+                    - code [ref=e2223]: SystemStatus
+                    - text: ","
+                    - code [ref=e2224]: KeySource
+                    - text: types from
+                    - code [ref=e2225]: "@/lib/types"
+                    - text: . Uses Lucide icons (
+                    - code [ref=e2226]: Loader2
+                    - text: ","
+                    - code [ref=e2227]: Check
+                    - text: ","
+                    - code [ref=e2228]: X
+                    - text: ).
+              - generic [ref=e2229]:
+                - generic [ref=e2230]:
+                  - generic [ref=e2231]: TracingPanel.tsx
+                  - generic [ref=e2232]: WikiPanel.tsx
+                  - generic [ref=e2233]: useScanPoll.ts
+                  - generic [ref=e2234]: api.ts
+                  - generic [ref=e2235]: mdToHtml.ts
+                  - generic [ref=e2236]: theme.ts
+                  - generic [ref=e2237]: types.ts
+                  - generic [ref=e2238]: uiSize.ts
+                  - generic [ref=e2239]: next-env.d.ts
+                  - generic [ref=e2240]: next.config.js
+                  - generic [ref=e2241]: package-lock.json
+                - generic [ref=e2242]:
+                  - paragraph [ref=e2243]:
+                    - text: The provided files form the core of a
+                    - strong [ref=e2244]: Yummy
+                    - text: frontend — a Next.js workspace for AI-augmented software development. The application connects to a FastAPI backend (port 8000) and supports configurable AI providers (Gemini, Ollama, Copilot, OpenAI, Bedrock), interactive SDLC pipelines, RAG-based chat, knowledge-base scanning, and a themed dashboard.
+                  - strong [ref=e2245]: "Key files and their logic:"
+                  - listitem [ref=e2246]:
+                    - strong [ref=e2247]:
+                      - code [ref=e2248]: frontend/lib/api.ts
+                    - text: – Centralized API client with typed methods for config, sessions, knowledge base, RAG chat, SDLC, and metrics. Uses SSE (Server-Sent Events) via
+                    - code [ref=e2249]: AsyncGenerator
+                    - text: for streaming endpoints like the SDLC pipeline and free‑mode chat. Includes an
+                    - code [ref=e2250]: sdlcStream
+                    - text: helper that yields
+                    - code [ref=e2251]: SdlcEvent
+                    - text: objects line‑by‑line.
+                  - listitem [ref=e2252]:
+                    - strong [ref=e2253]:
+                      - code [ref=e2254]: frontend/components/workspace/TracingPanel.tsx
+                    - text: – Displays usage metrics (request count, estimated cost) and a request-log list. If no metrics are provided, shows a “Load Metrics” button. Log entries show agent, tokens, latency, cost.
+                  - listitem [ref=e2255]:
+                    - strong [ref=e2256]:
+                      - code [ref=e2257]: frontend/components/workspace/WikiPanel.tsx
+                    - text: – Renders the project’s knowledge base summary as rendered HTML (via
+                    - code [ref=e2258]: mdToHtml
+                    - text: ). Includes an “Export” button that downloads the markdown as a file. Falls back to a placeholder message if no wiki exists.
+                  - listitem [ref=e2259]:
+                    - strong [ref=e2260]:
+                      - code [ref=e2261]: frontend/hooks/useScanPoll.ts
+                    - text: – Returns
+                    - code [ref=e2262]: startScanPoll
+                    - text: and
+                    - code [ref=e2263]: stopScanPoll
+                    - text: . Polls
+                    - code [ref=e2264]: GET /kb/scan/status
+                    - text: every 1.5 seconds, calls
+                    - code [ref=e2265]: onStatusUpdate
+                    - text: and streams status text to a terminal via
+                    - code [ref=e2266]: onMessage
+                    - text: ", then calls"
+                    - code [ref=e2267]: onComplete
+                    - text: when scanning finishes.
+                  - listitem [ref=e2268]:
+                    - strong [ref=e2269]:
+                      - code [ref=e2270]: frontend/lib/mdToHtml.ts
+                    - text: – Minimal Markdown → HTML converter. Strips wrapping fences, extracts fenced code blocks into styled divs, then regex‑replaces headings, bold/italic, inline code, lists, and blockquotes. Restores code blocks at the end.
+                  - listitem [ref=e2271]:
+                    - strong [ref=e2272]:
+                      - code [ref=e2273]: frontend/lib/theme.ts
+                    - text: – Defines six themes (dark, light, dracula, yummy, angry, idea) each with CSS custom properties for colors and scanline background.
+                    - code [ref=e2274]: applyTheme()
+                    - text: sets properties on
+                    - code [ref=e2275]
+                    - text: and persists the choice to
+                    - code [ref=e2276]: localStorage
+                    - text: . Called on boot via
+                    - code [ref=e2277]: loadSavedTheme()
+                    - text: .
+                  - listitem [ref=e2278]:
+                    - strong [ref=e2279]:
+                      - code [ref=e2280]: frontend/lib/uiSize.ts
+                    - text: – Scales the entire app by adjusting
+                    - code [ref=e2281]: html
+                    - text: font‑size (rem). Provides five sizes (XS‑XL).
+                    - code [ref=e2282]: applyUiSize(index)
+                    - text: sets the root font‑size and saves to
+                    - code [ref=e2283]: localStorage
+                    - text: .
+                  - listitem [ref=e2284]:
+                    - strong [ref=e2285]:
+                      - code [ref=e2286]: frontend/lib/types.ts
+                    - text: – TypeScript interfaces for Session, WorkflowState, ChatMessage, RAGTrace, AgentOutputs, JiraEpic, KnowledgeBase, ScanStatus, SystemStatus, MetricsData, etc.
+                  - listitem [ref=e2287]:
+                    - strong [ref=e2288]:
+                      - code [ref=e2289]: frontend/next.config.js
+                    - text: – Enables the React Compiler and sets
+                    - code [ref=e2290]: "output: 'standalone'"
+                    - text: for Docker builds.
+                  - strong [ref=e2291]: "Patterns:"
+                  - listitem [ref=e2292]:
+                    - strong [ref=e2293]: SSE streaming
+                    - text: for real‑time SDLC pipeline and chat responses.
+                  - listitem [ref=e2294]:
+                    - strong [ref=e2295]: Polling
+                    - text: for KB scan status (every 1.5s).
+                  - listitem [ref=e2296]:
+                    - strong [ref=e2297]: CSS custom properties
+                    - text: for theming – all inline styles reference variables like
+                    - code [ref=e2298]: var(--green)
+                    - text: ","
+                    - code [ref=e2299]: var(--bg)
+                    - text: ", etc."
+                  - listitem [ref=e2300]:
+                    - strong [ref=e2301]: localStorage
+                    - text: for persisting theme and UI size across sessions.
+                  - listitem [ref=e2302]:
+                    - strong [ref=e2303]: Utility modules
+                    - text: (
+                    - code [ref=e2304]: mdToHtml
+                    - text: ","
+                    - code [ref=e2305]: api.ts
+                    - text: ","
+                    - code [ref=e2306]: theme.ts
+                    - text: ","
+                    - code [ref=e2307]: uiSize.ts
+                    - text: ) are kept separate from components, promoting reuse.
+                  - listitem [ref=e2308]:
+                    - strong [ref=e2309]: TypeScript throughout
+                    - text: – all data shapes are strictly typed.
+                  - strong [ref=e2310]: "Dependencies:"
+                  - listitem [ref=e2311]:
+                    - strong [ref=e2312]: Next.js
+                    - text: (16.2.3) with React 19 and React Compiler.
+                  - listitem [ref=e2313]:
+                    - strong [ref=e2314]: lucide-react
+                    - text: for icons.
+                  - listitem [ref=e2315]:
+                    - strong [ref=e2316]: TailwindCSS
+                    - text: (present in dev dependencies) but components use inline styles with CSS variables instead of Tailwind classes.
+                  - listitem [ref=e2317]:
+                    - strong [ref=e2318]: Vitest
+                    - text: and
+                    - strong [ref=e2319]: "@testing-library/react"
+                    - text: for unit/integration tests.
+                  - listitem [ref=e2320]:
+                    - text: Backend API at
+                    - code [ref=e2321]: http://localhost:8000
+                    - text: (configurable via
+                    - code [ref=e2322]: NEXT_PUBLIC_API_URL
+                    - text: ).
+              - generic [ref=e2323]:
+                - generic [ref=e2324]:
+                  - generic [ref=e2325]: package.json
+                  - generic [ref=e2326]: postcss.config.js
+                  - generic [ref=e2327]: tailwind.config.js
+                  - generic [ref=e2328]: setup.ts
+                  - generic [ref=e2329]: tsconfig.json
+                  - generic [ref=e2330]: vitest.config.ts
+                  - generic [ref=e2331]: YUMMY_PLATFORM_ARCHITECTURE.md
+                - generic [ref=e2332]:
+                  - heading "Summary of Code Logic" [level=2] [ref=e2333]
+                  - paragraph [ref=e2334]:
+                    - text: The provided files represent two distinct aspects of the
+                    - strong [ref=e2335]: Yummy platform
+                    - text: ": the"
+                    - strong [ref=e2336]: frontend build configuration
+                    - text: (using Next.js, React 19, TypeScript, Tailwind CSS, and Vitest) and a
+                    - strong [ref=e2337]: comprehensive architecture/vision document
+                    - text: that describes a multi-agent AI‑powered SDLC platform with IDE‑agnostic integration via the Model Context Protocol (MCP).
+                  - heading "Frontend Configuration" [level=3] [ref=e2338]
+                  - listitem [ref=e2339]:
+                    - strong [ref=e2340]:
+                      - code [ref=e2341]: package.json
+                    - text: – Defines a Next.js 16 project with React 19,
+                    - code [ref=e2342]: lucide-react
+                    - text: icons. Dev tooling includes TypeScript, Tailwind CSS, PostCSS,
+                    - code [ref=e2343]: "@testing-library"
+                    - text: ","
+                    - code [ref=e2344]: vitest
+                    - text: ", and"
+                    - code [ref=e2345]: jsdom
+                    - text: for testing.
+                  - listitem [ref=e2346]:
+                    - strong [ref=e2347]:
+                      - code [ref=e2348]: postcss.config.js
+                    - text: – Standard Tailwind + Autoprefixer pipeline.
+                  - listitem [ref=e2349]:
+                    - strong [ref=e2350]:
+                      - code [ref=e2351]: tailwind.config.js
+                    - text: – Extends Tailwind with custom CSS custom properties (
+                    - code [ref=e2352]: var(--bg)
+                    - text: ","
+                    - code [ref=e2353]: var(--green)
+                    - text: ", etc.) for dynamic theming. Sets up custom"
+                    - code [ref=e2354]: font-mono
+                    - text: and
+                    - code [ref=e2355]: font-display
+                    - text: families, border radii, and a full type scale.
+                  - listitem [ref=e2356]:
+                    - strong [ref=e2357]:
+                      - code [ref=e2358]: tsconfig.json
+                    - text: – TypeScript config for the Next.js app with
+                    - code [ref=e2359]: "@/*"
+                    - text: path alias and
+                    - code [ref=e2360]: bundler
+                    - text: module resolution.
+                  - listitem [ref=e2361]:
+                    - strong [ref=e2362]:
+                      - code [ref=e2363]: vitest.config.ts
+                    - text: – Vitest config using
+                    - code [ref=e2364]: "@vitejs/plugin-react"
+                    - text: ","
+                    - code [ref=e2365]: jsdom
+                    - text: environment, and global test setup file (
+                    - code [ref=e2366]: ./test/setup.ts
+                    - text: ).
+                  - listitem [ref=e2367]:
+                    - strong [ref=e2368]:
+                      - code [ref=e2369]: test/setup.ts
+                    - text: – Imports
+                    - code [ref=e2370]: "@testing-library/jest-dom"
+                    - text: for DOM matchers.
+                  - heading "Platform Architecture Document (Conceptual Logic)" [level=3] [ref=e2371]
+                  - paragraph [ref=e2372]:
+                    - text: The document outlines a
+                    - strong [ref=e2373]: multi‑agent SDLC platform
+                    - text: "where each agent (PO, BA, Scrum Master, Developer, QA, Security) is a separate AI service exposed via MCP tools/resources. Key logical components:"
+                  - paragraph [ref=e2374]:
+                    - text: "1."
+                    - strong [ref=e2375]: Client Layer
+                    - text: – YummyCode (self‑hosted TUI + Web), a web portal for business users, and any MCP‑capable IDE (VS Code, Cursor, JetBrains).
+                    - text: "2."
+                    - strong [ref=e2376]: yummy‑hub
+                    - text: – API Gateway handling authentication, routing, rate limiting, audit logs, and session management.
+                    - text: "3."
+                    - strong [ref=e2377]: AI Agent Mesh
+                    - text: "– Six specialized agents:"
+                    - text: "-"
+                    - emphasis [ref=e2378]: yummy‑po
+                    - text: – Generates user stories, prioritizes backlog, creates GitHub Issues.
+                    - text: "-"
+                    - emphasis [ref=e2379]: yummy‑ba
+                    - text: – Converts codebase to BRD, finds implementation gaps, generates sequence diagrams.
+                    - text: "-"
+                    - emphasis [ref=e2380]: yummy‑scrum
+                    - text: – Plans sprints, auto‑reports burndown/standups, detects blockers.
+                    - text: "-"
+                    - emphasis [ref=e2381]: yummy‑dev
+                    - text: – Code generation, PR review, refactoring, onboarding explanation.
+                    - text: "-"
+                    - emphasis [ref=e2382]: yummy‑qa
+                    - text: – Test case generation, coverage gap checks, E2E scripts.
+                    - text: "-"
+                    - emphasis [ref=e2383]: yummy‑guard
+                    - text: – Secret scanning, CVE checks, policy enforcement, prompt safety.
+                    - text: "4."
+                    - strong [ref=e2384]: yummy‑mcp
+                    - text: "– The critical integration layer: an MCP server that exposes each agent’s capability as MCP"
+                    - emphasis [ref=e2385]: tools
+                    - text: (e.g.,
+                    - code [ref=e2386]: create_user_story
+                    - text: ","
+                    - code [ref=e2387]: review_pr
+                    - text: ),
+                    - emphasis [ref=e2388]: resources
+                    - text: (read‑only data like backlog, codebase summary), and
+                    - emphasis [ref=e2389]: prompts
+                    - text: (templates for user story creation, PR review). Implementation uses Python MCP SDK with HTTP/SSE transport.
+                    - text: "5."
+                    - strong [ref=e2390]: Core Backend
+                    - text: –
+                    - code [ref=e2391]: yummy-core
+                    - text: (FastAPI REST API orchestrating agents),
+                    - code [ref=e2392]: yummy-rag
+                    - text: (RAG engine with pgvector for code/doc embeddings),
+                    - code [ref=e2393]: yummy-collab
+                    - text: (WebSocket for real‑time collaboration and notifications).
+                    - text: "6."
+                    - strong [ref=e2394]: Data Layer
+                    - text: – PostgreSQL, pgvector/ChromaDB, Redis.
+                    - text: "7."
+                    - strong [ref=e2395]: External Integrations
+                    - text: – GitHub, CI/CD, Slack/Teams, Jira/Linear.
+                  - paragraph [ref=e2396]:
+                    - text: The document provides complete pseudo‑code for the MCP server (
+                    - code [ref=e2397]: server.py
+                    - text: and
+                    - code [ref=e2398]: http_server.py
+                    - text: ), Docker setup, and a mapping from REST endpoints to MCP tools. It also includes a phased implementation roadmap (weeks 1–10).
+                  - heading "Overall Logic Pattern" [level=3] [ref=e2399]
+                  - listitem [ref=e2400]:
+                    - strong [ref=e2401]: Frontend
+                    - text: ": Modern React/Next.js with Tailwind theming via CSS custom properties."
+                  - listitem [ref=e2402]:
+                    - strong [ref=e2403]: Backend/Architecture
+                    - text: ": A modular, agent‑based backend designed to be consumed both via REST and universally via MCP. The MCP layer wraps each agent’s API as MCP tools/resources, making the platform accessible from any MCP‑compatible IDE without custom plugins."
+                  - paragraph [ref=e2404]: This structure enables both a dedicated user interface (YummyCode) and seamless integration into existing developer workflows.

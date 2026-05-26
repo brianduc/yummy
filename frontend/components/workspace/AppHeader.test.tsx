@@ -32,11 +32,11 @@ describe('AppHeader component', () => {
     expect(breadcrumbs).toHaveTextContent('Workspace')
   })
 
-  it('renders correct breadcrumb for AI Copilot (index route)', () => {
+  it('renders correct breadcrumb for the index route', () => {
     mockPathname.value = '/workspace/test-session-abc'
     render(<AppHeader />)
     const breadcrumbs = screen.getByTestId('breadcrumbs')
-    expect(breadcrumbs).toHaveTextContent('AI Copilot')
+    expect(breadcrumbs).toHaveTextContent('Dashboard')
   })
 
   it('renders correct breadcrumb for Explorer route', () => {

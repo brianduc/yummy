@@ -75,6 +75,36 @@ describe('ActivityBar routing', () => {
     expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/sessions')
   })
 
+  it('clicking graph navigates to graph route', () => {
+    render(<ActivityBar />)
+    fireEvent.click(screen.getByTestId('activity-bar-item-graph'))
+    expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/graph')
+  })
+
+  it('clicking wiki navigates to wiki route', () => {
+    render(<ActivityBar />)
+    fireEvent.click(screen.getByTestId('activity-bar-item-wiki'))
+    expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/wiki')
+  })
+
+  it('clicking insight navigates to insight route', () => {
+    render(<ActivityBar />)
+    fireEvent.click(screen.getByTestId('activity-bar-item-insight'))
+    expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/insight')
+  })
+
+  it('clicking history navigates to history route', () => {
+    render(<ActivityBar />)
+    fireEvent.click(screen.getByTestId('activity-bar-item-history'))
+    expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/history')
+  })
+
+  it('clicking jira navigates to jira route', () => {
+    render(<ActivityBar />)
+    fireEvent.click(screen.getByTestId('activity-bar-item-jira'))
+    expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/jira')
+  })
+
   it('explorer item is highlighted when at explorer route', () => {
     mockPathname.value = '/workspace/test-session-abc/explorer'
     render(<ActivityBar />)
@@ -111,12 +141,47 @@ describe('ActivityBar routing', () => {
     expect(screen.getByTestId('activity-bar-item-sessions')).toHaveClass('bg-[var(--bg-2)]')
   })
 
+  it('graph item is highlighted when at graph route', () => {
+    mockPathname.value = '/workspace/test-session-abc/graph'
+    render(<ActivityBar />)
+    expect(screen.getByTestId('activity-bar-item-graph')).toHaveClass('bg-[var(--bg-2)]')
+  })
+
+  it('wiki item is highlighted when at wiki route', () => {
+    mockPathname.value = '/workspace/test-session-abc/wiki'
+    render(<ActivityBar />)
+    expect(screen.getByTestId('activity-bar-item-wiki')).toHaveClass('bg-[var(--bg-2)]')
+  })
+
+  it('insight item is highlighted when at insight route', () => {
+    mockPathname.value = '/workspace/test-session-abc/insight'
+    render(<ActivityBar />)
+    expect(screen.getByTestId('activity-bar-item-insight')).toHaveClass('bg-[var(--bg-2)]')
+  })
+
+  it('history item is highlighted when at history route', () => {
+    mockPathname.value = '/workspace/test-session-abc/history'
+    render(<ActivityBar />)
+    expect(screen.getByTestId('activity-bar-item-history')).toHaveClass('bg-[var(--bg-2)]')
+  })
+
+  it('jira item is highlighted when at jira route', () => {
+    mockPathname.value = '/workspace/test-session-abc/jira'
+    render(<ActivityBar />)
+    expect(screen.getByTestId('activity-bar-item-jira')).toHaveClass('bg-[var(--bg-2)]')
+  })
+
   it('inactive items do not have active background', () => {
     mockPathname.value = '/workspace/test-session-abc/explorer'
     render(<ActivityBar />)
     expect(screen.getByTestId('activity-bar-item-sdlc')).not.toHaveClass('bg-[var(--bg-2)]')
     expect(screen.getByTestId('activity-bar-item-copilot')).not.toHaveClass('bg-[var(--bg-2)]')
     expect(screen.getByTestId('activity-bar-item-settings')).not.toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('activity-bar-item-graph')).not.toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('activity-bar-item-wiki')).not.toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('activity-bar-item-insight')).not.toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('activity-bar-item-history')).not.toHaveClass('bg-[var(--bg-2)]')
+    expect(screen.getByTestId('activity-bar-item-jira')).not.toHaveClass('bg-[var(--bg-2)]')
   })
 
   it('chat index item is not highlighted when at a sub-route', () => {

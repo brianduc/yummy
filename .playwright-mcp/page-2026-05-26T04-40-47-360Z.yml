@@ -1,0 +1,219 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation "workspace navigation"
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: YUMMY
+          - button "Collapse Sidebar" [ref=e7] [cursor=pointer]:
+            - img
+        - navigation [ref=e8]:
+          - link "Explorer" [ref=e9] [cursor=pointer]:
+            - /url: /workspace/1777491625415/explorer
+            - img [ref=e10]
+            - generic [ref=e15]: Explorer
+          - link "SDLC Pipeline" [ref=e16] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sdlc
+            - img [ref=e17]
+            - generic [ref=e21]: SDLC Pipeline
+          - link "Dashboard" [ref=e22] [cursor=pointer]:
+            - /url: /workspace/1777491625415
+            - img [ref=e23]
+            - generic [ref=e25]: Dashboard
+          - link "Tracing" [ref=e26] [cursor=pointer]:
+            - /url: /workspace/1777491625415/tracing
+            - img [ref=e27]
+            - generic [ref=e29]: Tracing
+          - link "Database" [ref=e30] [cursor=pointer]:
+            - /url: /workspace/1777491625415/database
+            - img [ref=e31]
+            - generic [ref=e35]: Database
+          - link "Settings" [ref=e36] [cursor=pointer]:
+            - /url: /workspace/1777491625415/settings
+            - img [ref=e37]
+            - generic [ref=e40]: Settings
+          - link "World" [ref=e41] [cursor=pointer]:
+            - /url: /workspace/1777491625415/world
+            - img [ref=e42]
+            - generic [ref=e45]: World
+          - link "Sessions" [ref=e46] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sessions
+            - img [ref=e47]
+            - generic [ref=e51]: Sessions
+          - link "Graph" [ref=e52] [cursor=pointer]:
+            - /url: /workspace/1777491625415/graph
+            - img [ref=e53]
+            - generic [ref=e58]: Graph
+          - link "Wiki" [ref=e59] [cursor=pointer]:
+            - /url: /workspace/1777491625415/wiki
+            - img [ref=e60]
+            - generic [ref=e62]: Wiki
+          - link "Insight" [ref=e63] [cursor=pointer]:
+            - /url: /workspace/1777491625415/insight
+            - img [ref=e64]
+            - generic [ref=e66]: Insight
+          - link "History" [ref=e67] [cursor=pointer]:
+            - /url: /workspace/1777491625415/history
+            - img [ref=e68]
+            - generic [ref=e72]: History
+          - link "Jira" [ref=e73] [cursor=pointer]:
+            - /url: /workspace/1777491625415/jira
+            - img [ref=e74]
+            - generic [ref=e76]: Jira
+      - generic [ref=e77]:
+        - banner [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: Workspace
+            - img [ref=e81]
+            - generic [ref=e83]: Explorer
+          - generic [ref=e84]:
+            - button "Command Cmd/Ctrl +K" [ref=e85] [cursor=pointer]:
+              - img
+              - generic [ref=e86]: Command
+              - generic [ref=e87]:
+                - generic [ref=e88]: Cmd/Ctrl
+                - text: +K
+            - button "AI Copilot" [ref=e89] [cursor=pointer]:
+              - img
+              - generic [ref=e90]: AI Copilot
+        - main [ref=e92]:
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: FILE EXPLORER
+                - generic [ref=e98]: "0"
+              - generic [ref=e100]:
+                - img [ref=e101]
+                - paragraph [ref=e103]:
+                  - text: Workspace empty.
+                  - text: Run /scan to index.
+            - generic [ref=e104]:
+              - generic [ref=e106]: Welcome
+              - generic [ref=e107]:
+                - generic [ref=e108]:
+                  - generic [ref=e109]: "1"
+                  - generic [ref=e110]: "2"
+                  - generic [ref=e111]: "3"
+                  - generic [ref=e112]: "4"
+                  - generic [ref=e113]: "5"
+                  - generic [ref=e114]: "6"
+                  - generic [ref=e115]: "7"
+                  - generic [ref=e116]: "8"
+                  - generic [ref=e117]: "9"
+                  - generic [ref=e118]: "10"
+                  - generic [ref=e119]: "11"
+                  - generic [ref=e120]: "12"
+                  - generic [ref=e121]: "13"
+                  - generic [ref=e122]: "14"
+                  - generic [ref=e123]: "15"
+                  - generic [ref=e124]: "16"
+                  - generic [ref=e125]: "17"
+                  - generic [ref=e126]: "18"
+                  - generic [ref=e127]: "19"
+                  - generic [ref=e128]: "20"
+                  - generic [ref=e129]: "21"
+                  - generic [ref=e130]: "22"
+                  - generic [ref=e131]: "23"
+                  - generic [ref=e132]: "24"
+                  - generic [ref=e133]: "25"
+                  - generic [ref=e134]: "26"
+                  - generic [ref=e135]: "27"
+                  - generic [ref=e136]: "28"
+                  - generic [ref=e137]: "29"
+                  - generic [ref=e138]: "30"
+                  - generic [ref=e139]: "31"
+                  - generic [ref=e140]: "32"
+                  - generic [ref=e141]: "33"
+                  - generic [ref=e142]: "34"
+                  - generic [ref=e143]: "35"
+                  - generic [ref=e144]: "36"
+                  - generic [ref=e145]: "37"
+                  - generic [ref=e146]: "38"
+                  - generic [ref=e147]: "39"
+                  - generic [ref=e148]: "40"
+                  - generic [ref=e149]: "41"
+                  - generic [ref=e150]: "42"
+                  - generic [ref=e151]: "43"
+                  - generic [ref=e152]: "44"
+                  - generic [ref=e153]: "45"
+                  - generic [ref=e154]: "46"
+                  - generic [ref=e155]: "47"
+                  - generic [ref=e156]: "48"
+                  - generic [ref=e157]: "49"
+                  - generic [ref=e158]: "50"
+                  - generic [ref=e159]: "51"
+                  - generic [ref=e160]: "52"
+                  - generic [ref=e161]: "53"
+                  - generic [ref=e162]: "54"
+                  - generic [ref=e163]: "55"
+                  - generic [ref=e164]: "56"
+                  - generic [ref=e165]: "57"
+                  - generic [ref=e166]: "58"
+                  - generic [ref=e167]: "59"
+                  - generic [ref=e168]: "60"
+                  - generic [ref=e169]: "61"
+                  - generic [ref=e170]: "62"
+                  - generic [ref=e171]: "63"
+                  - generic [ref=e172]: "64"
+                  - generic [ref=e173]: "65"
+                  - generic [ref=e174]: "66"
+                  - generic [ref=e175]: "67"
+                  - generic [ref=e176]: "68"
+                  - generic [ref=e177]: "69"
+                  - generic [ref=e178]: "70"
+                  - generic [ref=e179]: "71"
+                  - generic [ref=e180]: "72"
+                  - generic [ref=e181]: "73"
+                  - generic [ref=e182]: "74"
+                  - generic [ref=e183]: "75"
+                  - generic [ref=e184]: "76"
+                  - generic [ref=e185]: "77"
+                  - generic [ref=e186]: "78"
+                  - generic [ref=e187]: "79"
+                  - generic [ref=e188]: "80"
+                  - generic [ref=e189]: "81"
+                  - generic [ref=e190]: "82"
+                  - generic [ref=e191]: "83"
+                  - generic [ref=e192]: "84"
+                  - generic [ref=e193]: "85"
+                  - generic [ref=e194]: "86"
+                  - generic [ref=e195]: "87"
+                  - generic [ref=e196]: "88"
+                  - generic [ref=e197]: "89"
+                  - generic [ref=e198]: "90"
+                  - generic [ref=e199]: "91"
+                  - generic [ref=e200]: "92"
+                  - generic [ref=e201]: "93"
+                  - generic [ref=e202]: "94"
+                  - generic [ref=e203]: "95"
+                  - generic [ref=e204]: "96"
+                  - generic [ref=e205]: "97"
+                  - generic [ref=e206]: "98"
+                  - generic [ref=e207]: "99"
+                  - generic [ref=e208]: "100"
+                  - generic [ref=e209]: "101"
+                  - generic [ref=e210]: "102"
+                  - generic [ref=e211]: "103"
+                  - generic [ref=e212]: "104"
+                  - generic [ref=e213]: "105"
+                  - generic [ref=e214]: "106"
+                  - generic [ref=e215]: "107"
+                  - generic [ref=e216]: "108"
+                  - generic [ref=e217]: "109"
+                  - generic [ref=e218]: "110"
+                  - generic [ref=e219]: "111"
+                  - generic [ref=e220]: "112"
+                  - generic [ref=e221]: "113"
+                  - generic [ref=e222]: "114"
+                  - generic [ref=e223]: "115"
+                  - generic [ref=e224]: "116"
+                  - generic [ref=e225]: "117"
+                  - generic [ref=e226]: "118"
+                  - generic [ref=e227]: "119"
+                  - generic [ref=e228]: "120"
+                - generic [ref=e230]:
+                  - generic [ref=e231]: ⬡
+                  - paragraph [ref=e232]: IDE Ready.
+  - button "Open Next.js Dev Tools" [ref=e238] [cursor=pointer]:
+    - img [ref=e239]
+  - alert [ref=e242]

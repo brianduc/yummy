@@ -29,6 +29,21 @@ function NavigationProbe() {
       <Link href={`/workspace/${params.sessionId}/settings`} data-testid="settings-link">
         Settings link
       </Link>
+      <Link href={`/workspace/${params.sessionId}/graph`} data-testid="graph-link">
+        Graph link
+      </Link>
+      <Link href={`/workspace/${params.sessionId}/wiki`} data-testid="wiki-link">
+        Wiki link
+      </Link>
+      <Link href={`/workspace/${params.sessionId}/insight`} data-testid="insight-link">
+        Insight link
+      </Link>
+      <Link href={`/workspace/${params.sessionId}/history`} data-testid="history-link">
+        History link
+      </Link>
+      <Link href={`/workspace/${params.sessionId}/jira`} data-testid="jira-link">
+        Jira link
+      </Link>
       <button type="button" onClick={() => router.push(`/workspace/${params.sessionId}/sdlc`)}>
         Go SDLC
       </button>
@@ -50,6 +65,11 @@ describe('next/navigation mock infrastructure', () => {
     expect(screen.getByTestId('pathname')).toHaveTextContent('/workspace/test-session-123')
     expect(screen.getByTestId('workspace-link')).toHaveAttribute('href', '/workspace/test-session-123')
     expect(screen.getByTestId('settings-link')).toHaveAttribute('href', '/workspace/test-session-123/settings')
+    expect(screen.getByTestId('graph-link')).toHaveAttribute('href', '/workspace/test-session-123/graph')
+    expect(screen.getByTestId('wiki-link')).toHaveAttribute('href', '/workspace/test-session-123/wiki')
+    expect(screen.getByTestId('insight-link')).toHaveAttribute('href', '/workspace/test-session-123/insight')
+    expect(screen.getByTestId('history-link')).toHaveAttribute('href', '/workspace/test-session-123/history')
+    expect(screen.getByTestId('jira-link')).toHaveAttribute('href', '/workspace/test-session-123/jira')
 
     fireEvent.click(screen.getByRole('button', { name: 'Go SDLC' }))
     fireEvent.click(screen.getByRole('button', { name: 'Replace route' }))

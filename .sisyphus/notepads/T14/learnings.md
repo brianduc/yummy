@@ -1,0 +1,2 @@
+- Wiki route pages are thin client wrappers that read kb from useWorkspaceStatus() and pass it into WikiPanel.
+- Targeted test npm test -- workspace/wiki-route passed (3/3).

@@ -52,3 +52,18 @@
 - **Test import path**: Tests in `frontend/test/` import from `@/app/workspace/[sessionId]/layout` (alias works even with brackets in path). Relative paths with `[sessionId]` in them cause Vite import analysis errors.
 - **Provider persistence test**: To verify layout persists across child navigation, use `rerender()` with different children and check the layout data-testids remain present while old child is gone and new child appears.
 - 4/4 workspace-layout tests pass. Full suite: 49 pass, 1 intentional RED (stream-lifecycle abort).
+## 2026-05-26 — Graph route red-phase setup
+- Graph route tests should mock `next/navigation`, `useWorkspaceStatus`, and `NodeGraph` before importing the page.
+- Keep the page stub minimal (`data-testid="graph-page"`) until the green implementation is added.
+- The red-phase test currently fails as expected because the page does not yet render `NodeGraph`.
+
+- History route scaffold added at `frontend/app/workspace/[sessionId]/history/page.tsx` with a minimal client wrapper. The RED-phase test intentionally fails on the missing `RagPanel` render until implementation is added.
+
+## 2026-05-26 — T16 History route green implementation
+- `frontend/app/workspace/[sessionId]/history/page.tsx` should consume the existing `WorkspaceChatProvider` via `useChat()` from `@/hooks/useWorkspaceChat`; do not create a route-local provider.
+- `RagPanel` expects a `chatHistory: ChatMessage[]` prop, so the route can render `<RagPanel chatHistory={chatHistory || []} />` inside the existing `data-testid="history-page"` wrapper.
+- Verification: `npm test -- workspace/history-route` passes 3/3 and `npm run build` passes. Standalone `npx tsc --noEmit` is currently blocked by pre-existing Vitest global typing errors in `app/workspace/[sessionId]/settingsSync.test.tsx`.
+
+## T19 dashboard page cleanup - 2026-05-26
+- `frontend/app/workspace/[sessionId]/page.tsx` is dashboard-only; stale tab/MainStage references are absent. Cleanup removed unused imports and the unused toast setter while preserving dashboard stats/cards, onboarding, scan polling, and data fetching.
+- Verified with LSP diagnostics, `npm test -- workspace/dashboard` (7 passing), required grep for `activeTab|setActiveTab|MainStage`, and `npm run build`.

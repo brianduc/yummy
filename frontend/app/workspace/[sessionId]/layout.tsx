@@ -1,14 +1,16 @@
 'use client'
 
 import React, { useRef, useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
 import { useWorkspaceStatus } from '@/hooks/useWorkspaceStatus'
 import { useWorkspaceUi } from '@/hooks/useWorkspaceUi'
 import { WorkspaceChatProvider, useWorkspaceChat } from '@/hooks/useWorkspaceChat'
 import { useWorkspaceSdlc } from '@/hooks/useWorkspaceSdlc'
 import WorkspaceLayout from '@/components/workspace/WorkspaceLayout'
-import type { ActivityId } from '@/components/workspace/ActivityBar'
-import type { MainTabId } from '@/components/workspace/MainStage'
+import DeleteSessionModal, { DeleteSessionContext } from '@/components/workspace/DeleteSessionModal'
+import { api } from '@/lib/api'
+import { FileOpenContext } from './file-open-context'
 import type { Session } from '@/lib/types'
 
 export default function WorkspaceRouteLayout({
@@ -19,10 +21,13 @@ export default function WorkspaceRouteLayout({
   params: Promise<{ sessionId: string }>
 }) {
   const { sessionId } = React.use(params)
+  const router = useRouter()
   const abortRef = useRef(new AbortController())
 
-  const [activeActivity, setActiveActivity] = useState<ActivityId>('explorer')
-  const [activeTab, setActiveTab] = useState<MainTabId>('ide')
+  const [ideFile, setIdeFile] = useState('')
+  const [ideContent, setIdeContent] = useState('')
+  const [ideLoading, setIdeLoading] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
 
   const sessionCtx = useWorkspaceSession(sessionId)
   const statusCtx = useWorkspaceStatus()
@@ -40,6 +45,38 @@ export default function WorkspaceRouteLayout({
     setCommandPaletteOpen(true)
   }, [setCommandPaletteOpen])
 
+  const handleFileOpen = useCallback(async (path: string) => {
+    if (!path) return
+
+    setIdeFile(path)
+    setIdeLoading(true)
+    setIdeContent('')
+
+    try {
+      const res = await api.kb.file(path) as { content?: string }
+      setIdeContent(res.content || '// (empty)')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setIdeContent(`// [ERROR LOADING FILE]: ${message}`)
+    } finally {
+      setIdeLoading(false)
+    }
+
+    router.push(`/workspace/${sessionId}/explorer`)
+  }, [router, sessionId])
+
+  const handleDeleteSession = useCallback(async () => {
+    if (!deleteTarget) return
+    const targetId = deleteTarget.id
+    setDeleteTarget(null)
+    try {
+      await sessionCtx.deleteSession(targetId)
+      await sessionCtx.fetchSessions()
+    } catch (e) {
+      console.error('Failed to delete session:', e)
+    }
+  }, [deleteTarget, sessionCtx])
+
   const chatCtx = useWorkspaceChat(sessionId, abortRef, {
     status: statusCtx.status,
     session,
@@ -47,8 +84,6 @@ export default function WorkspaceRouteLayout({
     fetchMetrics: sessionCtx.fetchMetrics,
     startScanPoll: statusCtx.startScanPoll,
     setScanStatus: statusCtx.setScanStatus,
-    setActiveTab,
-    setActiveActivity,
     setSession,
     runSdlcStream: sdlcCtx.runSdlcStream,
     handleStop: sdlcCtx.abort,
@@ -59,17 +94,13 @@ export default function WorkspaceRouteLayout({
       <div data-testid="workspace-layout">
         <nav data-testid="workspace-nav" aria-label="workspace navigation" />
         <WorkspaceLayout
-          activeActivity={activeActivity}
-          onActivityChange={setActiveActivity}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
           sessionName={session?.name ?? sessionId}
           session={session}
           workflowState={sdlcCtx.sdlcState.workflowState}
           streamingAgent={sdlcCtx.sdlcState.streamingAgent}
           isSDLCDone={session?.workflow_state === 'done'}
           fileTree={statusCtx.kb?.tree ?? []}
-          onFileOpen={() => {}}
+          onFileOpen={handleFileOpen}
           status={statusCtx.status}
           metrics={sessionCtx.metrics}
           scanStatus={statusCtx.scanStatus}
@@ -80,9 +111,20 @@ export default function WorkspaceRouteLayout({
           onApproveDevLead={sdlcCtx.approveDevLead}
           onStop={sdlcCtx.abort}
           mainStageChildren={
-            <main data-testid="workspace-main-slot">{children}</main>
+            <FileOpenContext.Provider value={{ ideFile, ideContent, ideLoading }}>
+              <DeleteSessionContext.Provider value={setDeleteTarget}>
+                <main data-testid="workspace-main-slot">{children}</main>
+              </DeleteSessionContext.Provider>
+            </FileOpenContext.Provider>
           }
         />
+        {deleteTarget && (
+          <DeleteSessionModal
+            session={deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={handleDeleteSession}
+          />
+        )}
       </div>
     </WorkspaceChatProvider>
   )

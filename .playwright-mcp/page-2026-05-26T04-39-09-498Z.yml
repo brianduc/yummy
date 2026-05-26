@@ -1,0 +1,466 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e13] [cursor=pointer]:
+    - img [ref=e14]
+  - alert [ref=e17]
+  - generic [ref=e18]:
+    - navigation "workspace navigation"
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: YUMMY
+          - button "Collapse Sidebar" [ref=e23] [cursor=pointer]:
+            - img
+        - navigation [ref=e24]:
+          - link "Explorer" [ref=e25] [cursor=pointer]:
+            - /url: /workspace/1777491625415/explorer
+            - img [ref=e26]
+            - generic [ref=e31]: Explorer
+          - link "SDLC Pipeline" [ref=e32] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sdlc
+            - img [ref=e33]
+            - generic [ref=e37]: SDLC Pipeline
+          - link "Dashboard" [ref=e38] [cursor=pointer]:
+            - /url: /workspace/1777491625415
+            - img [ref=e39]
+            - generic [ref=e41]: Dashboard
+          - link "Tracing" [ref=e42] [cursor=pointer]:
+            - /url: /workspace/1777491625415/tracing
+            - img [ref=e43]
+            - generic [ref=e45]: Tracing
+          - link "Database" [ref=e46] [cursor=pointer]:
+            - /url: /workspace/1777491625415/database
+            - img [ref=e47]
+            - generic [ref=e51]: Database
+          - link "Settings" [ref=e52] [cursor=pointer]:
+            - /url: /workspace/1777491625415/settings
+            - img [ref=e53]
+            - generic [ref=e56]: Settings
+          - link "World" [ref=e57] [cursor=pointer]:
+            - /url: /workspace/1777491625415/world
+            - img [ref=e58]
+            - generic [ref=e61]: World
+          - link "Sessions" [ref=e62] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sessions
+            - img [ref=e63]
+            - generic [ref=e67]: Sessions
+          - link "Graph" [ref=e68] [cursor=pointer]:
+            - /url: /workspace/1777491625415/graph
+            - img [ref=e69]
+            - generic [ref=e74]: Graph
+          - link "Wiki" [active] [ref=e75] [cursor=pointer]:
+            - /url: /workspace/1777491625415/wiki
+            - img [ref=e76]
+            - generic [ref=e78]: Wiki
+          - link "Insight" [ref=e79] [cursor=pointer]:
+            - /url: /workspace/1777491625415/insight
+            - img [ref=e80]
+            - generic [ref=e82]: Insight
+          - link "History" [ref=e83] [cursor=pointer]:
+            - /url: /workspace/1777491625415/history
+            - img [ref=e84]
+            - generic [ref=e88]: History
+          - link "Jira" [ref=e89] [cursor=pointer]:
+            - /url: /workspace/1777491625415/jira
+            - img [ref=e90]
+            - generic [ref=e92]: Jira
+      - generic [ref=e93]:
+        - banner [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Workspace
+            - img [ref=e97]
+            - generic [ref=e99]: Wiki
+          - generic [ref=e100]:
+            - button "Command Cmd/Ctrl +K" [ref=e101] [cursor=pointer]:
+              - img
+              - generic [ref=e102]: Command
+              - generic [ref=e103]:
+                - generic [ref=e104]: Cmd/Ctrl
+                - text: +K
+            - button "AI Copilot" [ref=e105] [cursor=pointer]:
+              - img
+              - generic [ref=e106]: AI Copilot
+        - main [ref=e108]:
+          - generic [ref=e786]:
+            - generic [ref=e787]:
+              - generic [ref=e788]: 📖 Project Documentation
+              - button "Export" [ref=e789] [cursor=pointer]:
+                - img [ref=e790]
+                - text: Export
+            - generic [ref=e794]:
+              - heading "PROJECT SUMMARY — YUMMY" [level=1] [ref=e795]
+              - heading "Introduction" [level=2] [ref=e796]
+              - strong [ref=e797]: YUMMY
+              - text: is an AI-native, multi-agent SDLC (Software Development Lifecycle) platform. It provides an intelligent assistant that guides teams through the entire software development process—from business case intake and requirements analysis, through design, development, security, QA, and operations. The platform is IDE-agnostic, integrates via the Model Context Protocol (MCP), and offers both a web-based workspace (Next.js frontend) and REST APIs.
+              - paragraph [ref=e798]: "The project consists of:"
+              - listitem [ref=e799]:
+                - strong [ref=e800]: Backend
+                - text: (TypeScript port of original Python FastAPI) – Hono HTTP framework with SQLite persistence via Drizzle ORM.
+              - listitem [ref=e801]:
+                - strong [ref=e802]: Frontend
+                - text: – Next.js 16 with React 19, custom theming, and real-time streaming (SSE).
+              - listitem [ref=e803]:
+                - strong [ref=e804]: AI Agent Mesh
+                - text: – Specialized agents (BA, SA, Dev Lead, Dev, Security, QA, SRE) orchestrated through a configurable provider abstraction.
+              - listitem [ref=e805]:
+                - strong [ref=e806]: Knowledge Base
+                - text: – Code indexing with chunking and summarization, stored in SQLite and served for RAG queries.
+              - listitem [ref=e807]:
+                - strong [ref=e808]: Infrastructure
+                - text: – Docker support, AWS App Runner + Amplify deployment pattern, and MCP server for universal IDE integration.
+              - paragraph [ref=e809]: "---"
+              - heading "Core Components" [level=2] [ref=e810]
+              - heading "Backend API (backend-ts/)" [level=3] [ref=e811]:
+                - text: Backend API (
+                - code [ref=e812]: backend-ts/
+                - text: )
+              - listitem [ref=e813]:
+                - strong [ref=e814]: Framework
+                - text: ": Hono v4 with"
+                - code [ref=e815]: "@hono/zod-openapi"
+                - text: for typed routes and OpenAPI 3.1.0 generation. Swagger UI at
+                - code [ref=e816]: /docs
+                - text: .
+              - listitem [ref=e817]:
+                - strong [ref=e818]: Database
+                - text: ": SQLite via"
+                - code [ref=e819]: better-sqlite3
+                - text: + Drizzle ORM (migrations, schema inference, repositories).
+              - listitem [ref=e820]:
+                - strong [ref=e821]: Configuration
+                - text: ": Two-tier – environment variables ("
+                - code [ref=e822]: .env
+                - text: ) provide defaults, SQLite
+                - code [ref=e823]: provider_config
+                - text: table overrides at runtime.
+              - listitem [ref=e824]:
+                - strong [ref=e825]: AI Dispatcher
+                - text: ": Central module ("
+                - code [ref=e826]: services/ai/dispatcher.ts
+                - text: ) that selects the active provider (Gemini, OpenAI, Ollama, Copilot, Bedrock) and delegates to provider-specific implementations. Supports both blocking calls (
+                - code [ref=e827]: callAI
+                - text: ) and streaming (
+                - code [ref=e828]: streamAI
+                - text: ).
+              - heading "Frontend (frontend/)" [level=3] [ref=e829]:
+                - text: Frontend (
+                - code [ref=e830]: frontend/
+                - text: )
+              - listitem [ref=e831]:
+                - strong [ref=e832]: Workspace
+                - text: ": Split-panel layout with left tabs (Chat, Sessions, Tracing, Settings) and right tabs (IDE, Node Graph, Wiki, Insights, RAG, SDLC, Backlog, DB)."
+              - listitem [ref=e833]:
+                - strong [ref=e834]: State Management
+                - text: ": Client-side"
+                - code [ref=e835]: useState
+                - text: + polling (4s) for session/status, real-time SSE for SDLC and RAG streaming.
+              - listitem [ref=e836]:
+                - strong [ref=e837]: Theming
+                - text: ": Dark theme with CSS custom properties, six themes (dark, light, dracula, yummy, angry, idea), persisted in"
+                - code [ref=e838]: localStorage
+                - text: .
+              - listitem [ref=e839]:
+                - strong [ref=e840]: UI Utilities
+                - text: ": Markdown-to-HTML converter ("
+                - code [ref=e841]: mdToHtml.ts
+                - text: ), API client (
+                - code [ref=e842]: api.ts
+                - text: ), theme/UI-size persistence.
+              - heading "AI Agent Mesh" [level=3] [ref=e843]
+              - paragraph [ref=e844]:
+                - text: "| Agent | Role |"
+                - text: "|----------------|----------------------------------------------------------------------|"
+                - text: "| BA | Converts business requirements to structured documents, gaps analysis |"
+                - text: "| SA / PM | Solution architecture, risk assessment, JIRA backlog generation |"
+                - text: "| Dev Lead | High-level design, task breakdown, code review |"
+                - text: "| Dev | Code generation, refactoring |"
+                - text: "| Security | Secret scanning, CVE checks, policy enforcement |"
+                - text: "| QA | Test case generation, coverage analysis, E2E scripts |"
+                - text: "| SRE | Deployment scripts, monitoring configuration |"
+              - heading "Knowledge Base (KB) Engine" [level=3] [ref=e845]
+              - listitem [ref=e846]:
+                - strong [ref=e847]: Scanning
+                - text: ": Fetches repo file tree from GitHub, groups files into ~35KB chunks, sends each chunk to an Indexer AI agent for summarization, then aggregates insights via an Architect agent to produce a project wiki."
+              - listitem [ref=e848]:
+                - strong [ref=e849]: Storage
+                - text: ":"
+                - code [ref=e850]: kb_tree
+                - text: (file hierarchy),
+                - code [ref=e851]: kb_insights
+                - text: (AI summaries),
+                - code [ref=e852]: kb_meta
+                - text: (project summary, singleton row).
+              - listitem [ref=e853]:
+                - strong [ref=e854]: RAG
+                - text: ": Builds a prompt from KB context + session history + optional IDE file content for contextual Q&A."
+              - paragraph [ref=e855]: "---"
+              - heading "Key Functions & APIs" [level=2] [ref=e856]
+              - paragraph [ref=e857]:
+                - text: All endpoints are available under
+                - code [ref=e858]: http://localhost:8000
+                - text: (configurable). OpenAPI spec auto-generated at
+                - code [ref=e859]: /openapi.json
+                - text: .
+              - heading "Sessions" [level=3] [ref=e860]
+              - text: "| Method | Path | Description | |--------|---------------------|--------------------------------------| | POST | /sessions | Create new session | | GET | /sessions | List all sessions | | GET | /sessions/:id | Get session details | | DELETE | /sessions/:id | Delete session | | POST | /sessions/:id/reset | Reset session state |"
+              - heading "Configuration" [level=3] [ref=e861]
+              - text: "| Method | Path | Description | |--------|--------------------------|----------------------------------| | POST | /config/provider | Switch active AI provider | | POST | /config/api-key | Set Gemini API key | | POST | /config/openai | Set OpenAI key/model | | POST | /config/ollama | Set Ollama endpoint/model | | POST | /config/bedrock | Set AWS Bedrock region/model | | POST | /config/copilot | Set GitHub Copilot settings | | POST | /config/setup | Parse GitHub repo URL, save | | GET | /config/status | Returns all config, KB stats, scan status, sessions/cost metrics |"
+              - heading "Knowledge Base" [level=3] [ref=e862]
+              - text: "| Method | Path | Description | |--------|-------------------|------------------------------------| | GET | /kb | Get KB snapshot (tree, insights, summary) | | POST | /kb/scan | Trigger background repo scan | | GET | /kb/scan/status | Poll scan progress | | GET | /kb/file?path=... | Fetch file content from GitHub | | DELETE | /kb | Clear KB and scan status |"
+              - heading "Ask (RAG)" [level=3] [ref=e863]
+              - text: "| Method | Path | Description | |--------|---------------|--------------------------------------------------| | POST | /ask | SSE stream Q&A with KB context + history | | POST | /ask/free | SSE stream freeform chat (no KB) | | POST | /ask/sync | Non-streaming Q&A returning JSON result |"
+              - heading "SDLC Pipeline" [level=3] [ref=e864]
+              - text: "| Method | Path | Description | |--------|-----------------------------------|-----------------------------------------------| | POST | /sdlc/start | Start BA agent, returns"
+              - code [ref=e865]: waiting_ba_approval
+              - text: "| | POST | /sdlc/approve-ba | Approve BA, run SA/PM, returns backlog | | POST | /sdlc/approve-sa | Approve SA, run Dev Lead, waiting approval | | POST | /sdlc/approve-dev-lead | Approve Dev Lead, run Dev→Security→QA→SRE | | POST | /sdlc/:session_id/stop | Abort streaming, set state to"
+              - code [ref=e866]: idle
+              - text: "| | POST | /sdlc/:session_id/restore | Rollback to checkpoint (ba/sa/dev_lead) | | GET | /sdlc/:session_id/state | Current workflow state, outputs, backlog | | GET | /sdlc/:session_id/history | Chat history for this session | | POST | /sdlc/:session_id/export-prompt | Distill outputs into implementation prompt |"
+              - heading "Metrics" [level=3] [ref=e867]
+              - text: "| Method | Path | Description | |--------|-----------|----------------------------------------| | GET | /metrics | Aggregated usage (calls, cost, tokens) and last 50 logs | | DELETE | /metrics | Clear all request logs |"
+              - heading "Utilities" [level=3] [ref=e868]
+              - text: "| Method | Path | Description | |--------|---------------|-----------------------------------| | GET | / | Root (API info) | | GET | /health | Simple health check | | GET | /health/model | Ping configured AI provider, report latency | | GET | /help | List commands, agents, workflow |"
+              - paragraph [ref=e869]: "---"
+              - heading "Data Models" [level=2] [ref=e870]
+              - paragraph [ref=e871]:
+                - text: All data stored in SQLite (
+                - code [ref=e872]: data/yummy.db
+                - text: ). Schema defined in
+                - code [ref=e873]: src/db/schema.ts
+                - text: with Drizzle ORM.
+              - paragraph [ref=e874]:
+                - text: "| Table | Key Columns (types) | Notes |"
+                - text: "|-------------------|------------------------------------------------------------------------|------------------------------------------|"
+                - text: "|"
+                - code [ref=e875]: kb_insights
+                - text: "|"
+                - code [ref=e876]: id
+                - text: (int PK),
+                - code [ref=e877]: file_path
+                - text: (text),
+                - code [ref=e878]: summary
+                - text: (text) | AI-summarized code chunks |
+                - text: "|"
+                - code [ref=e879]: kb_meta
+                - text: "|"
+                - code [ref=e880]: id
+                - text: (int PK, singleton=1),
+                - code [ref=e881]: project_summary
+                - text: (text),
+                - code [ref=e882]: directory
+                - text: (text),
+                - code [ref=e883]: files_count
+                - text: (int) | Global project wiki |
+                - text: "|"
+                - code [ref=e884]: kb_tree
+                - text: "|"
+                - code [ref=e885]: id
+                - text: (int PK),
+                - code [ref=e886]: path
+                - text: (text),
+                - code [ref=e887]: type
+                - text: (text),
+                - code [ref=e888]: children
+                - text: (text JSON) | File hierarchy (flat list) |
+                - text: "|"
+                - code [ref=e889]: provider_config
+                - text: "|"
+                - code [ref=e890]: id
+                - text: (int PK, singleton=1),
+                - code [ref=e891]: provider
+                - text: (text),
+                - code [ref=e892]: api_key
+                - text: (text),
+                - code [ref=e893]: model
+                - text: (text),
+                - code [ref=e894]: url
+                - text: (text), ... | Runtime AI provider settings |
+                - text: "|"
+                - code [ref=e895]: repo_info
+                - text: "|"
+                - code [ref=e896]: id
+                - text: (int PK, singleton=1),
+                - code [ref=e897]: url
+                - text: (text),
+                - code [ref=e898]: branch
+                - text: (text),
+                - code [ref=e899]: token
+                - text: (text) | GitHub repo configuration |
+                - text: "|"
+                - code [ref=e900]: request_logs
+                - text: "|"
+                - code [ref=e901]: id
+                - text: (int PK auto),
+                - code [ref=e902]: agent
+                - text: (text),
+                - code [ref=e903]: model
+                - text: (text),
+                - code [ref=e904]: prompt_tokens
+                - text: (int),
+                - code [ref=e905]: completion_tokens
+                - text: (int),
+                - code [ref=e906]: cost
+                - text: (real),
+                - code [ref=e907]: latency
+                - text: (real),
+                - code [ref=e908]: timestamp
+                - text: (text) | AI request tracking |
+                - text: "|"
+                - code [ref=e909]: scan_status
+                - text: "|"
+                - code [ref=e910]: id
+                - text: (int PK, singleton=1),
+                - code [ref=e911]: status
+                - text: (text),
+                - code [ref=e912]: progress
+                - text: (text),
+                - code [ref=e913]: error
+                - text: (text) | KB scan progress |
+                - text: "|"
+                - code [ref=e914]: sessions
+                - text: "|"
+                - code [ref=e915]: id
+                - text: (int PK auto),
+                - code [ref=e916]: name
+                - text: (text),
+                - code [ref=e917]: chat_history
+                - text: (text JSON),
+                - code [ref=e918]: agent_outputs
+                - text: (text JSON),
+                - code [ref=e919]: workflow_state
+                - text: (text),
+                - code [ref=e920]: jira_backlog
+                - text: (text JSON) | User workspace |
+              - strong [ref=e921]: Key patterns
+              - text: ":"
+              - listitem [ref=e922]:
+                - text: Singleton tables (
+                - code [ref=e923]: kb_meta
+                - text: ","
+                - code [ref=e924]: provider_config
+                - text: ","
+                - code [ref=e925]: repo_info
+                - text: ","
+                - code [ref=e926]: scan_status
+                - text: ) use row
+                - code [ref=e927]: id=1
+                - text: for global state.
+              - listitem [ref=e928]: JSON columns store complex objects (chat messages, agent outputs, file lists, backlog).
+              - listitem [ref=e929]: All tables use integer primary keys (autoincrement for logs/sessions).
+              - paragraph [ref=e930]: "---"
+              - heading "Security Considerations" [level=2] [ref=e931]
+              - listitem [ref=e932]:
+                - strong [ref=e933]: Authentication
+                - text: ": The current implementation"
+                - strong [ref=e934]: does not include authentication
+                - text: . The AWS deployment guide explicitly notes “no auth” as a known risk. Production use requires adding an auth layer (e.g., JWT, OAuth).
+              - listitem [ref=e935]:
+                - strong [ref=e936]: API Key Storage
+                - text: ": AI provider keys can be set via environment variables or through the UI (persisted in SQLite). For AWS deployments, keys should be stored in"
+                - strong [ref=e937]: AWS Secrets Manager
+                - text: and injected as environment variables to the App Runner service.
+              - listitem [ref=e938]:
+                - strong [ref=e939]: CORS
+                - text: ": Backend allows all origins, methods, and headers (matching the original Python FastAPI). For production, restrict to specific frontend domains."
+              - listitem [ref=e940]:
+                - strong [ref=e941]: HTTPS
+                - text: ": Should be enforced via CloudFront or AWS Certificate Manager (ACM) when using custom domains."
+              - listitem [ref=e942]:
+                - strong [ref=e943]: Input Validation
+                - text: ": All API requests are validated using Zod schemas (OpenAPI). SQL queries use parameterized ORM (no raw SQL injection risk)."
+              - listitem [ref=e944]:
+                - strong [ref=e945]: Environment Variables
+                - text: ": Sensitive data (API keys, GitHub tokens) are read from"
+                - code [ref=e946]: .env
+                - text: at boot time. The
+                - code [ref=e947]: env.ts
+                - text: module validates the schema and exits on failure.
+              - listitem [ref=e948]:
+                - strong [ref=e949]: MCP Integration
+                - text: ": The MCP server (optional) should follow security best practices for tool exposure, but the current implementation is internal to the platform."
+              - paragraph [ref=e950]: "---"
+              - heading "Deployment & Infrastructure" [level=2] [ref=e951]
+              - heading "Local Development" [level=3] [ref=e952]
+              - generic [ref=e953]:
+                - generic [ref=e954]: bash
+                - code [ref=e956]: "# Backend (TypeScript) cd backend-ts pnpm install pnpm db:migrate pnpm dev # starts on port 8000 # Frontend cd frontend npm install npm run dev # starts on port 3000"
+              - listitem [ref=e957]: Backend requires Node.js 20+ and SQLite.
+              - listitem [ref=e958]: Frontend requires Node.js 18+.
+              - listitem [ref=e959]:
+                - text: Environment variables in
+                - code [ref=e960]: .env
+                - text: at backend root (see
+                - code [ref=e961]: env.ts
+                - text: for required fields).
+              - heading "Docker" [level=3] [ref=e962]
+              - paragraph [ref=e963]:
+                - text: The project includes Docker support (not shown in summaries but implied by
+                - code [ref=e964]: "output: 'standalone'"
+                - text: in Next.js config and
+                - code [ref=e965]: apprunner.yaml
+                - text: "reference). Typical Docker Compose would include:"
+              - listitem [ref=e966]:
+                - code [ref=e967]: backend-ts
+                - text: container (Hono server)
+              - listitem [ref=e968]:
+                - code [ref=e969]: frontend
+                - text: container (Next.js standalone build)
+              - heading "AWS Production (Recommended)" [level=3] [ref=e970]
+              - paragraph [ref=e971]:
+                - text: "1."
+                - strong [ref=e972]: Backend
+                - text: ": AWS App Runner from GitHub repository. Use"
+                - code [ref=e973]: apprunner.yaml
+                - text: to define build and runtime configuration. Environment variables (including API keys) should come from AWS Secrets Manager.
+                - text: "2."
+                - strong [ref=e974]: Frontend
+                - text: ": AWS Amplify Hosting connected to the same repo. Build settings handle Next.js standalone output."
+                - text: "3."
+                - strong [ref=e975]: Custom Domains
+                - text: ": Route 53 hosted zone → ACM certificate → App Runner custom domain + Amplify custom domain."
+                - text: "4."
+                - strong [ref=e976]: Smoke Tests
+                - text: ": Verify health endpoint and frontend connectivity after deployment."
+              - strong [ref=e977]: Known Risks
+              - text: ":"
+              - listitem [ref=e978]: SQLite is file-based; not suitable for multi-instance scaling. For high availability, migrate to PostgreSQL (e.g., via Drizzle adapter change).
+              - listitem [ref=e979]: No authentication – must add before production use.
+              - listitem [ref=e980]: "Costs: App Runner + Amplify incur charges; monitor usage."
+              - strong [ref=e981]: Graduation Path
+              - text: ": Move backend to ECS/Fargate with a PostgreSQL RDS instance and add proper auth (Cognito or similar)."
+              - heading "CI/CD" [level=3] [ref=e982]
+              - listitem [ref=e983]:
+                - strong [ref=e984]: Backend
+                - text: ": GitHub Actions (implied but not explicitly configured) – run tests, lint, build."
+              - listitem [ref=e985]:
+                - strong [ref=e986]: Frontend
+                - text: ": Amplify auto-deploys on pushes to main branch."
+              - listitem [ref=e987]:
+                - strong [ref=e988]: Database Migrations
+                - text: ":"
+                - code [ref=e989]: pnpm db:migrate
+                - text: should run as part of deployment.
+              - heading "Monitoring & Observability" [level=3] [ref=e990]
+              - listitem [ref=e991]:
+                - strong [ref=e992]: Metrics API
+                - text: ": Built-in request logging and cost tracking."
+              - listitem [ref=e993]:
+                - strong [ref=e994]: Health Endpoints
+                - text: ":"
+                - code [ref=e995]: /health
+                - text: and
+                - code [ref=e996]: /health/model
+                - text: for basic uptime and AI provider responsiveness.
+              - listitem [ref=e997]:
+                - strong [ref=e998]: Logging
+                - text: ": Request logs stored in SQLite ("
+                - code [ref=e999]: request_logs
+                - text: table) and exposed via
+                - code [ref=e1000]: /metrics
+                - text: .
+              - listitem [ref=e1001]:
+                - strong [ref=e1002]: Audit
+                - text: ": All AI requests are tracked with tokens, cost, latency, and agent name."
+              - paragraph [ref=e1003]: "---"
+              - paragraph [ref=e1004]:
+                - text: For full documentation, see
+                - code [ref=e1005]: docs/
+                - text: directory – architecture overview, user guide, AWS deployment guide, feature backlog, and contributing guidelines.

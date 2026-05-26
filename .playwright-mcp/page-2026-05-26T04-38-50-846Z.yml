@@ -1,0 +1,132 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e13] [cursor=pointer]:
+    - img [ref=e14]
+  - alert [ref=e17]
+  - generic [ref=e18]:
+    - navigation "workspace navigation"
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: YUMMY
+          - button "Collapse Sidebar" [ref=e23] [cursor=pointer]:
+            - img
+        - navigation [ref=e24]:
+          - link "Explorer" [ref=e25] [cursor=pointer]:
+            - /url: /workspace/1777491625415/explorer
+            - img [ref=e26]
+            - generic [ref=e31]: Explorer
+          - link "SDLC Pipeline" [ref=e32] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sdlc
+            - img [ref=e33]
+            - generic [ref=e37]: SDLC Pipeline
+          - link "Dashboard" [ref=e38] [cursor=pointer]:
+            - /url: /workspace/1777491625415
+            - img [ref=e39]
+            - generic [ref=e41]: Dashboard
+          - link "Tracing" [ref=e42] [cursor=pointer]:
+            - /url: /workspace/1777491625415/tracing
+            - img [ref=e43]
+            - generic [ref=e45]: Tracing
+          - link "Database" [ref=e46] [cursor=pointer]:
+            - /url: /workspace/1777491625415/database
+            - img [ref=e47]
+            - generic [ref=e51]: Database
+          - link "Settings" [ref=e52] [cursor=pointer]:
+            - /url: /workspace/1777491625415/settings
+            - img [ref=e53]
+            - generic [ref=e56]: Settings
+          - link "World" [ref=e57] [cursor=pointer]:
+            - /url: /workspace/1777491625415/world
+            - img [ref=e58]
+            - generic [ref=e61]: World
+          - link "Sessions" [ref=e62] [cursor=pointer]:
+            - /url: /workspace/1777491625415/sessions
+            - img [ref=e63]
+            - generic [ref=e67]: Sessions
+          - link "Graph" [ref=e68] [cursor=pointer]:
+            - /url: /workspace/1777491625415/graph
+            - img [ref=e69]
+            - generic [ref=e74]: Graph
+          - link "Wiki" [ref=e75] [cursor=pointer]:
+            - /url: /workspace/1777491625415/wiki
+            - img [ref=e76]
+            - generic [ref=e78]: Wiki
+          - link "Insight" [ref=e79] [cursor=pointer]:
+            - /url: /workspace/1777491625415/insight
+            - img [ref=e80]
+            - generic [ref=e82]: Insight
+          - link "History" [ref=e83] [cursor=pointer]:
+            - /url: /workspace/1777491625415/history
+            - img [ref=e84]
+            - generic [ref=e88]: History
+          - link "Jira" [ref=e89] [cursor=pointer]:
+            - /url: /workspace/1777491625415/jira
+            - img [ref=e90]
+            - generic [ref=e92]: Jira
+      - generic [ref=e93]:
+        - banner [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Workspace
+            - img [ref=e97]
+            - generic [ref=e99]: Dashboard
+          - generic [ref=e100]:
+            - button "Command Cmd/Ctrl +K" [ref=e101] [cursor=pointer]:
+              - img
+              - generic [ref=e102]: Command
+              - generic [ref=e103]:
+                - generic [ref=e104]: Cmd/Ctrl
+                - text: +K
+            - button "AI Copilot" [ref=e105] [cursor=pointer]:
+              - img
+              - generic [ref=e106]: AI Copilot
+        - main [ref=e108]:
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - heading "YUMMY Dashboard" [level=1] [ref=e111]
+              - paragraph [ref=e112]: "CR: X..."
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - paragraph [ref=e115]: Repository
+                - paragraph [ref=e116]: brianduc/yummy
+              - generic [ref=e117]:
+                - paragraph [ref=e118]: Files
+                - paragraph [ref=e119]: "110"
+              - generic [ref=e120]:
+                - paragraph [ref=e121]: Scan
+                - paragraph [ref=e122]: Not started
+              - generic [ref=e123]:
+                - paragraph [ref=e124]: SDLC
+                - paragraph [ref=e125]: idle
+              - generic [ref=e126]:
+                - paragraph [ref=e127]: Chats
+                - paragraph [ref=e128]: "0"
+            - heading "Tools" [level=2] [ref=e129]
+            - generic [ref=e130]:
+              - link "Explorer" [ref=e131] [cursor=pointer]:
+                - /url: /workspace/1777491625415/explorer
+                - img [ref=e132]
+                - generic [ref=e137]: Explorer
+              - link "Graph" [ref=e138] [cursor=pointer]:
+                - /url: /workspace/1777491625415/graph
+                - img [ref=e139]
+                - generic [ref=e144]: Graph
+              - link "Wiki" [ref=e145] [cursor=pointer]:
+                - /url: /workspace/1777491625415/wiki
+                - img [ref=e146]
+                - generic [ref=e148]: Wiki
+              - link "Insight" [ref=e149] [cursor=pointer]:
+                - /url: /workspace/1777491625415/insight
+                - img [ref=e150]
+                - generic [ref=e152]: Insight
+              - link "History" [ref=e153] [cursor=pointer]:
+                - /url: /workspace/1777491625415/history
+                - img [ref=e154]
+                - generic [ref=e158]: History
+              - link "Jira" [ref=e159] [cursor=pointer]:
+                - /url: /workspace/1777491625415/jira
+                - img [ref=e160]
+                - generic [ref=e162]: Jira
+              - link "World" [ref=e163] [cursor=pointer]:
+                - /url: /workspace/1777491625415/world
+                - img [ref=e164]
+                - generic [ref=e167]: World

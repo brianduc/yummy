@@ -2,21 +2,12 @@
 
 import React from 'react'
 import { useChat } from '@/hooks/useWorkspaceChat'
-import type { ActivityId } from './ActivityBar'
-import type { MainTabId } from './MainStage'
 import { AppSidebar } from './AppSidebar'
 import AppHeader from './AppHeader'
 import { CopilotSheet } from './CopilotSheet'
 import type { Session, SystemStatus, MetricsData, ScanStatus, FileNode, WorkflowState } from '@/lib/types'
 
 interface WorkspaceLayoutProps {
-  // Activity management
-  activeActivity: ActivityId
-  onActivityChange: (id: ActivityId) => void
-
-  // Main stage
-  activeTab: MainTabId
-  onTabChange: (tab: MainTabId) => void
   sessionName: string
   session: Session | null
   workflowState: WorkflowState
