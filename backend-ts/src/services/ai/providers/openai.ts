@@ -44,17 +44,11 @@ export async function callOpenAI(
   } catch (e) {
     if (e instanceof HttpError) throw e;
     const status = (e as { status?: number }).status;
-    throw new HttpError(
-      502,
-      `OpenAI error${status ? ` ${status}` : ''}: ${(e as Error).message}`,
-    );
+    throw new HttpError(502, `OpenAI error${status ? ` ${status}` : ''}: ${(e as Error).message}`);
   }
 }
 
-export async function* streamOpenAI(
-  prompt: string,
-  instruction: string,
-): StreamChunks {
+export async function* streamOpenAI(prompt: string, instruction: string): StreamChunks {
   let stream: AsyncIterable<{
     choices?: Array<{ delta?: { content?: string | null } }>;
   }>;

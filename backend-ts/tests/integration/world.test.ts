@@ -19,7 +19,12 @@ describe('world API', () => {
     const res = await app.request('/world/servers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'test-stdio', transport: 'stdio', command: 'echo', args: ['hello'] }),
+      body: JSON.stringify({
+        name: 'test-stdio',
+        transport: 'stdio',
+        command: 'echo',
+        args: ['hello'],
+      }),
     });
     expect(res.status).toBe(201);
     const body = (await res.json()) as { id: string; name: string };
@@ -104,7 +109,11 @@ describe('world API', () => {
     const res = await app.request('/world/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mcp_server_enabled: false, mcp_server_token: 'secret', mcp_server_port: '8001' }),
+      body: JSON.stringify({
+        mcp_server_enabled: false,
+        mcp_server_token: 'secret',
+        mcp_server_port: '8001',
+      }),
     });
 
     expect(res.status).toBe(200);

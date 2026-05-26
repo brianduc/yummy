@@ -73,10 +73,7 @@ export async function callCopilot(
   }
 }
 
-export async function* streamCopilot(
-  prompt: string,
-  instruction: string,
-): StreamChunks {
+export async function* streamCopilot(prompt: string, instruction: string): StreamChunks {
   let stream: AsyncIterable<{
     choices?: Array<{ delta?: { content?: string | null } }>;
   }>;

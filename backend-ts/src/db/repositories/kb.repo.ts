@@ -3,11 +3,10 @@
  * Matches Python's DB["knowledge_base"] = {tree, insights, project_summary}.
  */
 import { asc, eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type KbInsightRow, type KbTreeRow, kbInsights, kbMeta, kbTree } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export type TreeEntry = KbTreeRow;
 export type Insight = KbInsightRow;
 

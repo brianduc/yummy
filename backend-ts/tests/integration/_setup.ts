@@ -15,19 +15,19 @@ import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { beforeAll, beforeEach, vi } from 'vitest';
 
-import { db } from '../../src/db/client.js';
-import { createWorldServer, updateWorldConfig } from '../../src/db/repositories/world.repo.js';
+import { db, getLocalDb } from '../../src/db/client.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../src/db/repositories/scan-status.repo.js';
 import { sessionsRepo } from '../../src/db/repositories/sessions.repo.js';
+import { createWorldServer, updateWorldConfig } from '../../src/db/repositories/world.repo.js';
 import {
-  worldConfig,
-  worldServers,
   type WorldConfigInsert,
   type WorldServerInsert,
   type WorldServerRow,
+  worldConfig,
+  worldServers,
 } from '../../src/db/schema.js';
 
 // ─── AI dispatcher mock ───────────────────────────────
@@ -76,7 +76,13 @@ vi.mock('@modelcontextprotocol/sdk/client/index.js', () => {
   const mockClient = {
     connect: vi.fn().mockResolvedValue(undefined),
     listTools: vi.fn().mockResolvedValue({
-      tools: [{ name: 'mock.echo', description: 'Echo tool', inputSchema: { type: 'object', properties: {} } }],
+      tools: [
+        {
+          name: 'mock.echo',
+          description: 'Echo tool',
+          inputSchema: { type: 'object', properties: {} },
+        },
+      ],
       nextCursor: undefined,
     }),
     callTool: vi.fn().mockResolvedValue({
@@ -96,7 +102,9 @@ vi.mock('@modelcontextprotocol/sdk/client/sse.js', () => ({
   SSEClientTransport: vi.fn(() => ({})),
 }));
 
-export async function seedWorldServer(overrides: Partial<WorldServerInsert> = {}): Promise<WorldServerRow> {
+export async function seedWorldServer(
+  overrides: Partial<WorldServerInsert> = {},
+): Promise<WorldServerRow> {
   const insert: WorldServerInsert = {
     id: overrides.id ?? `test-srv-${Date.now()}`,
     name: overrides.name ?? 'Test Server',
@@ -109,31 +117,33 @@ export async function seedWorldServer(overrides: Partial<WorldServerInsert> = {}
     createdAt: overrides.createdAt ?? new Date().toISOString(),
     lastStatus: overrides.lastStatus ?? 'unknown',
   };
-  return createWorldServer(insert);
+  return await createWorldServer(db, insert);
 }
 
 export async function seedWorldConfig(overrides: Partial<WorldConfigInsert> = {}): Promise<void> {
-  await updateWorldConfig(overrides);
+  await updateWorldConfig(db, overrides);
 }
 
 export function resetWorldData(): void {
   db.delete(worldServers).run();
   // world_config singleton stays (reset to defaults)
-  db.update(worldConfig).set({ mcpServerToken: '', mcpServerEnabled: false, mcpServerPort: '' }).run();
+  db.update(worldConfig)
+    .set({ mcpServerToken: '', mcpServerEnabled: false, mcpServerPort: '' })
+    .run();
 }
 
 beforeAll(() => {
-  migrate(db, {
-    migrationsFolder: resolve(__dirname, '../../src/db/migrations'),
+  migrate(getLocalDb(), {
+    migrationsFolder: resolve(__dirname, '../../drizzle'),
   });
 });
 
-beforeEach(() => {
-  for (const s of sessionsRepo.list()) sessionsRepo.delete(s.id);
-  kbRepo.resetAll();
-  repoRepo.clear();
-  scanStatusRepo.clear();
-  logsRepo.clear();
+beforeEach(async () => {
+  for (const s of await sessionsRepo.list(db)) await sessionsRepo.delete(db, s.id);
+  await kbRepo.resetAll(db);
+  await repoRepo.clear(db);
+  await scanStatusRepo.clear(db);
+  await logsRepo.clear(db);
   clearAIResponses();
   resetWorldData();
 });

@@ -12,10 +12,7 @@ const ProviderEnum = z
 
 export const SetupRequestSchema = z
   .object({
-    github_url: z
-      .string()
-      .min(1)
-      .openapi({ example: 'https://github.com/owner/repo' }),
+    github_url: z.string().min(1).openapi({ example: 'https://github.com/owner/repo' }),
     token: z.string().optional().default('').openapi({
       description: 'GitHub Personal Access Token (optional, for private repos)',
     }),
@@ -80,10 +77,7 @@ export const BedrockConfigSchema = z
     access_key: z.string().optional().default(''),
     secret_key: z.string().optional().default(''),
     region: z.string().optional().default('us-east-1'),
-    model: z
-      .string()
-      .optional()
-      .default('anthropic.claude-3-5-sonnet-20241022-v2:0'),
+    model: z.string().optional().default('anthropic.claude-3-5-sonnet-20241022-v2:0'),
   })
   .openapi('BedrockConfig');
 

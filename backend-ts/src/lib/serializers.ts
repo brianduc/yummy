@@ -4,12 +4,10 @@
  * The frontend expects snake_case keys identical to the Python backend.
  * Centralizing this avoids snake_case leaking into our domain code.
  */
-import type { Session } from '../db/repositories/sessions.repo.js';
+
 import type { RepoInfo } from '../db/repositories/repo.repo.js';
-import type {
-  SessionDetail,
-  SessionSummary,
-} from '../schemas/sessions.schema.js';
+import type { Session } from '../db/repositories/sessions.repo.js';
+import type { SessionDetail, SessionSummary } from '../schemas/sessions.schema.js';
 
 export function toSessionDetail(s: Session): SessionDetail {
   return {

@@ -2,23 +2,23 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 process.env.DATABASE_URL = ':memory:';
 
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { resolve } from 'node:path';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
 import { runtimeConfig } from '../../src/config/runtime.js';
-import { db } from '../../src/db/client.js';
+import { db, getLocalDb } from '../../src/db/client.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { estimateTokens, getPrice, PRICING } from '../../src/services/ai/pricing.js';
 import { track } from '../../src/services/ai/track.js';
 
 beforeAll(() => {
-  migrate(db, {
-    migrationsFolder: resolve(__dirname, '../../src/db/migrations'),
+  migrate(getLocalDb(), {
+    migrationsFolder: resolve(__dirname, '../../drizzle'),
   });
 });
 
-beforeEach(() => {
-  logsRepo.clear();
+beforeEach(async () => {
+  await logsRepo.clear(db);
 });
 
 describe('pricing', () => {
@@ -47,11 +47,11 @@ describe('estimateTokens', () => {
 });
 
 describe('track', () => {
-  it('writes a log row using current runtime provider/model', () => {
+  it('writes a log row using current runtime provider/model', async () => {
     runtimeConfig.provider = 'openai';
     runtimeConfig.openai_model = 'gpt-4o-mini';
 
-    track({
+    await track(db, {
       agentRole: 'INDEXER',
       prompt: 'a'.repeat(40),
       instruction: 'b'.repeat(40),
@@ -61,9 +61,11 @@ describe('track', () => {
       outTokens: 200,
     });
 
-    const rows = logsRepo.list();
+    const rows = await logsRepo.list(db);
     expect(rows).toHaveLength(1);
-    const row = rows[0]!;
+    const [row] = rows;
+    expect(row).toBeDefined();
+    if (!row) return;
     expect(row.agent).toBe('INDEXER');
     expect(row.provider).toBe('openai');
     expect(row.model).toBe('gpt-4o-mini');
@@ -75,11 +77,11 @@ describe('track', () => {
     expect(row.cost).toBeCloseTo(0.000135, 6);
   });
 
-  it('estimates tokens when provider does not return usage', () => {
+  it('estimates tokens when provider does not return usage', async () => {
     runtimeConfig.provider = 'gemini';
     runtimeConfig.gemini_model = 'gemini-2.5-flash';
 
-    track({
+    await track(db, {
       agentRole: 'AGENT_X',
       prompt: 'a'.repeat(80), // 20 tokens
       instruction: 'b'.repeat(80), // combined 160 chars -> 40 tokens
@@ -87,14 +89,16 @@ describe('track', () => {
       latencySeconds: 0.5,
     });
 
-    const row = logsRepo.list()[0]!;
+    const [row] = await logsRepo.list(db);
+    expect(row).toBeDefined();
+    if (!row) return;
     expect(row.inTokens).toBe(40);
     expect(row.outTokens).toBe(10);
   });
 
   it('newest log appears first via list()', async () => {
     runtimeConfig.provider = 'gemini';
-    track({
+    await track(db, {
       agentRole: 'first',
       prompt: 'p',
       instruction: 'i',
@@ -104,7 +108,7 @@ describe('track', () => {
       outTokens: 1,
     });
     await new Promise((r) => setTimeout(r, 5));
-    track({
+    await track(db, {
       agentRole: 'second',
       prompt: 'p',
       instruction: 'i',
@@ -114,7 +118,7 @@ describe('track', () => {
       outTokens: 1,
     });
 
-    const rows = logsRepo.list();
+    const rows = await logsRepo.list(db);
     expect(rows[0]?.agent).toBe('second');
     expect(rows[1]?.agent).toBe('first');
   });

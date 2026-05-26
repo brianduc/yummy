@@ -1,8 +1,9 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
+import { createApp } from '../../src/app.js';
+import { db } from '../../src/db/client.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
-import { createApp } from '../../src/app.js';
 import { setAIResponse } from './_setup.js';
 
 const app = createApp();
@@ -16,10 +17,10 @@ async function createSession() {
   return ((await r.json()) as { id: string }).id;
 }
 
-function seedKb() {
+async function seedKb() {
   // Repo info is needed for buildRagPrompt? Check guards — only requireKnowledgeBase.
   // We seed a small KB directly to bypass scan.
-  repoRepo.set({
+  await repoRepo.set(db, {
     url: 'https://github.com/mock/mock',
     owner: 'mock',
     repo: 'mock',
@@ -27,19 +28,19 @@ function seedKb() {
     githubToken: '',
     maxScanLimit: 100,
   });
-  kbRepo.replaceTree([{ path: 'README.md', name: 'README.md', status: 'done' }]);
-  kbRepo.addInsight({
+  await kbRepo.replaceTree(db, [{ path: 'README.md', name: 'README.md', status: 'done' }]);
+  await kbRepo.addInsight(db, {
     id: 1,
     files: ['README.md'],
     summary: 'project does X',
     createdAt: Date.now(),
   });
-  kbRepo.setProjectSummary('# Project Mock\nA mock project.');
+  await kbRepo.setProjectSummary(db, '# Project Mock\nA mock project.');
 }
 
 describe('ask integration', () => {
   it('POST /ask/sync returns 404 for unknown session', async () => {
-    seedKb();
+    await seedKb();
     const res = await app.request('/ask/sync', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -59,7 +60,7 @@ describe('ask integration', () => {
   });
 
   it('POST /ask/sync returns answer + appends to chat history', async () => {
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('EXPERT', 'The answer is 42.');
 

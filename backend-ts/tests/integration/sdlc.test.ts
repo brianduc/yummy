@@ -1,14 +1,15 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
+import { createApp } from '../../src/app.js';
+import { db } from '../../src/db/client.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
-import { createApp } from '../../src/app.js';
 import { setAIResponse, setDefaultAIResponse } from './_setup.js';
 
 const app = createApp();
 
-function seedKb() {
-  repoRepo.set({
+async function seedKb() {
+  await repoRepo.set(db, {
     url: 'https://github.com/mock/mock',
     owner: 'mock',
     repo: 'mock',
@@ -16,14 +17,14 @@ function seedKb() {
     githubToken: '',
     maxScanLimit: 100,
   });
-  kbRepo.replaceTree([{ path: 'README.md', name: 'README.md', status: 'done' }]);
-  kbRepo.addInsight({
+  await kbRepo.replaceTree(db, [{ path: 'README.md', name: 'README.md', status: 'done' }]);
+  await kbRepo.addInsight(db, {
     id: 1,
     files: ['README.md'],
     summary: 'mock',
     createdAt: Date.now(),
   });
-  kbRepo.setProjectSummary('# Mock Project');
+  await kbRepo.setProjectSummary(db, '# Mock Project');
 }
 
 async function createSession() {
@@ -33,6 +34,22 @@ async function createSession() {
     body: JSON.stringify({ name: 'SDLCTest' }),
   });
   return ((await r.json()) as { id: string }).id;
+}
+
+function parseSse(text: string): Record<string, unknown>[] {
+  const events: Record<string, unknown>[] = [];
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('data: ')) {
+      events.push(JSON.parse(trimmed.slice(6)) as Record<string, unknown>);
+    }
+  }
+  return events;
+}
+
+async function finalSseEvent(res: Response): Promise<Record<string, unknown>> {
+  const events = parseSse(await res.text());
+  return events.at(-1) ?? {};
 }
 
 describe('sdlc workflow integration', () => {
@@ -52,15 +69,12 @@ describe('sdlc workflow integration', () => {
   });
 
   it('runs full BA → SA → Dev Lead → DEV/SEC/QA/SRE pipeline', async () => {
-    seedKb();
+    await seedKb();
     const sid = await createSession();
 
     setAIResponse('BA', 'BRD content here');
     setAIResponse('SA', 'Architecture here');
-    setAIResponse(
-      'PM',
-      '```json\n{"epics":[{"epic":"E1","stories":["S1","S2"]}]}\n```',
-    );
+    setAIResponse('PM', '```json\n{"epics":[{"epic":"E1","stories":["S1","S2"]}]}\n```');
     setAIResponse('DEV_LEAD', 'Implementation plan');
     setAIResponse('DEV', 'Code commits');
     setAIResponse('SECURITY', 'No CVEs');
@@ -75,9 +89,9 @@ describe('sdlc workflow integration', () => {
       body: JSON.stringify({ session_id: sid, requirement: 'Build feature X' }),
     });
     expect(start.status).toBe(200);
-    const startBody = (await start.json()) as { status: string; ba_output: string };
-    expect(startBody.status).toBe('waiting_ba_approval');
-    expect(startBody.ba_output).toBe('BRD content here');
+    const startBody = await finalSseEvent(start);
+    expect(startBody.state).toBe('waiting_ba_approval');
+    expect((startBody.agent_outputs as Record<string, unknown>).ba).toBe('mock streamed response');
 
     // 2. approve-ba → SA + PM (parallel) → backlog
     const ba = await app.request('/sdlc/approve-ba', {
@@ -86,16 +100,10 @@ describe('sdlc workflow integration', () => {
       body: JSON.stringify({ session_id: sid }),
     });
     expect(ba.status).toBe(200);
-    const baBody = (await ba.json()) as {
-      status: string;
-      sa_output: string;
-      jira_backlog: unknown[];
-    };
-    expect(baBody.status).toBe('waiting_sa_approval');
-    expect(baBody.sa_output).toBe('Architecture here');
-    expect(baBody.jira_backlog).toEqual([
-      { epic: 'E1', stories: ['S1', 'S2'] },
-    ]);
+    const baBody = await finalSseEvent(ba);
+    expect(baBody.state).toBe('waiting_sa_approval');
+    expect((baBody.agent_outputs as Record<string, unknown>).sa).toBe('mock streamed response');
+    expect(baBody.jira_backlog).toEqual([{ epic: 'E1', stories: ['S1', 'S2'] }]);
 
     // 3. approve-sa → Dev Lead
     const sa = await app.request('/sdlc/approve-sa', {
@@ -104,9 +112,11 @@ describe('sdlc workflow integration', () => {
       body: JSON.stringify({ session_id: sid }),
     });
     expect(sa.status).toBe(200);
-    const saBody = (await sa.json()) as { status: string; dev_lead_output: string };
-    expect(saBody.status).toBe('waiting_dev_lead_approval');
-    expect(saBody.dev_lead_output).toBe('Implementation plan');
+    const saBody = await finalSseEvent(sa);
+    expect(saBody.state).toBe('waiting_dev_lead_approval');
+    expect((saBody.agent_outputs as Record<string, unknown>).dev_lead).toBe(
+      'mock streamed response',
+    );
 
     // 4. approve-dev-lead → DEV/SEC/QA/SRE
     const dl = await app.request('/sdlc/approve-dev-lead', {
@@ -115,18 +125,13 @@ describe('sdlc workflow integration', () => {
       body: JSON.stringify({ session_id: sid }),
     });
     expect(dl.status).toBe(200);
-    const dlBody = (await dl.json()) as {
-      status: string;
-      dev_output: string;
-      security_output: string;
-      qa_output: string;
-      sre_output: string;
-    };
-    expect(dlBody.status).toBe('done');
-    expect(dlBody.dev_output).toBe('Code commits');
-    expect(dlBody.security_output).toBe('No CVEs');
-    expect(dlBody.qa_output).toBe('All tests pass');
-    expect(dlBody.sre_output).toBe('Deployed to prod');
+    const dlBody = await finalSseEvent(dl);
+    const dlOutputs = dlBody.agent_outputs as Record<string, unknown>;
+    expect(dlBody.state).toBe('done');
+    expect(dlOutputs.dev).toBe('mock streamed response');
+    expect(dlOutputs.security).toBe('mock streamed response');
+    expect(dlOutputs.qa).toBe('mock streamed response');
+    expect(dlOutputs.sre).toBe('mock streamed response');
 
     // Final state reflects everything
     const state = await app.request(`/sdlc/${sid}/state`);
@@ -137,31 +142,35 @@ describe('sdlc workflow integration', () => {
     };
     expect(stateBody.workflow_state).toBe('done');
     expect(stateBody.agent_outputs.requirement).toBe('Build feature X');
-    expect(stateBody.agent_outputs.ba).toBe('BRD content here');
-    expect(stateBody.agent_outputs.sa).toBe('Architecture here');
-    expect(stateBody.agent_outputs.dev_lead).toBe('Implementation plan');
-    expect(stateBody.agent_outputs.dev).toBe('Code commits');
+    expect(stateBody.agent_outputs.ba).toBe('mock streamed response');
+    expect(stateBody.agent_outputs.sa).toBe('mock streamed response');
+    expect(stateBody.agent_outputs.dev_lead).toBe('mock streamed response');
+    expect(stateBody.agent_outputs.dev).toBe('mock streamed response');
     expect(stateBody.jira_backlog).toHaveLength(1);
   });
 
   it('approve-ba accepts edited_content override', async () => {
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'original BA');
     setAIResponse('SA', 'sa');
     setAIResponse('PM', '[]');
 
-    await app.request('/sdlc/start', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ session_id: sid, requirement: 'X' }),
-    });
+    await finalSseEvent(
+      await app.request('/sdlc/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ session_id: sid, requirement: 'X' }),
+      }),
+    );
 
-    await app.request('/sdlc/approve-ba', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ session_id: sid, edited_content: 'EDITED BRD' }),
-    });
+    await finalSseEvent(
+      await app.request('/sdlc/approve-ba', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ session_id: sid, edited_content: 'EDITED BRD' }),
+      }),
+    );
 
     const state = await app.request(`/sdlc/${sid}/state`);
     const body = (await state.json()) as {
@@ -171,23 +180,25 @@ describe('sdlc workflow integration', () => {
   });
 
   it('PM JSON parse failure falls back to []', async () => {
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'ba');
     setAIResponse('SA', 'sa');
     setAIResponse('PM', 'not valid json at all');
 
-    await app.request('/sdlc/start', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ session_id: sid, requirement: 'X' }),
-    });
+    await finalSseEvent(
+      await app.request('/sdlc/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ session_id: sid, requirement: 'X' }),
+      }),
+    );
     const ba = await app.request('/sdlc/approve-ba', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ session_id: sid }),
     });
-    const body = (await ba.json()) as { jira_backlog: unknown[] };
+    const body = await finalSseEvent(ba);
     expect(body.jira_backlog).toEqual([]);
   });
 });

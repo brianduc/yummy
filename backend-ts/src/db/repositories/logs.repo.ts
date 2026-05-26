@@ -2,11 +2,10 @@
  * Request logs — newest-first ordering (matches Python `insert(0, ...)`).
  */
 import { desc } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type RequestLogInsert, type RequestLogRow, requestLogs } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export type RequestLog = RequestLogRow;
 
 export const logsRepo = {

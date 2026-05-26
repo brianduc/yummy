@@ -1,12 +1,13 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
-import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { createApp } from '../../src/app.js';
+import { db } from '../../src/db/client.js';
+import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 
 const app = createApp();
 
-function seedLogs() {
-  logsRepo.add({
+async function seedLogs() {
+  await logsRepo.add(db, {
     id: 1,
     time: '10:00:00',
     agent: 'BA',
@@ -17,7 +18,7 @@ function seedLogs() {
     latency: 0.5,
     cost: 0.001,
   });
-  logsRepo.add({
+  await logsRepo.add(db, {
     id: 2,
     time: '10:00:05',
     agent: 'BA',
@@ -28,7 +29,7 @@ function seedLogs() {
     latency: 0.7,
     cost: 0.002,
   });
-  logsRepo.add({
+  await logsRepo.add(db, {
     id: 3,
     time: '10:00:10',
     agent: 'SA',
@@ -58,16 +59,13 @@ describe('metrics integration', () => {
   });
 
   it('GET /metrics aggregates and returns logs newest-first', async () => {
-    seedLogs();
+    await seedLogs();
     const res = await app.request('/metrics');
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       total_requests: number;
       total_cost_usd: number;
-      agent_breakdown: Record<
-        string,
-        { calls: number; cost: number; total_tokens: number }
-      >;
+      agent_breakdown: Record<string, { calls: number; cost: number; total_tokens: number }>;
       logs: Array<{ id: number; agent: string; in_tokens: number }>;
     };
     expect(body.total_requests).toBe(3);
@@ -89,7 +87,7 @@ describe('metrics integration', () => {
   });
 
   it('DELETE /metrics clears all logs', async () => {
-    seedLogs();
+    await seedLogs();
     const del = await app.request('/metrics', { method: 'DELETE' });
     expect(del.status).toBe(200);
     const body = (await del.json()) as { status: string };

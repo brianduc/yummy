@@ -14,12 +14,7 @@
  * (chat_history, agent_outputs, jira_backlog, logs, files[]).
  */
 import { sql } from 'drizzle-orm';
-import {
-  integer,
-  real,
-  sqliteTable,
-  text,
-} from 'drizzle-orm/sqlite-core';
+import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 // ─── Sessions ────────────────────────────────────────────
 export const sessions = sqliteTable('sessions', {
@@ -112,7 +107,7 @@ export const scanStatus = sqliteTable('scan_status', {
 // ─── Request logs (newest-first via id DESC) ─────────────
 export const requestLogs = sqliteTable('request_logs', {
   id: integer('id').primaryKey(), // ms epoch (matches Python int(time.time()*1000))
-  time: text('time').notNull(),   // HH:MM:SS
+  time: text('time').notNull(), // HH:MM:SS
   agent: text('agent').notNull(),
   provider: text('provider').notNull(),
   model: text('model').notNull(),

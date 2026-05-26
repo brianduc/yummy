@@ -49,10 +49,12 @@ const WorldServerCreateBaseSchema = z
 export const WorldServerCreateSchema = WorldServerCreateBaseSchema.refine(
   (data) => data.transport !== 'stdio' || !!data.command,
   { message: 'command is required for stdio transport', path: ['command'] },
-).refine((data) => data.transport !== 'http' || !!data.url, {
-  message: 'url is required for http transport',
-  path: ['url'],
-}).openapi('WorldServerCreate');
+)
+  .refine((data) => data.transport !== 'http' || !!data.url, {
+    message: 'url is required for http transport',
+    path: ['url'],
+  })
+  .openapi('WorldServerCreate');
 
 const WorldServerUpdateBaseSchema = z
   .object({
@@ -69,10 +71,12 @@ const WorldServerUpdateBaseSchema = z
 export const WorldServerUpdateSchema = WorldServerUpdateBaseSchema.refine(
   (data) => data.transport !== 'stdio' || data.command !== undefined,
   { message: 'command is required for stdio transport', path: ['command'] },
-).refine((data) => data.transport !== 'http' || data.url !== undefined, {
-  message: 'url is required for http transport',
-  path: ['url'],
-}).openapi('WorldServerUpdate');
+)
+  .refine((data) => data.transport !== 'http' || data.url !== undefined, {
+    message: 'url is required for http transport',
+    path: ['url'],
+  })
+  .openapi('WorldServerUpdate');
 
 export const ToolInvokeRequestSchema = z
   .object({

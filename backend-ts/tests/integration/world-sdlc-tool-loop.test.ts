@@ -1,16 +1,18 @@
 import './_setup.js';
-import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createApp } from '../../src/app.js';
+import { db } from '../../src/db/client.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
-import { createApp } from '../../src/app.js';
-import { setAIResponse, clearAIResponses } from './_setup.js';
-
 import { streamAI } from '../../src/services/ai/dispatcher.js';
+import { clearAIResponses, setAIResponse } from './_setup.js';
 
 vi.mock('../../src/services/world/client.js', () => ({
-  listTools: vi.fn().mockResolvedValue([
-    { name: 'echo', description: 'Echo tool', inputSchema: { type: 'object', properties: {} } },
-  ]),
+  listTools: vi
+    .fn()
+    .mockResolvedValue([
+      { name: 'echo', description: 'Echo tool', inputSchema: { type: 'object', properties: {} } },
+    ]),
   callTool: vi.fn().mockResolvedValue({
     content: [{ type: 'text', text: 'mock-tool-result' }],
     isError: false,
@@ -23,14 +25,20 @@ vi.mock('../../src/services/world/registry.js', async () => {
     getClient: vi.fn((id: string) => clients.get(id) ?? undefined),
     listConnected: vi.fn(() => Array.from(clients.keys())),
     isConnected: vi.fn((id: string) => clients.has(id)),
-    __connectMock: (id: string) => { clients.set(id, {}); },
-    __disconnectMock: (id: string) => { clients.delete(id); },
-    __resetMock: () => { clients.clear(); },
+    __connectMock: (id: string) => {
+      clients.set(id, {});
+    },
+    __disconnectMock: (id: string) => {
+      clients.delete(id);
+    },
+    __resetMock: () => {
+      clients.clear();
+    },
   };
 });
 
-import * as worldRegistry from '../../src/services/world/registry.js';
 import * as worldClientMod from '../../src/services/world/client.js';
+import * as worldRegistry from '../../src/services/world/registry.js';
 
 const mockRegistry = worldRegistry as unknown as {
   __connectMock: (id: string) => void;
@@ -41,14 +49,23 @@ const mockCallTool = worldClientMod.callTool as ReturnType<typeof vi.fn>;
 
 const app = createApp();
 
-function seedKb() {
-  repoRepo.set({
-    url: 'https://github.com/mock/mock', owner: 'mock', repo: 'mock',
-    branch: 'main', githubToken: '', maxScanLimit: 100,
+async function seedKb() {
+  await repoRepo.set(db, {
+    url: 'https://github.com/mock/mock',
+    owner: 'mock',
+    repo: 'mock',
+    branch: 'main',
+    githubToken: '',
+    maxScanLimit: 100,
   });
-  kbRepo.replaceTree([{ path: 'README.md', name: 'README.md', status: 'done' }]);
-  kbRepo.addInsight({ id: 1, files: ['README.md'], summary: 'mock', createdAt: Date.now() });
-  kbRepo.setProjectSummary('# Mock Project');
+  await kbRepo.replaceTree(db, [{ path: 'README.md', name: 'README.md', status: 'done' }]);
+  await kbRepo.addInsight(db, {
+    id: 1,
+    files: ['README.md'],
+    summary: 'mock',
+    createdAt: Date.now(),
+  });
+  await kbRepo.setProjectSummary(db, '# Mock Project');
 }
 
 async function createSession(): Promise<string> {
@@ -65,7 +82,11 @@ function parseSse(text: string): Record<string, unknown>[] {
   for (const line of text.split('\n')) {
     const trimmed = line.trim();
     if (trimmed.startsWith('data: ')) {
-      try { events.push(JSON.parse(trimmed.slice(6))); } catch { /* skip */ }
+      try {
+        events.push(JSON.parse(trimmed.slice(6)));
+      } catch {
+        /* skip */
+      }
     }
   }
   return events;
@@ -83,7 +104,10 @@ async function post(path: string, body: Record<string, unknown>): Promise<Respon
   });
 }
 
-async function runStage(path: string, body: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+async function runStage(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>[]> {
   return sse(await post(path, body));
 }
 
@@ -113,7 +137,7 @@ describe('SDLC tool-call loop', () => {
   });
 
   it('completes pipeline normally when no MCP servers are connected', async () => {
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd-content');
     setAIResponse('SA', 'sa-content');
@@ -131,8 +155,8 @@ describe('SDLC tool-call loop', () => {
 
     const done = evDone(dlEvents);
     expect(done).toBeDefined();
-    expect(done!.state).toBe('done');
-    const outputs = done!.agent_outputs as Record<string, string>;
+    expect(done?.state).toBe('done');
+    const outputs = done?.agent_outputs as Record<string, string>;
     expect(outputs.ba).toBeTruthy();
     expect(outputs.sa).toBeTruthy();
     expect(outputs.dev_lead).toBeTruthy();
@@ -144,7 +168,7 @@ describe('SDLC tool-call loop', () => {
 
   it('completes pipeline with connected MCP servers', async () => {
     mockRegistry.__connectMock('test-srv');
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
     setAIResponse('SA', 'sa');
@@ -162,7 +186,7 @@ describe('SDLC tool-call loop', () => {
 
     const done = evDone(dlEvents);
     expect(done).toBeDefined();
-    expect(done!.state).toBe('done');
+    expect(done?.state).toBe('done');
     expect(worldClientMod.listTools).toHaveBeenCalled();
   });
 
@@ -174,7 +198,7 @@ describe('SDLC tool-call loop', () => {
       yield ' done.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -182,18 +206,18 @@ describe('SDLC tool-call loop', () => {
 
     const tc = evToolCalls(events)[0];
     expect(tc).toBeDefined();
-    expect(tc!.server).toBe('test-srv');
-    expect(tc!.tool).toBe('echo');
+    expect(tc?.server).toBe('test-srv');
+    expect(tc?.tool).toBe('echo');
 
     const tr = evToolResults(events)[0];
     expect(tr).toBeDefined();
-    expect(tr!.is_error).toBe(false);
+    expect(tr?.is_error).toBe(false);
 
     expect(mockCallTool).toHaveBeenCalled();
 
     const done = evDone(events);
     expect(done).toBeDefined();
-    expect(done!.state).toBe('waiting_ba_approval');
+    expect(done?.state).toBe('waiting_ba_approval');
   });
 
   it('emits error tool_result when tool execution fails', async () => {
@@ -205,7 +229,7 @@ describe('SDLC tool-call loop', () => {
       yield ' continuing...';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -216,8 +240,8 @@ describe('SDLC tool-call loop', () => {
 
     const tr = evToolResults(events)[0];
     expect(tr).toBeDefined();
-    expect(tr!.is_error).toBe(true);
-    const content = tr!.content as Array<{ text?: string }>;
+    expect(tr?.is_error).toBe(true);
+    const content = tr?.content as Array<{ text?: string }>;
     expect(content[0]?.text).toContain('Tool execution failed');
 
     const done = evDone(events);
@@ -231,7 +255,7 @@ describe('SDLC tool-call loop', () => {
       yield ' after bad args.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -239,11 +263,11 @@ describe('SDLC tool-call loop', () => {
 
     const tr = evToolResults(events)[0];
     expect(tr).toBeDefined();
-    expect(tr!.is_error).toBe(true);
+    expect(tr?.is_error).toBe(true);
 
     const done = evDone(events);
     expect(done).toBeDefined();
-    expect(done!.state).toBe('waiting_ba_approval');
+    expect(done?.state).toBe('waiting_ba_approval');
   });
 
   it('stops calling tools after MAX_TOOL_CALL_ROUNDS (3)', async () => {
@@ -252,7 +276,7 @@ describe('SDLC tool-call loop', () => {
       yield '<tool_call server="test-srv" tool="echo">{"msg":"round"}</tool_call>';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -277,7 +301,7 @@ describe('SDLC tool-call loop', () => {
       yield ' after tool.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
     setAIResponse('SA', 'sa');
@@ -311,7 +335,7 @@ describe('SDLC tool-call loop', () => {
       yield ' done.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -319,8 +343,8 @@ describe('SDLC tool-call loop', () => {
 
     const calls = evToolCalls(events);
     expect(calls.length).toBeGreaterThanOrEqual(2);
-    expect(calls[0]!.server).toBe('srv-1');
-    expect(calls[1]!.server).toBe('srv-2');
+    expect(calls[0]?.server).toBe('srv-1');
+    expect(calls[1]?.server).toBe('srv-2');
 
     const results = evToolResults(events);
     expect(results.length).toBeGreaterThanOrEqual(2);
@@ -336,7 +360,7 @@ describe('SDLC tool-call loop', () => {
       yield ' done.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -344,14 +368,9 @@ describe('SDLC tool-call loop', () => {
 
     const tr = evToolResults(events)[0];
     expect(tr).toBeDefined();
-    expect(tr!.is_error).toBe(false);
+    expect(tr?.is_error).toBe(false);
 
-    expect(mockCallTool).toHaveBeenCalledWith(
-      expect.anything(),
-      'test-srv',
-      'list',
-      {},
-    );
+    expect(mockCallTool).toHaveBeenCalledWith(expect.anything(), 'test-srv', 'list', {});
 
     const done = evDone(events);
     expect(done).toBeDefined();
@@ -363,7 +382,7 @@ describe('SDLC tool-call loop', () => {
       yield ' after failed call.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
 
@@ -371,8 +390,8 @@ describe('SDLC tool-call loop', () => {
 
     const tr = evToolResults(events)[0];
     expect(tr).toBeDefined();
-    expect(tr!.is_error).toBe(true);
-    expect(tr!.server).toBe('unknown-srv');
+    expect(tr?.is_error).toBe(true);
+    expect(tr?.server).toBe('unknown-srv');
 
     const done = evDone(events);
     expect(done).toBeDefined();
@@ -385,7 +404,7 @@ describe('SDLC tool-call loop', () => {
       yield ' rest.';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
     setAIResponse('SA', 'sa');
@@ -396,7 +415,7 @@ describe('SDLC tool-call loop', () => {
 
     const baDone = evDone(baEvents);
     expect(baDone).toBeDefined();
-    expect(baDone!.state).toBe('waiting_sa_approval');
+    expect(baDone?.state).toBe('waiting_sa_approval');
 
     await post(`/sdlc/${sid}/stop`, {});
 
@@ -418,7 +437,7 @@ describe('SDLC tool-call loop', () => {
       yield '<tool_call server="test-srv" tool="echo">{"msg":"dl-tool"}</tool_call>';
     });
 
-    seedKb();
+    await seedKb();
     const sid = await createSession();
     setAIResponse('BA', 'brd');
     setAIResponse('SA', 'sa');
@@ -431,10 +450,10 @@ describe('SDLC tool-call loop', () => {
 
     const tc = evToolCalls(saEvents)[0];
     expect(tc).toBeDefined();
-    expect(tc!.tool).toBe('echo');
+    expect(tc?.tool).toBe('echo');
 
     const done = evDone(saEvents);
     expect(done).toBeDefined();
-    expect(done!.state).toBe('waiting_dev_lead_approval');
+    expect(done?.state).toBe('waiting_dev_lead_approval');
   });
 });

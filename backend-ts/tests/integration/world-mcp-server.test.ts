@@ -22,7 +22,10 @@ function mcpRequest(method: string, params?: unknown, id = 1) {
 }
 
 async function postMcp(app: App, body: string, token?: string) {
-  const headers: Record<string, string> = { Accept: 'application/json, text/event-stream', 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = {
+    Accept: 'application/json, text/event-stream',
+    'Content-Type': 'application/json',
+  };
   if (token) headers.Authorization = `Bearer ${token}`;
   return app.request('/world/mcp', { method: 'POST', headers, body });
 }
@@ -96,7 +99,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   it('responds to initialize request', async () => {
     const res = await postMcp(
       app,
-      mcpRequest('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'vitest', version: '1.0.0' } }),
+      mcpRequest('initialize', {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'vitest', version: '1.0.0' },
+      }),
       MCP_TOKEN,
     );
 
@@ -112,7 +119,9 @@ describe('POST /world/mcp — MCP server endpoint', () => {
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
-    const tools = (body.result as { tools: Array<{ name: string; description?: string; inputSchema?: unknown }> }).tools;
+    const tools = (
+      body.result as { tools: Array<{ name: string; description?: string; inputSchema?: unknown }> }
+    ).tools;
     expect(Array.isArray(tools)).toBe(true);
     expect(tools.length).toBeGreaterThanOrEqual(8);
     expect(tools.every((tool) => tool.name.startsWith('yummy.'))).toBe(true);
@@ -131,7 +140,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.session_list returns session list', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.session_list', arguments: {} }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.session_list', arguments: {} }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -140,7 +153,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.get_kb_summary returns text result', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.get_kb_summary', arguments: {} }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.get_kb_summary', arguments: {} }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -149,7 +166,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call unknown tool returns isError result', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.nope', arguments: {} }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.nope', arguments: {} }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -159,7 +180,14 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.session_create creates a session', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.session_create', arguments: { name: 'MCP Session' } }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', {
+        name: 'yummy.session_create',
+        arguments: { name: 'MCP Session' },
+      }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -170,7 +198,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.get_kb_insights returns fallback text result', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.get_kb_insights', arguments: {} }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.get_kb_insights', arguments: {} }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -179,7 +211,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.rag_ask_free uses mocked AI and returns text result', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.rag_ask_free', arguments: { question: 'hello' } }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.rag_ask_free', arguments: { question: 'hello' } }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);
@@ -188,7 +224,11 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   });
 
   it('tools/call yummy.sdlc_status returns an error text result for unknown session', async () => {
-    const res = await postMcp(app, mcpRequest('tools/call', { name: 'yummy.sdlc_status', arguments: { session_id: 'missing' } }), MCP_TOKEN);
+    const res = await postMcp(
+      app,
+      mcpRequest('tools/call', { name: 'yummy.sdlc_status', arguments: { session_id: 'missing' } }),
+      MCP_TOKEN,
+    );
 
     expect(res.status).toBe(200);
     const body = await readJsonRpc(res);

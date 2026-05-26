@@ -44,7 +44,8 @@ export const ExportPromptRequestSchema = z
   .object({
     session_id: z.string().min(1),
     format: z.enum(['chat']).openapi({
-      description: 'Output format for the exported prompt. "chat" = plain markdown for Claude/ChatGPT/Cursor.',
+      description:
+        'Output format for the exported prompt. "chat" = plain markdown for Claude/ChatGPT/Cursor.',
     }),
   })
   .openapi('ExportPromptRequest');

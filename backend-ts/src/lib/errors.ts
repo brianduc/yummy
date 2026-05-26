@@ -20,7 +20,10 @@ export const conflict = (detail: string) => new HttpError(409, detail);
 export const serverError = (detail: string) => new HttpError(500, detail);
 
 export class McpConnectionError extends Error {
-  constructor(public serverId: string, message: string) {
+  constructor(
+    public serverId: string,
+    message: string,
+  ) {
     super(`MCP connection error [${serverId}]: ${message}`);
     this.name = 'McpConnectionError';
   }

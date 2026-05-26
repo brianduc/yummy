@@ -33,7 +33,7 @@ metricsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const logs = await logsRepo.list(db); // newest-first
     const totalCost = round(
       logs.reduce((sum, l) => sum + l.cost, 0),
@@ -85,7 +85,7 @@ metricsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     await logsRepo.clear(db);
     return c.json({ status: 'ok', message: 'Request logs cleared.' });
   },

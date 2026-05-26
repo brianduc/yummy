@@ -3,11 +3,10 @@
  * Returns undefined when no scan has been initialized (Python's `None`).
  */
 import { eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type ScanStatusRow, scanStatus } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export interface ScanStatus {
   running: boolean;
   text: string;

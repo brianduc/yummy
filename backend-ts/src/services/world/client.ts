@@ -29,7 +29,9 @@ function parseHeaders(value: string | null): Record<string, string> | undefined 
   if (!value) return undefined;
   const parsed = JSON.parse(value) as unknown;
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
-  return Object.fromEntries(Object.entries(parsed).map(([key, headerValue]) => [key, String(headerValue)]));
+  return Object.fromEntries(
+    Object.entries(parsed).map(([key, headerValue]) => [key, String(headerValue)]),
+  );
 }
 
 function createClient(): Client {
@@ -45,7 +47,10 @@ export async function createStdioClient(config: WorldServerRow): Promise<Client>
 
   try {
     const args = parseJsonArray(config.args) ?? [];
-    const transport = new StdioClientTransport({ command: config.command!, args });
+    if (!config.command) {
+      throw new Error('command is required for stdio transport');
+    }
+    const transport = new StdioClientTransport({ command: config.command, args });
     await Promise.race([client.connect(transport), timeout(CONNECT_TIMEOUT_MS)]);
     return client;
   } catch (error) {
@@ -60,9 +65,15 @@ export async function createHttpClient(config: WorldServerRow): Promise<Client> 
     const client = createClient();
 
     try {
-      const url = new URL(config.url!);
+      if (!config.url) {
+        throw new Error('url is required for http transport');
+      }
+      const url = new URL(config.url);
       const headers = parseHeaders(config.headersJson);
-      const transport = new SSEClientTransport(url, headers ? { requestInit: { headers } } : undefined);
+      const transport = new SSEClientTransport(
+        url,
+        headers ? { requestInit: { headers } } : undefined,
+      );
       await Promise.race([client.connect(transport), timeout(CONNECT_TIMEOUT_MS)]);
       return client;
     } catch (error) {

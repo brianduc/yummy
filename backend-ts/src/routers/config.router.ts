@@ -50,7 +50,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const cfg = c.req.valid('json');
     if (cfg.api_key) runtimeConfig.gemini_key = cfg.api_key;
     if (cfg.model) runtimeConfig.gemini_model = cfg.model;
@@ -74,7 +74,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const cfg = c.req.valid('json');
     runtimeConfig.ollama_base_url = cfg.base_url;
     runtimeConfig.ollama_model = cfg.model;
@@ -103,7 +103,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { provider } = c.req.valid('json');
     if (!['gemini', 'ollama', 'copilot', 'openai', 'bedrock'].includes(provider)) {
       throw badRequest('Provider must be one of: gemini, ollama, copilot, openai, bedrock.');
@@ -129,7 +129,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const cfg = c.req.valid('json');
     if (cfg.api_key) runtimeConfig.openai_key = cfg.api_key;
     if (cfg.model) runtimeConfig.openai_model = cfg.model;
@@ -153,7 +153,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const cfg = c.req.valid('json');
     if (cfg.access_key) runtimeConfig.bedrock_access_key = cfg.access_key;
     if (cfg.secret_key) runtimeConfig.bedrock_secret_key = cfg.secret_key;
@@ -183,7 +183,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const cfg = c.req.valid('json');
     if (cfg.token) runtimeConfig.copilot_token = cfg.token;
     if (cfg.model) runtimeConfig.copilot_model = cfg.model;
@@ -207,7 +207,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const req = c.req.valid('json');
     const m = GITHUB_URL_RE.exec(req.github_url);
     if (!m) {
@@ -263,7 +263,7 @@ configRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const repo = await repoRepo.get(db);
     const insightsCount = (await kbRepo.listInsights(db)).length;
     const treeCount = (await kbRepo.listTree(db)).length;

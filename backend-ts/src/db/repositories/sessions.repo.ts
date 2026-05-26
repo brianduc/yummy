@@ -3,12 +3,11 @@
  * Mirrors Python's DB["sessions"] dict with the make_session() shape.
  */
 import { eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { nowIso } from '../../lib/time.js';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type SessionRow, sessions } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export type Session = SessionRow;
 
 function defaultSystemLog(name: string): Session['logs'][number] {
@@ -54,8 +53,10 @@ export const sessionsRepo = {
   },
 
   async delete(db: DB, id: string): Promise<boolean> {
-    const res = await db.delete(sessions).where(eq(sessions.id, id)).run();
-    return res.changes > 0;
+    const existing = await this.get(db, id);
+    if (!existing) return false;
+    await db.delete(sessions).where(eq(sessions.id, id)).run();
+    return true;
   },
 
   /** Reset agent outputs / jira backlog / workflow state — keeps logs + chat. */

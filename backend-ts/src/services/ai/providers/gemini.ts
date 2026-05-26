@@ -47,21 +47,14 @@ export async function callGemini(
   }
 }
 
-export async function* streamGemini(
-  prompt: string,
-  instruction: string,
-): StreamChunks {
+export async function* streamGemini(prompt: string, instruction: string): StreamChunks {
   let stream: AsyncGenerator<{ text?: string | undefined }, unknown, unknown>;
   try {
     stream = (await client().models.generateContentStream({
       model: model(),
       contents: prompt,
       config: { systemInstruction: instruction },
-    })) as unknown as AsyncGenerator<
-      { text?: string | undefined },
-      unknown,
-      unknown
-    >;
+    })) as unknown as AsyncGenerator<{ text?: string | undefined }, unknown, unknown>;
   } catch (e) {
     if (e instanceof HttpError) throw e;
     throw new HttpError(502, `Gemini stream error: ${(e as Error).message}`);

@@ -33,7 +33,7 @@ sessionsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const req = c.req.valid('json');
     const sid = newSessionId();
     const name = req.name ?? `Session ${(await sessionsRepo.list(db)).length + 1}`;
@@ -53,7 +53,7 @@ sessionsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     return c.json((await sessionsRepo.list(db)).map(toSessionSummary));
   },
 );
@@ -71,7 +71,7 @@ sessionsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     return c.json(toSessionDetail(await requireSession(db, session_id)), 200);
   },
@@ -93,7 +93,7 @@ sessionsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     await requireSession(db, session_id); // raises 404
     await sessionsRepo.delete(db, session_id);
@@ -117,7 +117,7 @@ sessionsRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     await requireSession(db, session_id);
     // Python only sets workflow_state to 'idle'; doesn't clear agent_outputs.

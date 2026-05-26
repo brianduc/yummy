@@ -5,8 +5,8 @@
  * Wire as: app.onError(errorHandler)
  */
 import type { Context } from 'hono';
-import { HttpError } from '../lib/errors.js';
 import { ZodError } from 'zod';
+import { HttpError } from '../lib/errors.js';
 
 export function errorHandler(err: Error, c: Context): Response {
   if (err instanceof HttpError) {

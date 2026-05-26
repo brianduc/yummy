@@ -3,8 +3,7 @@
  * Persists runtime-mutable world/MCP settings to SQLite.
  */
 import { asc, eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import {
   type WorldConfigInsert,
   type WorldConfigRow,
@@ -14,7 +13,7 @@ import {
   worldServers,
 } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 
 function defaultWorldConfig(): WorldConfigRow {
   return {

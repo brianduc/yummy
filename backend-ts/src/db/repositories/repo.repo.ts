@@ -2,11 +2,10 @@
  * Repo info — singleton row id=1. Returns undefined if not configured.
  */
 import { eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type RepoInfoRow, repoInfo } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export type RepoInfo = RepoInfoRow;
 
 export const repoRepo = {

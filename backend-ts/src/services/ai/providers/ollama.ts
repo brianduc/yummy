@@ -51,10 +51,7 @@ export async function callOllama(
   }
 }
 
-export async function* streamOllama(
-  prompt: string,
-  instruction: string,
-): StreamChunks {
+export async function* streamOllama(prompt: string, instruction: string): StreamChunks {
   const m = model();
   let iterator: AsyncIterable<{ message?: { content?: string } }>;
   try {

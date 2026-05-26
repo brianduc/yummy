@@ -74,7 +74,7 @@ worldRouter.openapi(
     responses: { 200: { content: json(WorldConfigSchema), description: 'OK' } },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const config = await getWorldConfig(db);
     return c.json(mapConfigRow(config));
   },
@@ -89,7 +89,7 @@ worldRouter.openapi(
     responses: { 200: { content: json(WorldConfigSchema), description: 'OK' } },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const body = c.req.valid('json');
     const updated = await updateWorldConfig(db, {
       ...(body.mcp_server_token !== undefined && { mcpServerToken: body.mcp_server_token }),
@@ -108,7 +108,7 @@ worldRouter.openapi(
     responses: { 200: { content: json(z.array(WorldServerSchema)), description: 'OK' } },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const servers = await listWorldServers(db);
     return c.json(servers.map(mapServerRow));
   },
@@ -125,7 +125,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const server = await requireMcpServer(db, c.req.param('id'));
     return c.json(mapServerRow(server), 200);
   },
@@ -143,7 +143,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const body = c.req.valid('json');
     const created = await createWorldServer(db, {
       id: crypto.randomUUID(),
@@ -173,7 +173,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const id = c.req.param('id');
     await requireMcpServer(db, id);
     const body = c.req.valid('json');
@@ -202,7 +202,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const id = c.req.param('id');
     await requireMcpServer(db, id);
     if (isConnected(id)) await disconnectServer(db, id);
@@ -223,7 +223,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const id = c.req.param('id');
     const server = await requireMcpServer(db, id);
     try {
@@ -246,7 +246,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const id = c.req.param('id');
     await requireMcpServer(db, id);
     await disconnectServer(db, id);
@@ -266,7 +266,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const id = c.req.param('id');
     await requireMcpServer(db, id);
     const client = getClient(id);
@@ -298,7 +298,7 @@ worldRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const body = c.req.valid('json');
     const server = await requireMcpServer(db, body.server_id);
 
@@ -341,7 +341,7 @@ worldRouter.openapi(
 
 // ─── POST /world/mcp — MCP JSON-RPC endpoint (bearer token auth) ─────────────
 worldRouter.post('/world/mcp', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const config = await getWorldConfig(db);
   if (!config?.mcpServerEnabled) {
     return c.json({ detail: 'MCP server is disabled' }, 503);

@@ -103,7 +103,7 @@ function sseLine(data: string): string {
 
 // ─── POST /ask  (SSE) ────────────────────────────────────
 askRouter.post('/ask', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as Partial<AskRequest>;
   const req = AskRequestSchema.parse(body);
 
@@ -159,7 +159,7 @@ askRouter.post('/ask', async (c) => {
 
 // ─── POST /ask/free  (SSE, no KB) ────────────────────────
 askRouter.post('/ask/free', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as Partial<AskRequest>;
   const req = AskRequestSchema.parse(body);
 
@@ -238,7 +238,7 @@ askRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const req = c.req.valid('json');
     const session = await requireSession(db, req.session_id);
     const kb = await requireKnowledgeBase(db);

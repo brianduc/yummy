@@ -312,7 +312,7 @@ const AGENT_INSTRUCTIONS = {
 // ─── POST /sdlc/start  (SSE) ──────────────────────────────
 // Streams BA output in real time.
 sdlcRouter.post('/sdlc/start', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as { session_id?: string; requirement?: string };
   const req = CRRequestSchema.parse(body);
 
@@ -372,7 +372,7 @@ sdlcRouter.post('/sdlc/start', async (c) => {
 // ─── POST /sdlc/approve-ba  (SSE) ───────────────────────
 // Streams SA output. PM (backlog JSON) runs blocking after SA stream completes.
 sdlcRouter.post('/sdlc/approve-ba', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
   const req = ApproveRequestSchema.parse(body);
 
@@ -465,7 +465,7 @@ sdlcRouter.post('/sdlc/approve-ba', async (c) => {
 // ─── POST /sdlc/approve-sa  (SSE) ───────────────────────
 // Streams Dev Lead output.
 sdlcRouter.post('/sdlc/approve-sa', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
   const req = ApproveRequestSchema.parse(body);
 
@@ -530,7 +530,7 @@ sdlcRouter.post('/sdlc/approve-sa', async (c) => {
 // Streams DEV → SECURITY → QA → SRE sequentially.
 // agent_done events are emitted between agents; DB is saved after each.
 sdlcRouter.post('/sdlc/approve-dev-lead', async (c) => {
-  const db = createDb(c.env.DB);
+  const db = createDb(c.env?.DB);
   const body = (await c.req.json()) as { session_id?: string; edited_content?: string };
   const req = ApproveRequestSchema.parse(body);
 
@@ -672,7 +672,7 @@ sdlcRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     const session = await requireSession(db, session_id);
 
@@ -708,7 +708,7 @@ sdlcRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     const { checkpoint } = c.req.valid('json');
     const session = await requireSession(db, session_id);
@@ -781,7 +781,7 @@ sdlcRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     const session = await requireSession(db, session_id);
     return c.json(
@@ -817,7 +817,7 @@ sdlcRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     const session = await requireSession(db, session_id);
     return c.json(
@@ -856,7 +856,7 @@ sdlcRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     const body = c.req.valid('json');
     const session = await requireSession(db, session_id);

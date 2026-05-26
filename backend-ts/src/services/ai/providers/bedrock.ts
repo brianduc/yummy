@@ -60,10 +60,7 @@ export async function callBedrock(
   }
 }
 
-export async function* streamBedrock(
-  prompt: string,
-  instruction: string,
-): StreamChunks {
+export async function* streamBedrock(prompt: string, instruction: string): StreamChunks {
   const m = model();
   let response: Awaited<ReturnType<BedrockRuntimeClient['send']>> & {
     stream?: AsyncIterable<{

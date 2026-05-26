@@ -35,7 +35,7 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const snap = await kbRepo.snapshot(db);
     return c.json({
       file_count: snap.tree.length,
@@ -64,7 +64,7 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     await requireRepo(db);
     const cur = await scanStatusRepo.get(db);
     if (cur?.running) {
@@ -93,7 +93,7 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const s = await scanStatusRepo.get(db);
     if (!s) {
       return c.json({
@@ -122,7 +122,7 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     const { path } = c.req.valid('query');
     const ri = await requireRepo(db);
 
@@ -153,7 +153,7 @@ kbRouter.openapi(
     },
   }),
   async (c) => {
-    const db = createDb(c.env.DB);
+    const db = createDb(c.env?.DB);
     await kbRepo.resetAll(db);
     await scanStatusRepo.clear(db);
     return c.json({ status: 'ok', message: 'Knowledge base cleared.' });

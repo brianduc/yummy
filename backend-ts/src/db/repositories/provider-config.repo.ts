@@ -4,12 +4,11 @@
  * Returns undefined if not yet saved (pre-migration or first boot).
  */
 import { eq } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { RuntimeConfig } from '../../config/runtime.js';
-import type * as schema from '../schema.js';
+import type { Db } from '../client.js';
 import { type ProviderConfigRow, providerConfig } from '../schema.js';
 
-type DB = DrizzleD1Database<typeof schema>;
+type DB = Db;
 export type ProviderConfig = ProviderConfigRow;
 
 export const providerConfigRepo = {
