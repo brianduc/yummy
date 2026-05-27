@@ -123,7 +123,7 @@ configRouter.openapi(
     request: { body: { content: json(OpenAIConfigSchema) } },
     responses: {
       200: {
-        content: json(z.object({ status: z.string(), model: z.string() })),
+        content: json(z.object({ status: z.string(), model: z.string(), base_url: z.string() })),
         description: 'OK',
       },
     },
@@ -133,8 +133,13 @@ configRouter.openapi(
     const cfg = c.req.valid('json');
     if (cfg.api_key) runtimeConfig.openai_key = cfg.api_key;
     if (cfg.model) runtimeConfig.openai_model = cfg.model;
+    if (cfg.base_url !== undefined) runtimeConfig.openai_base_url = cfg.base_url.trim();
     await providerConfigRepo.upsert(db, runtimeConfig);
-    return c.json({ status: 'ok', model: runtimeConfig.openai_model });
+    return c.json({
+      status: 'ok',
+      model: runtimeConfig.openai_model,
+      base_url: runtimeConfig.openai_base_url,
+    });
   },
 );
 
@@ -288,6 +293,8 @@ configRouter.openapi(
       has_openai_key: !!runtimeConfig.openai_key,
       openai_key_source: keySource('OPENAI_API_KEY', 'openai_key'),
       openai_model: runtimeConfig.openai_model,
+      openai_base_url: runtimeConfig.openai_base_url || null,
+      openai_base_url_source: keySource('OPENAI_BASE_URL', 'openai_base_url'),
       has_bedrock_key: !!runtimeConfig.bedrock_access_key,
       bedrock_key_source: keySource('AWS_ACCESS_KEY_ID', 'bedrock_access_key'),
       bedrock_region: runtimeConfig.bedrock_region,

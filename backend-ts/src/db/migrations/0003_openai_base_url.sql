@@ -1,0 +1,1 @@
+ALTER TABLE `provider_config` ADD `openai_base_url` text DEFAULT '' NOT NULL;

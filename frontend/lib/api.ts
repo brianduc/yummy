@@ -90,8 +90,8 @@ export const api = {
     setCopilot: (token: string, model?: string) =>
       request('/config/copilot', { method: 'POST', body: JSON.stringify({ token, model }) }),
 
-    setOpenAI: (api_key: string, model?: string) =>
-      request('/config/openai', { method: 'POST', body: JSON.stringify({ api_key, model }) }),
+    setOpenAI: (api_key: string, model?: string, base_url?: string) =>
+      request('/config/openai', { method: 'POST', body: JSON.stringify({ api_key, model, base_url }) }),
 
     setBedrock: (access_key: string, secret_key: string, region?: string, model?: string) =>
       request('/config/bedrock', { method: 'POST', body: JSON.stringify({ access_key, secret_key, region, model }) }),

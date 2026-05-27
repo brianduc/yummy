@@ -183,6 +183,14 @@
           "autoincrement": false,
           "default": "''"
         },
+        "openai_base_url": {
+          "name": "openai_base_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
         "bedrock_access_key": {
           "name": "bedrock_access_key",
           "type": "text",

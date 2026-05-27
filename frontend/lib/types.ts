@@ -107,6 +107,8 @@ export interface SystemStatus {
   has_openai_key?: boolean
   openai_key_source: KeySource
   openai_model?: string
+  openai_base_url?: string | null
+  openai_base_url_source?: KeySource
   // Bedrock
   has_bedrock_key?: boolean
   bedrock_key_source: KeySource

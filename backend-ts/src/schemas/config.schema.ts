@@ -69,6 +69,9 @@ export const OpenAIConfigSchema = z
     model: z.string().optional().default('gpt-4o').openapi({
       description: 'OpenAI model ID',
     }),
+    base_url: z.string().optional().default('').openapi({
+      description: 'OpenAI-compatible API base URL (optional, keeps current if not provided)',
+    }),
   })
   .openapi('OpenAIConfig');
 
@@ -115,6 +118,8 @@ export const ConfigStatusSchema = z
     has_openai_key: z.boolean(),
     openai_key_source: z.enum(['env', 'ui', 'none']),
     openai_model: z.string(),
+    openai_base_url: z.string().nullable(),
+    openai_base_url_source: z.enum(['env', 'ui', 'none']),
     has_bedrock_key: z.boolean(),
     bedrock_key_source: z.enum(['env', 'ui', 'none']),
     bedrock_region: z.string(),

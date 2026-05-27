@@ -14,7 +14,8 @@ function client(): OpenAI {
       'OPENAI_API_KEY is not configured. Set it in Settings or via the OPENAI_API_KEY env var.',
     );
   }
-  return new OpenAI({ apiKey: key, timeout: 300_000 });
+  const baseURL = runtimeConfig.openai_base_url.trim() || undefined;
+  return new OpenAI({ apiKey: key, baseURL, timeout: 300_000 });
 }
 
 function model(): string {

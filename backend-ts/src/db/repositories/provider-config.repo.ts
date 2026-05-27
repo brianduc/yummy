@@ -43,6 +43,7 @@ export const providerConfigRepo = {
       copilotModel: cfg.copilot_model,
       openaiKey: cfg.openai_key,
       openaiModel: cfg.openai_model,
+      openaiBaseUrl: cfg.openai_base_url,
       bedrockAccessKey: cfg.bedrock_access_key,
       bedrockSecretKey: cfg.bedrock_secret_key,
       bedrockRegion: cfg.bedrock_region,

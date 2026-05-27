@@ -129,6 +129,7 @@ export const providerConfig = sqliteTable('provider_config', {
   copilotModel: text('copilot_model').notNull().default(''),
   openaiKey: text('openai_key').notNull().default(''),
   openaiModel: text('openai_model').notNull().default(''),
+  openaiBaseUrl: text('openai_base_url').notNull().default(''),
   bedrockAccessKey: text('bedrock_access_key').notNull().default(''),
   bedrockSecretKey: text('bedrock_secret_key').notNull().default(''),
   bedrockRegion: text('bedrock_region').notNull().default(''),

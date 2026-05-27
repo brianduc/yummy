@@ -27,6 +27,7 @@ CREATE TABLE `provider_config` (
 	`copilot_model` text DEFAULT '' NOT NULL,
 	`openai_key` text DEFAULT '' NOT NULL,
 	`openai_model` text DEFAULT '' NOT NULL,
+	`openai_base_url` text DEFAULT '' NOT NULL,
 	`bedrock_access_key` text DEFAULT '' NOT NULL,
 	`bedrock_secret_key` text DEFAULT '' NOT NULL,
 	`bedrock_region` text DEFAULT '' NOT NULL,

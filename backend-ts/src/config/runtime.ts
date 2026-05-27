@@ -60,6 +60,7 @@ export async function hydrateRuntimeConfig(db: Db): Promise<void> {
   if (_saved.copilotModel) runtimeConfig.copilot_model = _saved.copilotModel;
   if (_saved.openaiKey) runtimeConfig.openai_key = _saved.openaiKey;
   if (_saved.openaiModel) runtimeConfig.openai_model = _saved.openaiModel;
+  if (_saved.openaiBaseUrl) runtimeConfig.openai_base_url = _saved.openaiBaseUrl;
   if (_saved.bedrockAccessKey) runtimeConfig.bedrock_access_key = _saved.bedrockAccessKey;
   if (_saved.bedrockSecretKey) runtimeConfig.bedrock_secret_key = _saved.bedrockSecretKey;
   if (_saved.bedrockRegion) runtimeConfig.bedrock_region = _saved.bedrockRegion;

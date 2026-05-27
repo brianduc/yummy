@@ -119,12 +119,15 @@ function GeminiForm({ status, onSave, saving }: { status: SystemStatus | null; o
 function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; onSave: (fn: () => Promise<void>) => void; saving: boolean }) {
   const [key, setKey] = useState('')
   const [model, setModel] = useState(status?.openai_model ?? '')
+  const [baseUrl, setBaseUrl] = useState(status?.openai_base_url ?? '')
   const fromEnv = status?.openai_key_source === 'env'
   const hasKey  = status?.has_openai_key
+  const baseUrlFromEnv = status?.openai_base_url_source === 'env'
 
   return (
     <div className="flex flex-col gap-3">
       {fromEnv && <EnvHint varName="OPENAI_API_KEY" />}
+      {baseUrlFromEnv && <EnvHint varName="OPENAI_BASE_URL" />}
       <label className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <FieldLabel>API Key</FieldLabel>
@@ -135,6 +138,19 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
           style={inputStyle('#10b981')}
           value={key} onChange={e => setKey(e.target.value)}
           placeholder={hasKey ? '••••••••  (set — leave blank to keep)' : 'sk-...'}
+        />
+      </label>
+      <label className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <FieldLabel>Base URL</FieldLabel>
+          <KeySourceBadge source={status?.openai_base_url_source ?? 'none'} />
+        </div>
+        <input
+          className={inputCls}
+          style={inputStyle('#10b981')}
+          value={baseUrl ?? ''}
+          onChange={e => setBaseUrl(e.target.value)}
+          placeholder="https://api.openai.com/v1"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -174,7 +190,7 @@ function OpenAIForm({ status, onSave, saving }: { status: SystemStatus | null; o
         color="#10b981" bg="rgba(16,185,129,.1)" border="rgba(16,185,129,.35)"
         disabled={!key && !hasKey} saving={saving}
         onClick={() => onSave(async () => {
-          if (key) await api.config.setOpenAI(key, model || undefined)
+          await api.config.setOpenAI(key, model || undefined, baseUrl)
           await api.config.setProvider('openai')
         })}
       />
@@ -410,6 +426,7 @@ function SaveButton({ color, bg, border, disabled, saving, onClick }: {
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={saving || disabled}
       className="w-full py-2 rounded text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
