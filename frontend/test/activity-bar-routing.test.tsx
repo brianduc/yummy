@@ -39,7 +39,7 @@ describe('ActivityBar routing', () => {
     expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc/sdlc')
   })
 
-  it('clicking AI Copilot navigates to index route', () => {
+  it('clicking YumAI navigates to index route', () => {
     render(<ActivityBar />)
     fireEvent.click(screen.getByTestId('activity-bar-item-copilot'))
     expect(mockPush).toHaveBeenCalledWith('/workspace/test-session-abc')

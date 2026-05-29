@@ -4,7 +4,8 @@ import React from 'react'
 import { useChat } from '@/hooks/useWorkspaceChat'
 import { AppSidebar } from './AppSidebar'
 import AppHeader from './AppHeader'
-import { CopilotSheet } from './CopilotSheet'
+import { Group as PanelGroup, Panel } from 'react-resizable-panels'
+import { YumAISidebar } from './YumAISidebar'
 import type { Session, SystemStatus, MetricsData, ScanStatus, FileNode, WorkflowState } from '@/lib/types'
 
 interface WorkspaceLayoutProps {
@@ -52,7 +53,7 @@ export default function WorkspaceLayout({
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'j') {
         event.preventDefault()
-        setIsCopilotOpen(true)
+        setIsCopilotOpen(prev => !prev)
       }
     }
 
@@ -68,33 +69,34 @@ export default function WorkspaceLayout({
     >
       <AppSidebar />
 
-      <div
-        data-testid="dashboard-main"
-        className="flex-1 flex flex-col min-w-0"
-      >
-        <AppHeader
-          onOpenCommandPalette={onOpenCommandPalette}
-          onOpenCopilot={() => setIsCopilotOpen(true)}
-        />
+      <PanelGroup orientation="horizontal" className="flex-1 flex min-w-0" data-testid="yumai-panel-group">
+        <Panel className="flex flex-col min-w-0" defaultSize={isCopilotOpen ? '75%' : '100%'} minSize="50%">
+          <div data-testid="dashboard-main" className="flex-1 flex flex-col min-w-0">
+            <AppHeader
+              onOpenCommandPalette={onOpenCommandPalette}
+              onOpenCopilot={() => setIsCopilotOpen(prev => !prev)}
+            />
 
-        <div data-testid="dashboard-content" className="flex-1 overflow-y-auto p-6">
-          {mainStageChildren}
-        </div>
-      </div>
+            <div data-testid="dashboard-content" className="flex-1 overflow-y-auto p-6">
+              {mainStageChildren}
+            </div>
+          </div>
+        </Panel>
 
-      <CopilotSheet
-        open={isCopilotOpen}
-        onOpenChange={setIsCopilotOpen}
-        chatHistory={chatHistory}
-        termLogs={termLogs}
-        busy={busy}
-        btwBusy={btwBusy}
-        termRef={termRef}
-        scanStatus={scanStatus}
-        workflowRunning={workflowRunning}
-        onSubmit={handleCmd}
-        sessionName={sessionName}
-      />
+        {isCopilotOpen && (
+          <YumAISidebar
+            chatHistory={chatHistory}
+            termLogs={termLogs}
+            busy={busy}
+            btwBusy={btwBusy}
+            termRef={termRef}
+            scanStatus={scanStatus}
+            workflowRunning={workflowRunning}
+            onSubmit={handleCmd}
+            sessionName={sessionName}
+          />
+        )}
+      </PanelGroup>
     </div>
   )
 }

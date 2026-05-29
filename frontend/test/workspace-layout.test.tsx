@@ -6,6 +6,14 @@ const { mockPathname } = vi.hoisted(() => ({
   mockPathname: { value: '/workspace/test-layout-session' },
 }))
 
+if (typeof window !== 'undefined') {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
   useParams: () => ({ sessionId: 'test-layout-session' }),
@@ -89,7 +97,7 @@ vi.mock('@/components/workspace/AppSidebar', () => ({
       <aside data-testid="app-sidebar">
         <a data-testid="sidebar-nav-explorer" className={isExplorerActive ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session/explorer`}>Explorer</a>
         <a data-testid="sidebar-nav-sdlc" className={mockPathname.value.includes('/sdlc') ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session/sdlc`}>SDLC Pipeline</a>
-        <a data-testid="sidebar-nav-copilot" className={mockPathname.value === '/workspace/test-layout-session' ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session`}>AI Copilot</a>
+        <a data-testid="sidebar-nav-copilot" className={mockPathname.value === '/workspace/test-layout-session' ? 'bg-[var(--bg-2)]' : ''} href={`/workspace/test-layout-session`}>YumAI</a>
       </aside>
     )
   },
@@ -98,15 +106,15 @@ vi.mock('@/components/workspace/AppSidebar', () => ({
 vi.mock('@/components/workspace/AppHeader', () => ({
   default: ({ onOpenCommandPalette, onOpenCopilot }: { onOpenCommandPalette?: () => void; onOpenCopilot?: () => void }) => (
     <header data-testid="app-header">
-      <div data-testid="breadcrumbs">Workspace / {mockPathname.value.includes('/explorer') ? 'Explorer' : 'AI Copilot'}</div>
-      <button data-testid="command-palette-trigger" onClick={onOpenCommandPalette}>Command</button>
-      <button data-testid="ai-copilot-trigger" onClick={onOpenCopilot}>AI Copilot</button>
+      <div data-testid="breadcrumbs">Workspace / {mockPathname.value.includes('/explorer') ? 'Explorer' : 'YumAI'}</div>
+      <button type="button" data-testid="command-palette-trigger" onClick={onOpenCommandPalette}>Command</button>
+      <button type="button" data-testid="ai-copilot-trigger" onClick={onOpenCopilot}>YumAI</button>
     </header>
   ),
 }))
 
-vi.mock('@/components/workspace/CopilotSheet', () => ({
-  CopilotSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="copilot-sheet">AI Copilot</div> : null),
+vi.mock('@/components/workspace/YumAISidebar', () => ({
+  YumAISidebar: () => <div data-testid="yumai-sidebar">YumAI</div>,
 }))
 
 const defaultSessionReturn = {
@@ -219,7 +227,7 @@ describe('WorkspaceRouteLayout', () => {
     expect(screen.queryByTestId('child-page-a')).toBeNull()
   })
 
-  it('renders dashboard shell composition without resize handles or permanent Copilot pane', () => {
+  it('renders dashboard shell composition with resizable YumAI layout and hidden sidebar by default', () => {
     render(
       <WorkspaceRouteLayout params={Promise.resolve({ sessionId: 'test-layout-session' })}>
         <div data-testid="mock-child">child content</div>
@@ -232,11 +240,9 @@ describe('WorkspaceRouteLayout', () => {
     expect(screen.getByTestId('dashboard-main')).toHaveClass('flex-1', 'flex', 'flex-col', 'min-w-0')
     expect(screen.getByTestId('dashboard-content')).toHaveClass('flex-1', 'overflow-y-auto', 'p-6')
     expect(screen.getByTestId('mock-child')).toBeInTheDocument()
-    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('AI Copilot')
-    expect(screen.queryByTestId('panel-group')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('panel')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('YumAI')
+    expect(screen.getByTestId('dashboard-shell').querySelector('[data-group="true"]')).toBeInTheDocument()
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
   })
 
   it('shows index breadcrumb and keeps the command palette trigger wired', () => {
@@ -246,7 +252,7 @@ describe('WorkspaceRouteLayout', () => {
       </WorkspaceRouteLayout>,
     )
 
-    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('AI Copilot')
+    expect(screen.getByTestId('breadcrumbs')).toHaveTextContent('YumAI')
     fireEvent.click(screen.getByTestId('command-palette-trigger'))
     expect(defaultUiReturn.setCommandPaletteOpen).toHaveBeenCalledWith(true)
   })

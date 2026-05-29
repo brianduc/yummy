@@ -101,13 +101,13 @@ vi.mock('@/components/workspace/AppHeader', () => ({
   default: ({ onOpenCommandPalette, onOpenCopilot }: { onOpenCommandPalette?: () => void; onOpenCopilot?: () => void }) => (
     <header data-testid="app-header">
       <button type="button" data-testid="command-palette-trigger" onClick={onOpenCommandPalette}>Command</button>
-      <button type="button" data-testid="ai-copilot-trigger" onClick={onOpenCopilot}>AI Copilot</button>
+      <button type="button" data-testid="ai-copilot-trigger" onClick={onOpenCopilot}>YumAI</button>
     </header>
   ),
 }))
 
-vi.mock('@/components/workspace/CopilotSheet', () => ({
-  CopilotSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="copilot-sheet">AI Copilot</div> : null),
+vi.mock('@/components/workspace/YumAISidebar', () => ({
+  YumAISidebar: () => <div data-testid="yumai-sidebar">YumAI</div>,
 }))
 
 vi.mock('@/lib/api', () => ({
@@ -158,7 +158,7 @@ describe('WorkspacePage characterization', () => {
 
     await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
-    expect(screen.getByRole('button', { name: 'AI Copilot' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'YumAI' })).toBeInTheDocument()
     expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument()
     expect(screen.getByText('Workspace Baseline')).toBeInTheDocument()
   })
@@ -213,7 +213,7 @@ describe('WorkspacePage characterization', () => {
     expect(screen.getByTestId('command-palette-trigger')).toBeInTheDocument()
   })
 
-  it('documents that AI Copilot is a Sheet triggered from the header (not a permanent right pane)', async () => {
+  it('documents that YumAI is an inline right sidebar triggered from the header', async () => {
     vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
 
     render(
@@ -224,14 +224,14 @@ describe('WorkspacePage characterization', () => {
 
     await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
-    expect(screen.queryByTestId('copilot-sheet')).toBeNull()
+    expect(screen.queryByTestId('yumai-sidebar')).toBeNull()
 
     fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
 
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
   })
 
-  it('documents that AI Copilot trigger is a single button in the header (Sheet pattern, not inline panel)', async () => {
+  it('documents that YumAI trigger is a single button in the header for the inline panel', async () => {
     vi.spyOn(React, 'use').mockReturnValue({ sessionId: 'test-session-123' } as never)
 
     render(
@@ -243,6 +243,6 @@ describe('WorkspacePage characterization', () => {
     await waitFor(() => expect(screen.getByTestId('dashboard-shell')).toBeInTheDocument())
 
     expect(screen.getAllByTestId('ai-copilot-trigger')).toHaveLength(1)
-    expect(screen.queryByTestId('copilot-sheet')).toBeNull()
+    expect(screen.queryByTestId('yumai-sidebar')).toBeNull()
   })
 })

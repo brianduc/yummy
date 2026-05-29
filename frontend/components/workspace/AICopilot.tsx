@@ -229,7 +229,7 @@ export default function AICopilot({
         }}
       >
         <span className="font-display font-extrabold text-sm" style={{ color: 'var(--green)' }}>
-          AI Copilot
+          YumAI
         </span>
         <span className="ml-2 text-2xs font-mono truncate" style={{ color: 'var(--text-3)' }}>
           {sessionName}

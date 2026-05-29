@@ -1,6 +1,15 @@
 import React from 'react'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+if (typeof window !== 'undefined') {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 import WorkspaceLayout from './WorkspaceLayout'
 import { WorkspaceChatProvider } from '@/hooks/useWorkspaceChat'
 import type { WorkspaceChatContext } from '@/hooks/useWorkspaceContracts'
@@ -32,10 +41,6 @@ function renderRealWorkspaceLayout() {
   return render(
     <WorkspaceChatProvider value={chatContext}>
       <WorkspaceLayout
-        activeActivity="explorer"
-        onActivityChange={vi.fn()}
-        activeTab="ide"
-        onTabChange={vi.fn()}
         sessionName="Real Layout Session"
         session={null}
         workflowState="idle"
@@ -72,14 +77,14 @@ describe('WorkspaceLayout real dashboard shell', () => {
     expect(within(dashboardContent).getByTestId('real-main-stage-child')).toHaveTextContent('Actual content slot')
   })
 
-  it('opens the actual CopilotSheet from the actual AppHeader AI trigger', () => {
+  it('opens the actual YumAISidebar from the actual AppHeader AI trigger', () => {
     renderRealWorkspaceLayout()
 
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
 
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
     expect(screen.getByText('Existing real layout chat')).toBeInTheDocument()
   })
 
@@ -104,10 +109,6 @@ describe('WorkspaceLayout real dashboard shell', () => {
         }}
       >
         <WorkspaceLayout
-          activeActivity="explorer"
-          onActivityChange={vi.fn()}
-          activeTab="ide"
-          onTabChange={vi.fn()}
           sessionName="Real Layout Session"
           session={null}
           workflowState="idle"
@@ -133,52 +134,43 @@ describe('WorkspaceLayout real dashboard shell', () => {
   it.each([
     ['meta', { metaKey: true }],
     ['ctrl', { ctrlKey: true }],
-  ])('opens CopilotSheet with %s+J shortcut', (_, modifier) => {
+  ])('opens YumAISidebar with %s+J shortcut', (_, modifier) => {
     renderRealWorkspaceLayout()
 
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     fireEvent.keyDown(window, { ...modifier, key: 'j' })
 
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
     expect(screen.getByText('Existing real layout chat')).toBeInTheDocument()
   })
 
-  it('does not create duplicate CopilotSheet dialogs on repeated Meta+J presses', () => {
+  it('toggles YumAISidebar component on repeated Meta+J presses', () => {
     renderRealWorkspaceLayout()
 
     fireEvent.keyDown(window, { metaKey: true, key: 'j' })
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
+
     fireEvent.keyDown(window, { metaKey: true, key: 'j' })
-
-    expect(screen.getAllByTestId('copilot-sheet')).toHaveLength(1)
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
   })
 
-  it('does not render legacy resizable panel artifacts or resize handles', () => {
-    const { container } = renderRealWorkspaceLayout()
-
-    expect(screen.queryByTestId('panel-group')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('panel')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
-    expect(container.querySelector('[data-panel-resize-handle-id]')).toBeNull()
-    expect(container.querySelector('[data-panel-group-id]')).toBeNull()
-  })
-
-  it('preserves chat history from WorkspaceChatProvider after Sheet close/reopen cycle', () => {
+  it('preserves chat history from WorkspaceChatProvider after close/reopen cycle', () => {
     renderRealWorkspaceLayout()
 
     fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
     expect(screen.getByText('Existing real layout chat')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /close/i }))
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
     expect(screen.getByText('Existing real layout chat')).toBeInTheDocument()
   })
 
-  it('WorkspaceChatProvider context state is not altered when CopilotSheet closes', () => {
+  it('WorkspaceChatProvider context state is not altered when YumAISidebar closes', () => {
     const sendAskMock = vi.fn()
     const handleCmdMock = vi.fn().mockResolvedValue(undefined)
 
@@ -200,10 +192,6 @@ describe('WorkspaceLayout real dashboard shell', () => {
     render(
       <WorkspaceChatProvider value={busyChatContext}>
         <WorkspaceLayout
-          activeActivity="explorer"
-          onActivityChange={vi.fn()}
-          activeTab="ide"
-          onTabChange={vi.fn()}
           sessionName="Busy Session"
           session={null}
           workflowState="idle"
@@ -222,10 +210,10 @@ describe('WorkspaceLayout real dashboard shell', () => {
     )
 
     fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /close/i }))
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('ai-copilot-trigger'))
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     expect(sendAskMock).not.toHaveBeenCalled()
     expect(handleCmdMock).not.toHaveBeenCalled()

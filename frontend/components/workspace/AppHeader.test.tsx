@@ -62,7 +62,7 @@ describe('AppHeader component', () => {
     expect(onOpenCommandPalette).toHaveBeenCalledTimes(1)
   })
 
-  it('triggers onOpenCopilot when AI Copilot button is clicked', () => {
+  it('triggers onOpenCopilot when YumAI button is clicked', () => {
     const onOpenCopilot = vi.fn()
     render(<AppHeader onOpenCopilot={onOpenCopilot} />)
     

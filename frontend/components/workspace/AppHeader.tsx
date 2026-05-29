@@ -92,7 +92,7 @@ export default function AppHeader({
           className="gap-2"
         >
           <Sparkles size={14} />
-          <span>AI Copilot</span>
+          <span>YumAI</span>
         </Button>
       </div>
     </header>

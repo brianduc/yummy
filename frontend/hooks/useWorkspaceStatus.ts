@@ -49,10 +49,8 @@ export function useWorkspaceStatus(options?: UseWorkspaceStatusOptions) {
     Promise.all([fetchStatus(), fetchKb()]).finally(() => {
       if (!cancelled) setLoading(false)
     })
-    const iv = setInterval(() => fetchStatus(), 4000)
     return () => {
       cancelled = true
-      clearInterval(iv)
       stopScanPollRef.current()
     }
   }, [fetchStatus, fetchKb])

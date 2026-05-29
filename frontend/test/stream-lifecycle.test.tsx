@@ -119,21 +119,21 @@ function ChildRoute() {
   return <p>workspace child route</p>
 }
 
-function SheetToggleHarness() {
-  const [sheetOpen, setSheetOpen] = React.useState(false)
+function YumAIToggleHarness() {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const streams = useWorkspaceStreamContext()
 
   return (
     <section aria-label="workspace layout">
       <button type="button" onClick={streams.startChatStream}>start chat</button>
       <button type="button" onClick={streams.startSdlcStream}>start sdlc</button>
-      <button type="button" onClick={() => setSheetOpen((o) => !o)}>toggle sheet</button>
-      {sheetOpen && <div data-testid="copilot-sheet">AI Copilot Sheet</div>}
+      <button type="button" onClick={() => setSidebarOpen((open) => !open)}>toggle YumAI</button>
+      {sidebarOpen && <div data-testid="yumai-sidebar">YumAI</div>}
     </section>
   )
 }
 
-function MidStreamSheetCloseHarness({
+function MidStreamYumAICloseHarness({
   pauseAfterFirst,
   chunks,
   abortedRef,
@@ -142,7 +142,7 @@ function MidStreamSheetCloseHarness({
   chunks: string[]
   abortedRef: { current: boolean }
 }) {
-  const [sheetOpen, setSheetOpen] = React.useState(false)
+  const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const controllerRef = React.useRef(new NativeAbortController())
 
   const startStream = () => {
@@ -163,9 +163,9 @@ function MidStreamSheetCloseHarness({
   return (
     <section aria-label="mid-stream harness">
       <button type="button" onClick={startStream} data-testid="start-stream">start stream</button>
-      <button type="button" onClick={() => setSheetOpen(true)} data-testid="open-sheet">open sheet</button>
-      <button type="button" onClick={() => setSheetOpen(false)} data-testid="close-sheet">close sheet</button>
-      {sheetOpen && <div data-testid="copilot-sheet">Sheet</div>}
+      <button type="button" onClick={() => setSidebarOpen(true)} data-testid="open-yumai">open YumAI</button>
+      <button type="button" onClick={() => setSidebarOpen(false)} data-testid="close-yumai">close YumAI</button>
+      {sidebarOpen && <div data-testid="yumai-sidebar">YumAI</div>}
     </section>
   )
 }
@@ -225,28 +225,28 @@ describe('workspace stream lifecycle contracts', () => {
     expect(activeSignals.every((signal) => signal.aborted === true)).toBe(true)
   })
 
-  it('stream continues after CopilotSheet open/close cycle (Sheet is presentation-only)', async () => {
+  it('stream continues after YumAI open/close cycle (sidebar is presentation-only)', async () => {
     render(
       <WorkspaceStreamProvider>
-        <SheetToggleHarness />
+        <YumAIToggleHarness />
       </WorkspaceStreamProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'start chat' }))
     await act(async () => {})
 
-    fireEvent.click(screen.getByRole('button', { name: 'toggle sheet' }))
-    expect(screen.getByTestId('copilot-sheet')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'toggle YumAI' }))
+    expect(screen.getByTestId('yumai-sidebar')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'toggle sheet' }))
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'toggle YumAI' }))
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     const signals = getSignalsFromAbortControllerMock()
     expect(signals).toHaveLength(1)
     expect(signals[0]!.aborted).toBe(false)
   })
 
-  it('deterministic multi-chunk stream is not interrupted by mid-stream Sheet close', async () => {
+  it('deterministic multi-chunk stream is not interrupted by mid-stream YumAI close', async () => {
     const chunks: string[] = []
     const abortedRef = { current: false }
     let resumeStream!: () => void
@@ -256,7 +256,7 @@ describe('workspace stream lifecycle contracts', () => {
 
     render(
       <WorkspaceStreamProvider>
-        <MidStreamSheetCloseHarness
+        <MidStreamYumAICloseHarness
           pauseAfterFirst={pauseAfterFirst}
           chunks={chunks}
           abortedRef={abortedRef}
@@ -269,9 +269,9 @@ describe('workspace stream lifecycle contracts', () => {
 
     expect(chunks).toEqual(['alpha'])
 
-    fireEvent.click(screen.getByTestId('open-sheet'))
-    fireEvent.click(screen.getByTestId('close-sheet'))
-    expect(screen.queryByTestId('copilot-sheet')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('open-yumai'))
+    fireEvent.click(screen.getByTestId('close-yumai'))
+    expect(screen.queryByTestId('yumai-sidebar')).not.toBeInTheDocument()
 
     await act(async () => {
       resumeStream()
