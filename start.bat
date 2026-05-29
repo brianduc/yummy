@@ -52,9 +52,7 @@ if not exist "%ROOT_DIR%.env" (
     if exist "%ROOT_DIR%.env.example" (
         copy "%ROOT_DIR%.env.example" "%ROOT_DIR%.env" >nul
         echo Created .env from .env.example
-        echo Please open .env and fill in your API keys, then run start.bat again.
-        pause
-        exit /b 0
+        echo You can configure provider credentials in the app UI or in .env.
     ) else (
         echo ERROR: Neither .env nor .env.example found.
         pause
@@ -107,39 +105,27 @@ echo ==================================
 echo.
 echo Select AI Provider:
 echo.
-echo   [1] Gemini       (Google - requires GEMINI_API_KEY)
-echo   [2] OpenAI       (requires OPENAI_API_KEY)
-echo   [3] Bedrock      (AWS - requires AWS credentials)
-echo   [4] Copilot      (GitHub Copilot - requires COPILOT_GITHUB_TOKEN)
-echo   [5] Ollama       (Local - no API key needed)
+echo   [1] Gemini       (configure credentials in the app UI)
+echo   [2] OpenAI       (configure credentials in the app UI)
+echo   [3] Bedrock      (configure credentials in the app UI)
+echo   [4] Copilot      (configure credentials in the app UI)
+echo   [5] Ollama       (optional local URL/model)
 echo   [6] Keep current (!AI_PROVIDER!)
 echo.
 set /p "PROVIDER_CHOICE=Enter number and press Enter [default: 6]: "
 
 if "!PROVIDER_CHOICE!"=="1" (
     set "AI_PROVIDER=gemini"
-    call :configure_gemini
 ) else if "!PROVIDER_CHOICE!"=="2" (
     set "AI_PROVIDER=openai"
-    call :configure_openai
 ) else if "!PROVIDER_CHOICE!"=="3" (
     set "AI_PROVIDER=bedrock"
-    call :configure_bedrock
 ) else if "!PROVIDER_CHOICE!"=="4" (
     set "AI_PROVIDER=copilot"
-    call :configure_copilot
 ) else if "!PROVIDER_CHOICE!"=="5" (
     set "AI_PROVIDER=ollama"
-    call :configure_ollama
 ) else (
     echo Using current provider: !AI_PROVIDER!
-)
-
-REM Validate required keys for chosen provider
-call :validate_provider
-if errorlevel 1 (
-    pause
-    exit /b 1
 )
 
 REM Save provider choice back to .env
@@ -147,6 +133,7 @@ call :update_env "AI_PROVIDER" "!AI_PROVIDER!"
 
 echo.
 echo Provider set to: !AI_PROVIDER!
+echo Configure credentials later in the app UI if needed.
 echo ==================================
 
 REM Backend (TypeScript / Hono)
@@ -220,119 +207,6 @@ echo ==================================
 echo.
 echo Close the 2 terminal windows to stop.
 pause
-exit /b 0
-
-REM ============================================================
-REM  PROVIDER CONFIGURATION SUBROUTINES
-REM ============================================================
-
-:configure_gemini
-echo.
-echo -- Gemini Configuration --
-if "!GEMINI_API_KEY!"=="" (
-    set /p "GEMINI_API_KEY=Enter GEMINI_API_KEY (or press Enter to skip): "
-    if not "!GEMINI_API_KEY!"=="" call :update_env "GEMINI_API_KEY" "!GEMINI_API_KEY!"
-)
-set /p "GEMINI_MODEL_INPUT=Gemini model [!GEMINI_MODEL!]: "
-if not "!GEMINI_MODEL_INPUT!"=="" (
-    set "GEMINI_MODEL=!GEMINI_MODEL_INPUT!"
-    call :update_env "GEMINI_MODEL" "!GEMINI_MODEL!"
-)
-exit /b 0
-
-:configure_openai
-echo.
-echo -- OpenAI Configuration --
-if "!OPENAI_API_KEY!"=="" (
-    set /p "OPENAI_API_KEY=Enter OPENAI_API_KEY (or press Enter to skip): "
-    if not "!OPENAI_API_KEY!"=="" call :update_env "OPENAI_API_KEY" "!OPENAI_API_KEY!"
-)
-set /p "OPENAI_MODEL_INPUT=OpenAI model [!OPENAI_MODEL!]: "
-if not "!OPENAI_MODEL_INPUT!"=="" (
-    set "OPENAI_MODEL=!OPENAI_MODEL_INPUT!"
-    call :update_env "OPENAI_MODEL" "!OPENAI_MODEL!"
-)
-exit /b 0
-
-:configure_bedrock
-echo.
-echo -- AWS Bedrock Configuration --
-if "!AWS_ACCESS_KEY_ID!"=="" (
-    set /p "AWS_ACCESS_KEY_ID=Enter AWS_ACCESS_KEY_ID (or press Enter to skip): "
-    if not "!AWS_ACCESS_KEY_ID!"=="" call :update_env "AWS_ACCESS_KEY_ID" "!AWS_ACCESS_KEY_ID!"
-)
-if "!AWS_SECRET_ACCESS_KEY!"=="" (
-    set /p "AWS_SECRET_ACCESS_KEY=Enter AWS_SECRET_ACCESS_KEY (or press Enter to skip): "
-    if not "!AWS_SECRET_ACCESS_KEY!"=="" call :update_env "AWS_SECRET_ACCESS_KEY" "!AWS_SECRET_ACCESS_KEY!"
-)
-set /p "AWS_REGION_INPUT=AWS region [!AWS_REGION!]: "
-if not "!AWS_REGION_INPUT!"=="" (
-    set "AWS_REGION=!AWS_REGION_INPUT!"
-    call :update_env "AWS_REGION" "!AWS_REGION!"
-)
-set /p "BEDROCK_MODEL_INPUT=Bedrock model [!BEDROCK_MODEL!]: "
-if not "!BEDROCK_MODEL_INPUT!"=="" (
-    set "BEDROCK_MODEL=!BEDROCK_MODEL_INPUT!"
-    call :update_env "BEDROCK_MODEL" "!BEDROCK_MODEL!"
-)
-exit /b 0
-
-:configure_copilot
-echo.
-echo -- GitHub Copilot Configuration --
-if "!COPILOT_GITHUB_TOKEN!"=="" (
-    set /p "COPILOT_GITHUB_TOKEN=Enter COPILOT_GITHUB_TOKEN (or press Enter to skip): "
-    if not "!COPILOT_GITHUB_TOKEN!"=="" call :update_env "COPILOT_GITHUB_TOKEN" "!COPILOT_GITHUB_TOKEN!"
-)
-set /p "COPILOT_MODEL_INPUT=Copilot model [!COPILOT_MODEL!]: "
-if not "!COPILOT_MODEL_INPUT!"=="" (
-    set "COPILOT_MODEL=!COPILOT_MODEL_INPUT!"
-    call :update_env "COPILOT_MODEL" "!COPILOT_MODEL!"
-)
-exit /b 0
-
-:configure_ollama
-echo.
-echo -- Ollama Configuration --
-if "!OLLAMA_BASE_URL!"=="" set "OLLAMA_BASE_URL=http://localhost:11434"
-set /p "OLLAMA_BASE_URL_INPUT=Ollama URL [!OLLAMA_BASE_URL!]: "
-if not "!OLLAMA_BASE_URL_INPUT!"=="" (
-    set "OLLAMA_BASE_URL=!OLLAMA_BASE_URL_INPUT!"
-    call :update_env "OLLAMA_BASE_URL" "!OLLAMA_BASE_URL!"
-)
-if "!OLLAMA_MODEL!"=="" set "OLLAMA_MODEL=llama3"
-set /p "OLLAMA_MODEL_INPUT=Ollama model [!OLLAMA_MODEL!]: "
-if not "!OLLAMA_MODEL_INPUT!"=="" (
-    set "OLLAMA_MODEL=!OLLAMA_MODEL_INPUT!"
-    call :update_env "OLLAMA_MODEL" "!OLLAMA_MODEL!"
-)
-exit /b 0
-
-:validate_provider
-if "!AI_PROVIDER!"=="gemini" (
-    if "!GEMINI_API_KEY!"=="" (
-        echo ERROR: GEMINI_API_KEY is not set. Edit .env or re-run and enter it when prompted.
-        exit /b 1
-    )
-)
-if "!AI_PROVIDER!"=="openai" (
-    if "!OPENAI_API_KEY!"=="" (
-        echo ERROR: OPENAI_API_KEY is not set. Edit .env or re-run and enter it when prompted.
-        exit /b 1
-    )
-)
-if "!AI_PROVIDER!"=="bedrock" (
-    if "!AWS_ACCESS_KEY_ID!"=="" (
-        echo ERROR: AWS_ACCESS_KEY_ID is not set. Edit .env or re-run and enter it when prompted.
-        exit /b 1
-    )
-)
-if "!AI_PROVIDER!"=="copilot" (
-    if "!COPILOT_GITHUB_TOKEN!"=="" (
-        echo ERROR: COPILOT_GITHUB_TOKEN is not set. Edit .env or re-run and enter it when prompted.
-        exit /b 1
-    )
-)
 exit /b 0
 
 REM Update or append a key=value in .env

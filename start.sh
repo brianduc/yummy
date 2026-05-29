@@ -51,8 +51,7 @@ if [ ! -f "$ROOT_DIR/.env" ]; then
   if [ -f "$ROOT_DIR/.env.example" ]; then
     cp "$ROOT_DIR/.env.example" "$ROOT_DIR/.env"
     echo -e "${YELLOW}Created .env from .env.example"
-    echo -e "Please fill in GEMINI_API_KEY in .env, then run again.${NC}"
-    exit 0
+    echo -e "You can configure provider credentials in the app UI or in .env.${NC}"
   else
     echo -e "${RED}ERROR: .env not found.${NC}"
     exit 1
@@ -81,11 +80,6 @@ set +a
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 AI_PROVIDER="${AI_PROVIDER:-gemini}"
-
-if [ "$AI_PROVIDER" = "gemini" ] && [ -z "$GEMINI_API_KEY" ]; then
-  echo -e "${RED}ERROR: GEMINI_API_KEY is not set in .env${NC}"
-  exit 1
-fi
 
 echo ""
 echo -e "${CYAN}YUMMY - AI SDLC Platform ${YELLOW}[$MODE mode]${NC}"
