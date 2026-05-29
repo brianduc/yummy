@@ -20,6 +20,10 @@ export default function IdePanel({
 	onFileOpen,
 }: IdePanelProps) {
 	const fileTree = buildFileTree(tree);
+	const lineCount = Math.max(
+		120,
+		ideContent ? ideContent.split("\n").length : 1,
+	);
 
 	return (
 		<div className="flex h-full min-h-0 overflow-hidden text-base">
@@ -95,10 +99,13 @@ export default function IdePanel({
 						{ideFile ? ideFile.split("/").pop() : "Welcome"}
 					</span>
 				</div>
-				<div className="flex min-h-0 flex-1 overflow-hidden">
+				<div
+					data-testid="ide-editor-scroll"
+					className="flex min-h-0 flex-1 overflow-auto"
+				>
 					{/* Line numbers */}
 					<div
-						className="border-r p-4 pr-2 font-mono text-sm text-right overflow-hidden select-none leading-relaxed"
+						className="border-r p-4 pr-2 font-mono text-sm text-right select-none leading-relaxed"
 						style={{
 							width: 44,
 							background: "var(--bg)",
@@ -106,13 +113,15 @@ export default function IdePanel({
 							color: "var(--text-3)",
 						}}
 					>
-						{Array.from({ length: 120 }, (_, i) => i + 1).map((lineNumber) => (
-							<div key={lineNumber}>{lineNumber}</div>
-						))}
+						{Array.from({ length: lineCount }, (_, i) => i + 1).map(
+							(lineNumber) => (
+								<div key={lineNumber}>{lineNumber}</div>
+							),
+						)}
 					</div>
 					{/* Code content */}
 					<div
-						className="min-h-0 flex-1 overflow-auto whitespace-pre p-4 font-mono text-base leading-relaxed"
+						className="flex-1 whitespace-pre p-4 font-mono text-base leading-relaxed"
 						style={{ color: "var(--text)" }}
 					>
 						{ideLoading ? (

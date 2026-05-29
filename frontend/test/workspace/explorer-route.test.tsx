@@ -26,14 +26,23 @@ vi.mock("@/hooks/useWorkspaceStatus", () => ({
 }));
 
 vi.mock("@/components/workspace/IdePanel", () => ({
-	default: ({ onFileOpen }: { onFileOpen: (path: string) => void }) => (
-		<button
-			type="button"
-			data-testid="ide-panel-stub"
-			onClick={() => onFileOpen("README.md")}
-		>
-			IdePanel
-		</button>
+	default: ({
+		onFileOpen,
+		ideContent,
+	}: {
+		onFileOpen: (path: string) => void;
+		ideContent: string;
+	}) => (
+		<div>
+			<button
+				type="button"
+				data-testid="ide-panel-stub"
+				onClick={() => onFileOpen("README.md")}
+			>
+				IdePanel
+			</button>
+			<div data-testid="ide-panel-content">{ideContent}</div>
+		</div>
 	),
 }));
 
@@ -86,5 +95,23 @@ describe("ExplorerPage", () => {
 		fireEvent.click(screen.getByTestId("ide-panel-stub"));
 
 		expect(onFileOpen).toHaveBeenCalledWith("README.md");
+	});
+
+	it("passes shared ide content into the explorer panel", () => {
+		render(
+			<FileOpenContext.Provider
+				value={{
+					ideFile: "README.md",
+					ideContent: "line 1\nline 2",
+					ideLoading: false,
+					onFileOpen: vi.fn(),
+				}}
+			>
+				<ExplorerPage />
+			</FileOpenContext.Provider>,
+		);
+
+		expect(screen.getByTestId("ide-panel-content")).toHaveTextContent("line 1");
+		expect(screen.getByTestId("ide-panel-content")).toHaveTextContent("line 2");
 	});
 });
