@@ -1,6 +1,9 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
+import { runtimeConfig } from '../../src/config/runtime.js';
+import { db } from '../../src/db/client.local.js';
+import { providerConfig } from '../../src/db/schema.js';
 
 const app = createApp();
 
@@ -37,6 +40,45 @@ describe('config + sessions integration', () => {
       body: JSON.stringify({ provider: 'openai' }),
     });
     expect(res.status).toBe(200);
+  });
+
+  it('hydrates saved provider config from DB for a new app instance', async () => {
+    db.delete(providerConfig).run();
+
+    const saveOpenAI = await app.request('/config/openai', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        api_key: 'persisted-openai-key',
+        model: 'gpt-5.1',
+        base_url: 'https://example.test/v1',
+      }),
+    });
+    expect(saveOpenAI.status).toBe(200);
+
+    const switchProvider = await app.request('/config/provider', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ provider: 'openai' }),
+    });
+    expect(switchProvider.status).toBe(200);
+
+    runtimeConfig.provider = 'gemini';
+    runtimeConfig.openai_key = '';
+    runtimeConfig.openai_model = '';
+    runtimeConfig.openai_base_url = '';
+
+    const restartedApp = createApp();
+    const status = await restartedApp.request('/config/status');
+
+    expect(status.status).toBe(200);
+    const body = (await status.json()) as Record<string, unknown>;
+    expect(body.ai_provider).toBe('openai');
+    expect(body.has_openai_key).toBe(true);
+    expect(body.openai_key_source).toBe('ui');
+    expect(body.openai_model).toBe('gpt-5.1');
+    expect(body.openai_base_url).toBe('https://example.test/v1');
+    expect(JSON.stringify(body)).not.toContain('persisted-openai-key');
   });
 
   it('POST /config/provider rejects unknown provider', async () => {
@@ -95,11 +137,18 @@ describe('config + sessions integration', () => {
     expect(created.id).toBeTruthy();
     expect(created.name).toBe('Workspace A');
 
+    const createSecond = await app.request('/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Workspace B' }),
+    });
+    expect(createSecond.status).toBe(200);
+
     // List
     const list = await app.request('/sessions');
     expect(list.status).toBe(200);
     const sessions = (await list.json()) as unknown[];
-    expect(sessions).toHaveLength(1);
+    expect(sessions).toHaveLength(2);
 
     // Get
     const get = await app.request(`/sessions/${created.id}`);
@@ -120,5 +169,25 @@ describe('config + sessions integration', () => {
     // Get after delete -> 404
     const gone = await app.request(`/sessions/${created.id}`);
     expect(gone.status).toBe(404);
+  });
+
+  it('prevents deleting the last remaining session', async () => {
+    const create = await app.request('/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Solo Workspace' }),
+    });
+    expect(create.status).toBe(200);
+
+    const created = (await create.json()) as { id: string };
+    const del = await app.request(`/sessions/${created.id}`, {
+      method: 'DELETE',
+    });
+
+    expect(del.status).toBe(409);
+    expect(await del.json()).toEqual({ detail: 'Cannot delete the last workspace.' });
+
+    const get = await app.request(`/sessions/${created.id}`);
+    expect(get.status).toBe(200);
   });
 });

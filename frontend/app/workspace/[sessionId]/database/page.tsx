@@ -1,13 +1,13 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
 import { useWorkspaceStatus } from '@/hooks/useWorkspaceStatus'
 import DbPanel from '@/components/workspace/DbPanel'
+import { useWorkspaceSessionListContext } from '../session-context'
 
 export default function DatabasePage() {
   const { sessionId } = useParams<{ sessionId: string }>()
-  const { sessions } = useWorkspaceSession(sessionId)
+  const { sessions } = useWorkspaceSessionListContext()
   const { status } = useWorkspaceStatus()
 
   return (

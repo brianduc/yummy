@@ -68,4 +68,29 @@ describe("/cr workspace chat command", () => {
 		expect(runSdlcStream).toHaveBeenCalledTimes(1);
 		expect(setSession).toHaveBeenCalledTimes(1);
 	});
+
+	it("applies theme commands through the workspace UI setter", async () => {
+		const abortRef = { current: new AbortController() };
+		const setTheme = vi.fn();
+
+		const { result } = renderHook(() =>
+			useWorkspaceChat("s-1", abortRef, {
+				status,
+				session,
+				setTheme,
+			}),
+		);
+
+		await act(async () => {
+			await result.current.handleCmd("/light");
+		});
+
+		expect(setTheme).toHaveBeenCalledWith("light");
+		expect(result.current.termLogs).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ text: "> /light", role: "user" }),
+				expect.objectContaining({ text: "✅ Theme set to: light", role: "system" }),
+			]),
+		);
+	});
 });

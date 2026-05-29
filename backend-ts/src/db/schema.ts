@@ -29,7 +29,7 @@ export const sessions = sqliteTable('sessions', {
     .default(sql`'[]'`),
   chatHistory: text('chat_history', { mode: 'json' })
     .notNull()
-    .$type<Array<{ role: string; text: string; trace?: unknown }>>()
+    .$type<Array<{ role: string; text: string; timestamp?: string; trace?: unknown }>>()
     .default(sql`'[]'`),
   agentOutputs: text('agent_outputs', { mode: 'json' })
     .notNull()

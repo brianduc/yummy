@@ -1,16 +1,16 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useWorkspaceSession } from '@/hooks/useWorkspaceSession'
 import { api } from '@/lib/api'
 import { useDeleteSessionRequest } from '@/components/workspace/DeleteSessionModal'
 import SessionsPanel from '@/components/workspace/SessionsPanel'
 import type { Session } from '@/lib/types'
+import { useWorkspaceSessionListContext } from '../session-context'
 
 export default function SessionsPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const router = useRouter()
-  const { sessions } = useWorkspaceSession(sessionId)
+  const { sessions } = useWorkspaceSessionListContext()
   const requestDeleteSession = useDeleteSessionRequest()
 
   const handleNew = async () => {

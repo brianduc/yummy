@@ -10,7 +10,8 @@ import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 
-import type { Bindings } from './db/client.js';
+import { hydrateRuntimeConfig } from './config/runtime.js';
+import { type Bindings, createDb } from './db/client.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { askRouter } from './routers/ask.router.js';
 import { configRouter } from './routers/config.router.js';
@@ -23,6 +24,7 @@ import { worldRouter } from './routers/world.router.js';
 
 export function createApp(): OpenAPIHono<{ Bindings: Bindings }> {
   const app = new OpenAPIHono<{ Bindings: Bindings }>();
+  let runtimeConfigHydration: Promise<void> | undefined;
 
   // ── CORS — matches Python (allow all) ─────────────────
   app.use(
@@ -34,6 +36,14 @@ export function createApp(): OpenAPIHono<{ Bindings: Bindings }> {
       allowHeaders: ['*'],
     }),
   );
+
+  // Load DB-persisted provider settings before any route reads runtimeConfig.
+  // This keeps settings saved from one workspace/process visible to all others.
+  app.use('*', async (c, next) => {
+    runtimeConfigHydration ??= hydrateRuntimeConfig(createDb(c.env?.DB));
+    await runtimeConfigHydration;
+    await next();
+  });
 
   // ── Routers ───────────────────────────────────────────
   app.route('/', utilsRouter);

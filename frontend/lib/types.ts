@@ -25,6 +25,7 @@ export type WorkflowState =
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
   text: string
+  timestamp?: string
   trace?: RAGTrace
 }
 

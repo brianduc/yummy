@@ -1,3 +1,11 @@
+import { api, type SdlcEvent } from "@/lib/api";
+import type { ThemeId } from "@/lib/theme";
+import type {
+	ChatMessage,
+	ScanStatus,
+	Session,
+	SystemStatus,
+} from "@/lib/types";
 import {
 	createContext,
 	type ReactNode,
@@ -7,13 +15,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { api, type SdlcEvent } from "@/lib/api";
-import type {
-	ChatMessage,
-	ScanStatus,
-	Session,
-	SystemStatus,
-} from "@/lib/types";
 import type {
 	TerminalLogEntry,
 	WorkspaceChatContext,
@@ -37,12 +38,29 @@ const VALID_PROVIDERS = [
 	"bedrock",
 ] as const;
 
+const VALID_THEMES = [
+	"dark",
+	"light",
+	"dracula",
+	"yummy",
+	"angry",
+	"idea",
+] as const;
+
 function getErrorMessage(error: unknown) {
 	return error instanceof Error ? error.message : String(error);
 }
 
 function isProvider(provider: string): provider is Provider {
 	return VALID_PROVIDERS.some((validProvider) => validProvider === provider);
+}
+
+function isTheme(theme: string): theme is ThemeId {
+	return VALID_THEMES.some((validTheme) => validTheme === theme);
+}
+
+function newChatMessage(role: ChatMessage["role"], text: string): ChatMessage {
+	return { role, text, timestamp: new Date().toISOString() };
 }
 
 export interface UseWorkspaceChatOptions {
@@ -57,6 +75,7 @@ export interface UseWorkspaceChatOptions {
 	setSession?: (fn: (prev: Session | null) => Session | null) => void;
 	runSdlcStream?: (gen: AsyncGenerator<SdlcEvent>) => Promise<boolean>;
 	handleStop?: () => Promise<void>;
+	setTheme?: (theme: ThemeId) => void;
 	ideFile?: string | null;
 	ideContent?: string | null;
 }
@@ -78,11 +97,10 @@ export function useWorkspaceChat(
 
 	const sendAsk = useCallback(
 		async (question: string, free = false) => {
-			setChatHistory((prev) => [...prev, { role: "user", text: question }]);
-			setChatHistory((prev) => [...prev, { role: "assistant", text: "" }]);
+			setChatHistory((prev) => [...prev, newChatMessage("user", question)]);
+			setChatHistory((prev) => [...prev, newChatMessage("assistant", "")]);
 			setBusy(true);
-			if (opts.setActiveTab) opts.setActiveTab("rag");
-
+			
 			let accumulated = "";
 			let lastFlushed = "";
 			let flushTimer: ReturnType<typeof setTimeout> | null = null;
@@ -93,7 +111,11 @@ export function useWorkspaceChat(
 				setChatHistory((prev) => {
 					const next = [...prev];
 					if (next[next.length - 1].role === "assistant")
-						next[next.length - 1] = { role: "assistant", text: accumulated };
+						next[next.length - 1] = {
+							...next[next.length - 1],
+							role: "assistant",
+							text: accumulated,
+						};
 					return next;
 				});
 			};
@@ -119,6 +141,7 @@ export function useWorkspaceChat(
 						setChatHistory((prev) => {
 							const next = [...prev];
 							next[next.length - 1] = {
+								...next[next.length - 1],
 								role: "system",
 								text: `❌ ${chunk.slice(8)}`,
 							};
@@ -145,6 +168,7 @@ export function useWorkspaceChat(
 				setChatHistory((prev) => {
 					const next = [...prev];
 					next[next.length - 1] = {
+						...next[next.length - 1],
 						role: "system",
 						text: `❌ ${getErrorMessage(e)}`,
 					};
@@ -161,8 +185,8 @@ export function useWorkspaceChat(
 
 	const sendBtw = useCallback(
 		async (question: string) => {
-			setChatHistory((prev) => [...prev, { role: "user", text: question }]);
-			setChatHistory((prev) => [...prev, { role: "assistant", text: "" }]);
+			setChatHistory((prev) => [...prev, newChatMessage("user", question)]);
+			setChatHistory((prev) => [...prev, newChatMessage("assistant", "")]);
 			setBtwBusy(true);
 
 			let accumulated = "";
@@ -175,7 +199,11 @@ export function useWorkspaceChat(
 				setChatHistory((prev) => {
 					const next = [...prev];
 					if (next[next.length - 1].role === "assistant")
-						next[next.length - 1] = { role: "assistant", text: accumulated };
+						next[next.length - 1] = {
+							...next[next.length - 1],
+							role: "assistant",
+							text: accumulated,
+						};
 					return next;
 				});
 			};
@@ -201,6 +229,7 @@ export function useWorkspaceChat(
 						setChatHistory((prev) => {
 							const next = [...prev];
 							next[next.length - 1] = {
+								...next[next.length - 1],
 								role: "system",
 								text: `❌ ${chunk.slice(8)}`,
 							};
@@ -215,6 +244,7 @@ export function useWorkspaceChat(
 				setChatHistory((prev) => {
 					const next = [...prev];
 					next[next.length - 1] = {
+						...next[next.length - 1],
 						role: "system",
 						text: `❌ ${getErrorMessage(e)}`,
 					};
@@ -235,8 +265,14 @@ export function useWorkspaceChat(
 			if (!raw) return;
 			const args = raw.split(" ");
 			const command = args[0].toLowerCase();
+			const themeCommand = command.startsWith("/") ? command.slice(1) : command;
 
-			if (busy && command !== "/btw" && command !== "/stop") {
+			if (
+				busy &&
+				command !== "/btw" &&
+				command !== "/stop" &&
+				!isTheme(themeCommand)
+			) {
 				if (opts.session?.workflow_state?.includes("running")) {
 					print(
 						"⟳ Pipeline is running — use /btw <question> to chat, or /stop to abort.",
@@ -248,6 +284,12 @@ export function useWorkspaceChat(
 			print(`> ${raw}`, "user");
 
 			try {
+				if (isTheme(themeCommand)) {
+					opts.setTheme?.(themeCommand);
+					print(`✅ Theme set to: ${themeCommand}`);
+					return;
+				}
+
 				switch (command) {
 					case "/help":
 						print(
@@ -264,7 +306,8 @@ export function useWorkspaceChat(
 								"  /provider <name> <key>   — Switch provider and set API key in one step\n" +
 								"  /new                     — Create new workspace\n" +
 								"  /healthcheck             — Ping AI model connection\n" +
-								"  /info                    — Show system info",
+								"  /info                    — Show system info\n" +
+								"  /dark|/light|/dracula|/yummy|/angry|/idea — Switch theme",
 						);
 						break;
 					case "/setup": {

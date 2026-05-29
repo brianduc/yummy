@@ -20,6 +20,7 @@ export const SessionLogSchema = z.object({
 export const ChatMessageSchema = z.object({
   role: z.string(),
   text: z.string(),
+  timestamp: z.string().optional(),
   trace: z.unknown().optional(),
 });
 

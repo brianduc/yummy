@@ -5,6 +5,7 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { type Bindings, createDb } from '../db/client.js';
 import { sessionsRepo } from '../db/repositories/sessions.repo.js';
+import { conflict } from '../lib/errors.js';
 import { requireSession } from '../lib/guards.js';
 import { newSessionId } from '../lib/id.js';
 import { toSessionDetail, toSessionSummary } from '../lib/serializers.js';
@@ -89,6 +90,7 @@ sessionsRouter.openapi(
         content: json(z.object({ status: z.string(), session_id: z.string() })),
         description: 'Deleted',
       },
+      409: { content: json(ErrorSchema), description: 'Cannot delete last workspace' },
       404: { content: json(ErrorSchema), description: 'Not found' },
     },
   }),
@@ -96,6 +98,9 @@ sessionsRouter.openapi(
     const db = createDb(c.env?.DB);
     const { session_id } = c.req.valid('param');
     await requireSession(db, session_id); // raises 404
+    if ((await sessionsRepo.count(db)) <= 1) {
+      throw conflict('Cannot delete the last workspace.');
+    }
     await sessionsRepo.delete(db, session_id);
     return c.json({ status: 'deleted', session_id }, 200);
   },

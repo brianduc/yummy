@@ -1,26 +1,11 @@
-import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { WorkspaceSessionListContext } from '@/app/workspace/[sessionId]/session-context'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
   useParams: () => ({ sessionId: 'test-sessions-session' }),
   usePathname: () => '/workspace/test-sessions-session/sessions',
-}))
-
-vi.mock('@/hooks/useWorkspaceSession', () => ({
-  useWorkspaceSession: () => ({
-    session: null,
-    sessionId: 'test-sessions-session',
-    sessions: [],
-    metrics: null,
-    loading: false,
-    error: null,
-    fetchSession: vi.fn(),
-    fetchSessions: vi.fn(),
-    fetchMetrics: vi.fn(),
-    deleteSession: vi.fn(),
-  }),
 }))
 
 vi.mock('@/components/workspace/SessionsPanel', () => ({
@@ -30,13 +15,26 @@ vi.mock('@/components/workspace/SessionsPanel', () => ({
 import SessionsPage from '@/app/workspace/[sessionId]/sessions/page'
 
 describe('SessionsPage', () => {
+  const renderPage = () =>
+    render(
+      <WorkspaceSessionListContext.Provider
+        value={{
+          sessions: [],
+          fetchSessions: vi.fn().mockResolvedValue(undefined),
+          deleteSession: vi.fn().mockResolvedValue(undefined),
+        }}
+      >
+        <SessionsPage />
+      </WorkspaceSessionListContext.Provider>,
+    )
+
   it('renders sessions-page wrapper', () => {
-    render(<SessionsPage />)
+    renderPage()
     expect(screen.getByTestId('sessions-page')).toBeInTheDocument()
   })
 
   it('renders SessionsPanel component', () => {
-    render(<SessionsPage />)
+    renderPage()
     expect(screen.getByTestId('sessions-panel-stub')).toBeInTheDocument()
   })
 })

@@ -1,26 +1,11 @@
-import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { WorkspaceSessionListContext } from '@/app/workspace/[sessionId]/session-context'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
   useParams: () => ({ sessionId: 'test-database-session' }),
   usePathname: () => '/workspace/test-database-session/database',
-}))
-
-vi.mock('@/hooks/useWorkspaceSession', () => ({
-  useWorkspaceSession: () => ({
-    session: null,
-    sessionId: 'test-database-session',
-    sessions: [],
-    metrics: null,
-    loading: false,
-    error: null,
-    fetchSession: vi.fn(),
-    fetchSessions: vi.fn(),
-    fetchMetrics: vi.fn(),
-    deleteSession: vi.fn(),
-  }),
 }))
 
 vi.mock('@/hooks/useWorkspaceStatus', () => ({
@@ -45,13 +30,26 @@ vi.mock('@/components/workspace/DbPanel', () => ({
 import DatabasePage from '@/app/workspace/[sessionId]/database/page'
 
 describe('DatabasePage', () => {
+  const renderPage = () =>
+    render(
+      <WorkspaceSessionListContext.Provider
+        value={{
+          sessions: [],
+          fetchSessions: vi.fn().mockResolvedValue(undefined),
+          deleteSession: vi.fn().mockResolvedValue(undefined),
+        }}
+      >
+        <DatabasePage />
+      </WorkspaceSessionListContext.Provider>,
+    )
+
   it('renders database-page wrapper', () => {
-    render(<DatabasePage />)
+    renderPage()
     expect(screen.getByTestId('database-page')).toBeInTheDocument()
   })
 
   it('renders DbPanel component', () => {
-    render(<DatabasePage />)
+    renderPage()
     expect(screen.getByTestId('db-panel-stub')).toBeInTheDocument()
   })
 })

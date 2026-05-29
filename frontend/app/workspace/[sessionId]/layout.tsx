@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import type { Session } from "@/lib/types";
 import { FileOpenContext } from "./file-open-context";
 import { WorkspaceSdlcRouteContextObj } from "./sdlc-context";
+import { WorkspaceSessionListContext } from "./session-context";
 
 export default function WorkspaceRouteLayout({
 	children,
@@ -107,7 +108,16 @@ export default function WorkspaceRouteLayout({
 		setSession,
 		runSdlcStream: sdlcCtx.runSdlcStream,
 		handleStop: sdlcCtx.abort,
+		setTheme: uiCtx.setTheme,
 	});
+
+	const hydratedSessionId = useRef("");
+	useEffect(() => {
+		if (session && session.id !== hydratedSessionId.current) {
+			hydratedSessionId.current = session.id;
+			chatCtx.setChatHistory(session.chat_history ?? []);
+		}
+	}, [session, chatCtx]);
 
 	return (
 		<WorkspaceChatProvider value={chatCtx}>
@@ -132,15 +142,28 @@ export default function WorkspaceRouteLayout({
 					onStop={sdlcCtx.abort}
 					mainStageChildren={
 						<FileOpenContext.Provider
-							value={{ ideFile, ideContent, ideLoading }}
+							value={{
+								ideFile,
+								ideContent,
+								ideLoading,
+								onFileOpen: handleFileOpen,
+							}}
 						>
-							<WorkspaceSdlcRouteContextObj.Provider
-								value={{ ...sdlcCtx, session }}
+							<WorkspaceSessionListContext.Provider
+								value={{
+									sessions: sessionCtx.sessions,
+									fetchSessions: sessionCtx.fetchSessions,
+									deleteSession: sessionCtx.deleteSession,
+								}}
 							>
-								<DeleteSessionContext.Provider value={setDeleteTarget}>
-									<main data-testid="workspace-main-slot">{children}</main>
-								</DeleteSessionContext.Provider>
-							</WorkspaceSdlcRouteContextObj.Provider>
+								<WorkspaceSdlcRouteContextObj.Provider
+									value={{ ...sdlcCtx, session }}
+								>
+									<DeleteSessionContext.Provider value={setDeleteTarget}>
+										<main data-testid="workspace-main-slot">{children}</main>
+									</DeleteSessionContext.Provider>
+								</WorkspaceSdlcRouteContextObj.Provider>
+							</WorkspaceSessionListContext.Provider>
 						</FileOpenContext.Provider>
 					}
 				/>

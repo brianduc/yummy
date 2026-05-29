@@ -10,6 +10,22 @@ import { type SessionRow, sessions } from '../schema.js';
 type DB = Db;
 export type Session = SessionRow;
 
+function orderedChatHistory(chatHistory: Session['chatHistory']): Session['chatHistory'] {
+  return [...chatHistory].sort((a, b) => {
+    const left = a.timestamp ?? '';
+    const right = b.timestamp ?? '';
+    if (left === right) return 0;
+    if (!left) return -1;
+    if (!right) return 1;
+    return left.localeCompare(right);
+  });
+}
+
+function withOrderedChatHistory<T extends Session | undefined>(session: T): T {
+  if (!session) return session;
+  return { ...session, chatHistory: orderedChatHistory(session.chatHistory) };
+}
+
 function defaultSystemLog(name: string): Session['logs'][number] {
   return {
     role: 'system',
@@ -19,11 +35,16 @@ function defaultSystemLog(name: string): Session['logs'][number] {
 
 export const sessionsRepo = {
   async list(db: DB): Promise<Session[]> {
-    return await db.select().from(sessions).all();
+    return (await db.select().from(sessions).all()).map((session) => withOrderedChatHistory(session));
   },
 
   async get(db: DB, id: string): Promise<Session | undefined> {
-    return await db.select().from(sessions).where(eq(sessions.id, id)).get();
+    return withOrderedChatHistory(await db.select().from(sessions).where(eq(sessions.id, id)).get());
+  },
+
+  async count(db: DB): Promise<number> {
+    const rows = await db.select({ id: sessions.id }).from(sessions).all();
+    return rows.length;
   },
 
   async create(db: DB, id: string, name: string): Promise<Session> {

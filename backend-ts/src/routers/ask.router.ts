@@ -17,10 +17,11 @@
  */
 import { createRoute, OpenAPIHono, type z } from '@hono/zod-openapi';
 import { stream } from 'hono/streaming';
-import { type Bindings, createDb } from '../db/client.js';
+import { type Bindings, createDb, type Db } from '../db/client.js';
 import { repoRepo } from '../db/repositories/repo.repo.js';
 import { sessionsRepo } from '../db/repositories/sessions.repo.js';
 import { requireKnowledgeBase, requireSession } from '../lib/guards.js';
+import { nowIso } from '../lib/time.js';
 import { type AskRequest, AskRequestSchema, AskSyncResponseSchema } from '../schemas/ask.schema.js';
 import { ErrorSchema } from '../schemas/common.schema.js';
 import { callAI, streamAI } from '../services/ai/dispatcher.js';
@@ -42,7 +43,13 @@ interface TraceInfo {
 }
 
 interface SessionLike {
-  chatHistory: Array<{ role: string; text: string; trace?: unknown }>;
+  chatHistory: Array<{ role: string; text: string; timestamp?: string; trace?: unknown }>;
+}
+
+function chatMessage(role: string, text: string, trace?: unknown): SessionLike['chatHistory'][number] {
+  const message: SessionLike['chatHistory'][number] = { role, text, timestamp: nowIso() };
+  if (trace !== undefined) message.trace = trace;
+  return message;
 }
 
 function buildRagPrompt(
@@ -101,6 +108,21 @@ function sseLine(data: string): string {
   return `data: ${data}\n\n`;
 }
 
+async function appendAssistantMessage(
+  db: Db,
+  sessionId: string,
+  answer: string,
+  trace?: unknown,
+): Promise<void> {
+  if (!answer) return;
+  const fresh = await sessionsRepo.get(db, sessionId);
+  if (!fresh) return;
+
+  await sessionsRepo.update(db, sessionId, {
+    chatHistory: [...fresh.chatHistory, chatMessage('assistant', answer, trace)],
+  });
+}
+
 // ─── POST /ask  (SSE) ────────────────────────────────────
 askRouter.post('/ask', async (c) => {
   const db = createDb(c.env?.DB);
@@ -113,7 +135,7 @@ askRouter.post('/ask', async (c) => {
   const { prompt, instruction, trace } = buildRagPrompt(repoName, session, kb, req);
 
   // Persist user message immediately (matches Python).
-  const newHistory = [...session.chatHistory, { role: 'user', text: req.question }];
+  const newHistory = [...session.chatHistory, chatMessage('user', req.question)];
   await sessionsRepo.update(db, req.session_id, { chatHistory: newHistory });
 
   // Set SSE headers
@@ -122,6 +144,17 @@ askRouter.post('/ask', async (c) => {
   return stream(c, async (s) => {
     const start = Date.now();
     const chunks: string[] = [];
+    let assistantPersisted = false;
+
+    const persistAssistant = async (): Promise<string> => {
+      const answer = chunks.join('');
+      if (!assistantPersisted) {
+        await appendAssistantMessage(db, req.session_id, answer, trace);
+        assistantPersisted = true;
+      }
+      return answer;
+    };
+
     try {
       for await (const chunk of streamAI(prompt, instruction)) {
         chunks.push(chunk);
@@ -129,19 +162,12 @@ askRouter.post('/ask', async (c) => {
         await s.write(sseLine(safe));
       }
     } catch (e) {
+      await persistAssistant();
       await s.write(sseLine(`[ERROR] ${(e as Error).message}`));
       return;
     }
 
-    const answer = chunks.join('');
-
-    // Persist assistant message + trace (re-fetch to avoid losing concurrent writes).
-    const fresh = await sessionsRepo.get(db, req.session_id);
-    if (fresh) {
-      await sessionsRepo.update(db, req.session_id, {
-        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer, trace }],
-      });
-    }
+    const answer = await persistAssistant();
 
     // Record metrics (streamAI does NOT track — Python parity).
     await track(db, {
@@ -184,7 +210,7 @@ askRouter.post('/ask/free', async (c) => {
 
   // Persist user message immediately.
   await sessionsRepo.update(db, req.session_id, {
-    chatHistory: [...session.chatHistory, { role: 'user', text: req.question }],
+    chatHistory: [...session.chatHistory, chatMessage('user', req.question)],
   });
 
   for (const [k, v] of Object.entries(sseHeaders())) c.header(k, v);
@@ -192,6 +218,17 @@ askRouter.post('/ask/free', async (c) => {
   return stream(c, async (s) => {
     const start = Date.now();
     const chunks: string[] = [];
+    let assistantPersisted = false;
+
+    const persistAssistant = async (): Promise<string> => {
+      const answer = chunks.join('');
+      if (!assistantPersisted) {
+        await appendAssistantMessage(db, req.session_id, answer);
+        assistantPersisted = true;
+      }
+      return answer;
+    };
+
     try {
       for await (const chunk of streamAI(prompt, instruction)) {
         chunks.push(chunk);
@@ -199,18 +236,12 @@ askRouter.post('/ask/free', async (c) => {
         await s.write(sseLine(safe));
       }
     } catch (e) {
+      await persistAssistant();
       await s.write(sseLine(`[ERROR] ${(e as Error).message}`));
       return;
     }
 
-    const answer = chunks.join('');
-
-    const fresh = await sessionsRepo.get(db, req.session_id);
-    if (fresh) {
-      await sessionsRepo.update(db, req.session_id, {
-        chatHistory: [...fresh.chatHistory, { role: 'assistant', text: answer }],
-      });
-    }
+    const answer = await persistAssistant();
 
     await track(db, {
       agentRole: 'EXPERT',
@@ -250,8 +281,8 @@ askRouter.openapi(
     await sessionsRepo.update(db, req.session_id, {
       chatHistory: [
         ...session.chatHistory,
-        { role: 'user', text: req.question },
-        { role: 'assistant', text: answer, trace },
+        chatMessage('user', req.question),
+        chatMessage('assistant', answer, trace),
       ],
     });
 
