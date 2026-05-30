@@ -1,0 +1,14 @@
+## Task T11: Active Cloudflare scripts search
+## Generated: 2026-05-30
+## Command: grep -n "wrangler|opennextjs-cloudflare|@opennextjs/cloudflare" frontend/package.json backend-ts/package.json
+
+RESULT: Only :legacy suffixed scripts remain — no active Cloudflare scripts in default build/deploy paths.
+
+backend-ts/package.json:18:    "deploy:legacy": "wrangler deploy",
+backend-ts/package.json:19:    "dev:worker:legacy": "wrangler dev",
+backend-ts/package.json:20:    "db:migrate:local:legacy": "wrangler d1 migrations apply yummy-db --local",
+backend-ts/package.json:21:    "db:migrate:remote:legacy": "wrangler d1 migrations apply yummy-db --remote"
+
+frontend/package.json: NO MATCHES (clean — @opennextjs/cloudflare removed in T10)
+
+VERIFICATION: `grep -n "wrangler|opennextjs-cloudflare" frontend/package.json backend-ts/package.json | grep -v ":legacy"` returns 0 lines.

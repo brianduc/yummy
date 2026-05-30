@@ -1,3 +1,6 @@
+// LEGACY: Cloudflare D1 + Workers deployment config — gated as part of AWS migration (T11).
+// Active deployment target is AWS (App Runner). This file is retained for reference only.
+// Do not run `wrangler deploy` without restoring wrangler to devDependencies.
 {
   "name": "yummy-api",
   "main": "src/worker.ts",

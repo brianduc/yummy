@@ -1,0 +1,16 @@
+## Task T11: Worker runtime artifacts search
+## Generated: 2026-05-30
+## Command: grep -rn "c.env?.DB|@cloudflare/workers-types|cloudflare:workers|WorkerEnv|ExecutionContext" backend-ts/src/
+
+RESULT: NO MATCHES — zero active Worker runtime dependencies in backend source code.
+
+backend-ts/src/worker.ts: Contains only legacy comment header + `createApp()` call.
+  - @cloudflare/workers-types: REMOVED from devDependencies
+  - wrangler: REMOVED from devDependencies
+  - c.env?.DB: NOT PRESENT in any source file (T9 completed this cleanup)
+
+backend-ts build: pnpm build exits 0 (tsc -p tsconfig.json — clean)
+
+frontend/.open-next/: Exists as leftover artifact from prior Cloudflare build.
+  - Added frontend/.open-next/ to root .gitignore to prevent future commits.
+  - frontend/open-next.config.ts: Replaced with legacy-gate comment block.

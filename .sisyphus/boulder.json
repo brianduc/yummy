@@ -12,7 +12,8 @@
     "ses_187d30d04ffe3D3orZuMO0DRnj",
     "ses_187d2c5acffe81b80lxdTa8Cb5",
     "ses_187bb88aeffei435EEaTCBKRvr",
-    "ses_187b36064ffe5SCCvUr1pl6g1I"
+    "ses_187b36064ffe5SCCvUr1pl6g1I",
+    "ses_187b0191fffeaGg56M0DXQ5crR"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -25,7 +26,8 @@
     "ses_187d30d04ffe3D3orZuMO0DRnj": "appended",
     "ses_187d2c5acffe81b80lxdTa8Cb5": "appended",
     "ses_187bb88aeffei435EEaTCBKRvr": "appended",
-    "ses_187b36064ffe5SCCvUr1pl6g1I": "appended"
+    "ses_187b36064ffe5SCCvUr1pl6g1I": "appended",
+    "ses_187b0191fffeaGg56M0DXQ5crR": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -74,6 +76,15 @@
       "agent": "Sisyphus-Junior",
       "category": "visual-engineering",
       "updated_at": "2026-05-30T09:55:17.239Z"
+    },
+    "todo:11": {
+      "task_key": "todo:11",
+      "task_label": "11",
+      "task_title": "Remove/gate Cloudflare tooling and generated artifacts",
+      "session_id": "ses_187b0191fffeaGg56M0DXQ5crR",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-30T09:58:41.157Z"
     }
   }
 }

@@ -7,8 +7,6 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node --import tsx src/index.ts",
-    "deploy": "wrangler deploy",
-    "dev:worker": "wrangler dev",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,9 +14,11 @@
     "format": "biome format --write src tests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:migrate:local": "wrangler d1 migrations apply yummy-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply yummy-db --remote",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "deploy:legacy": "wrangler deploy",
+    "dev:worker:legacy": "wrangler dev",
+    "db:migrate:local:legacy": "wrangler d1 migrations apply yummy-db --local",
+    "db:migrate:remote:legacy": "wrangler d1 migrations apply yummy-db --remote"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -43,13 +43,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
-    "@cloudflare/workers-types": "^4.20260522.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.6.0",
     "drizzle-kit": "0.30.6",
     "tsx": "^4.21.0",
     "typescript": "5.7.3",
-    "vitest": "^4.1.4",
-    "wrangler": "^4.93.1"
+    "vitest": "^4.1.4"
   }
 }

@@ -845,7 +845,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `frontend/package.json`, `frontend/next.config.mjs`, frontend Dockerfile/config
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 11. Remove/gate Cloudflare tooling and generated artifacts
+- [x] 11. Remove/gate Cloudflare tooling and generated artifacts
 
   **What to do**:
   - Remove Cloudflare as the default deployment path for AWS migration.

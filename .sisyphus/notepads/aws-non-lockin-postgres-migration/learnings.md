@@ -161,3 +161,13 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - The dynamic routing (`[sessionId]`) strictly requires this SSR/Node.js runtime, making static export impossible.
 - Removed Cloudflare workers config from Next and deployed as a standard Next.js Docker container using `node:20-slim`.
 - API base URL behavior (`NEXT_PUBLIC_API_URL`) requires baked-in build args; implemented this in Dockerfile.
+
+## T11: Cloudflare Tooling Gating (2026-05-30)
+
+- **backend-ts/package.json**: Removed `wrangler` and `@cloudflare/workers-types` from devDependencies. Renamed `deploy`, `dev:worker`, `db:migrate:local`, `db:migrate:remote` scripts to `:legacy` suffix — they remain in the file but are clearly non-default.
+- **frontend/open-next.config.ts**: Replaced Cloudflare provider config with legacy-gate comment block. `@opennextjs/cloudflare` was already removed in T10 so importing it would fail.
+- **backend-ts/wrangler.jsonc**: Added LEGACY header comment. D1 config retained for reference only.
+- **backend-ts/src/worker.ts**: Added LEGACY header comment. File still re-exports `createApp()` so it remains syntactically valid.
+- **frontend/.open-next/**: Pre-built Cloudflare artifact directory exists in working tree. Added `frontend/.open-next/` to root `.gitignore` to prevent accidental commits.
+- **backend build**: `pnpm build` exits 0 — tsc clean after removing `@cloudflare/workers-types`.
+- **Key pattern**: Gate strategy = rename scripts to `:legacy` + comment headers on files, not deletion. Preserves intent for potential future reference without polluting active paths.
