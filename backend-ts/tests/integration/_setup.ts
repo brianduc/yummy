@@ -1,36 +1,18 @@
-/**
- * Shared integration test setup:
- *   - in-memory SQLite
- *   - migrate before all
- *   - reset all tables before each test
- *   - mock AI dispatcher (callAI/streamAI)
- *   - mock github service (no real network)
- *
- * Import this file FIRST in every integration test (before importing app.ts
- * or any router) so DATABASE_URL is set before db/client.ts is evaluated.
- */
-process.env.DATABASE_URL = ':memory:';
-
 import { resolve } from 'node:path';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { beforeAll, beforeEach, vi } from 'vitest';
+import { sql } from 'drizzle-orm';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
 
-import { db, getLocalDb } from '../../src/db/client.local.js';
-import { kbRepo } from '../../src/db/repositories/kb.repo.js';
-import { logsRepo } from '../../src/db/repositories/logs.repo.js';
-import { repoRepo } from '../../src/db/repositories/repo.repo.js';
-import { scanStatusRepo } from '../../src/db/repositories/scan-status.repo.js';
-import { sessionsRepo } from '../../src/db/repositories/sessions.repo.js';
+import { closePostgresClient, createDb, getMigratorDb } from '../../src/db/client.js';
 import { createWorldServer, updateWorldConfig } from '../../src/db/repositories/world.repo.js';
-import {
-  type WorldConfigInsert,
-  type WorldServerInsert,
-  type WorldServerRow,
-  worldConfig,
-  worldServers,
+import type {
+  WorldConfigInsert,
+  WorldServerInsert,
+  WorldServerRow,
 } from '../../src/db/schema.js';
 
-// ─── AI dispatcher mock ───────────────────────────────
+const db = createDb();
+
 const aiResponses = new Map<string, string>();
 let defaultResponse = 'mock-ai-response';
 
@@ -56,7 +38,6 @@ vi.mock('../../src/services/ai/dispatcher.js', () => ({
   }),
 }));
 
-// ─── Mock GitHub service — avoids real network ────────
 vi.mock('../../src/services/github/github.service.js', () => ({
   githubFetch: vi.fn(),
   githubRaw: vi.fn(async () => 'mock file contents'),
@@ -71,7 +52,6 @@ vi.mock('../../src/services/github/github.service.js', () => ({
   ]),
 }));
 
-// ─── MCP transport mocks ──────────────────────────────────
 vi.mock('@modelcontextprotocol/sdk/client/index.js', () => {
   const mockClient = {
     connect: vi.fn().mockResolvedValue(undefined),
@@ -110,11 +90,10 @@ export async function seedWorldServer(
     name: overrides.name ?? 'Test Server',
     transport: overrides.transport ?? 'stdio',
     command: overrides.command ?? 'echo',
-    args: overrides.args ?? '["hello"]',
+    args: overrides.args ?? ['hello'],
     url: overrides.url ?? null,
     headersJson: overrides.headersJson ?? null,
     enabled: overrides.enabled ?? true,
-    createdAt: overrides.createdAt ?? new Date().toISOString(),
     lastStatus: overrides.lastStatus ?? 'unknown',
   };
   return await createWorldServer(db, insert);
@@ -124,26 +103,36 @@ export async function seedWorldConfig(overrides: Partial<WorldConfigInsert> = {}
   await updateWorldConfig(db, overrides);
 }
 
-export function resetWorldData(): void {
-  db.delete(worldServers).run();
-  // world_config singleton stays (reset to defaults)
-  db.update(worldConfig)
-    .set({ mcpServerToken: '', mcpServerEnabled: false, mcpServerPort: '' })
-    .run();
+export async function resetWorldData(): Promise<void> {
+  await db.execute(sql`TRUNCATE TABLE world_servers RESTART IDENTITY CASCADE`);
 }
 
-beforeAll(() => {
-  migrate(getLocalDb(), {
-    migrationsFolder: resolve(__dirname, '../../drizzle'),
+beforeAll(async () => {
+  const migratorDb = getMigratorDb();
+  await migrate(migratorDb, {
+    migrationsFolder: resolve(import.meta.dirname, '../../src/db/migrations'),
   });
-});
+  await migratorDb.$client.end({ timeout: 5 });
+}, 30_000);
 
 beforeEach(async () => {
-  for (const s of await sessionsRepo.list(db)) await sessionsRepo.delete(db, s.id);
-  await kbRepo.resetAll(db);
-  await repoRepo.clear(db);
-  await scanStatusRepo.clear(db);
-  await logsRepo.clear(db);
+  await db.execute(sql`
+    TRUNCATE TABLE
+      sessions,
+      kb_tree,
+      kb_insights,
+      kb_meta,
+      repo_info,
+      scan_status,
+      request_logs,
+      world_servers,
+      world_config,
+      provider_config
+    RESTART IDENTITY CASCADE
+  `);
   clearAIResponses();
-  resetWorldData();
+});
+
+afterAll(async () => {
+  await closePostgresClient();
 });

@@ -38,7 +38,7 @@ describe('world API', () => {
   });
 
   it('GET /world/servers/:id returns server', async () => {
-    const srv = await seedWorldServer({ name: 'lookup-server', args: '["ping"]' });
+    const srv = await seedWorldServer({ name: 'lookup-server', args: ['ping'] });
 
     const res = await app.request(`/world/servers/${srv.id}`);
 

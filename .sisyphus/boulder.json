@@ -10,7 +10,8 @@
     "ses_187e00aadffeKyDEaKPLe8NZ2I",
     "ses_187db8669ffenuaaD43AEndZCK",
     "ses_187d30d04ffe3D3orZuMO0DRnj",
-    "ses_187d2c5acffe81b80lxdTa8Cb5"
+    "ses_187d2c5acffe81b80lxdTa8Cb5",
+    "ses_187bb88aeffei435EEaTCBKRvr"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -21,7 +22,8 @@
     "ses_187e00aadffeKyDEaKPLe8NZ2I": "appended",
     "ses_187db8669ffenuaaD43AEndZCK": "appended",
     "ses_187d30d04ffe3D3orZuMO0DRnj": "appended",
-    "ses_187d2c5acffe81b80lxdTa8Cb5": "appended"
+    "ses_187d2c5acffe81b80lxdTa8Cb5": "appended",
+    "ses_187bb88aeffei435EEaTCBKRvr": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -52,6 +54,15 @@
       "agent": "Sisyphus-Junior",
       "category": "deep",
       "updated_at": "2026-05-30T09:42:42.785Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Update backend integration tests for Postgres",
+      "session_id": "ses_187bb88aeffei435EEaTCBKRvr",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-30T09:51:25.875Z"
     }
   }
 }

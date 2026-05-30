@@ -2,7 +2,9 @@ import './_setup.js';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { runtimeConfig } from '../../src/config/runtime.js';
-import { db } from '../../src/db/client.local.js';
+import { createDb } from '../../src/db/client.js';
+
+const db = createDb();
 import { providerConfig } from '../../src/db/schema.js';
 
 const app = createApp();
@@ -43,7 +45,7 @@ describe('config + sessions integration', () => {
   });
 
   it('hydrates saved provider config from DB for a new app instance', async () => {
-    db.delete(providerConfig).run();
+    await db.delete(providerConfig);
 
     const saveOpenAI = await app.request('/config/openai', {
       method: 'POST',

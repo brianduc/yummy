@@ -1,21 +1,23 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-
-// Use in-memory DB for tests
-process.env.DATABASE_URL = ':memory:';
-
 import { resolve } from 'node:path';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { db, getLocalDb } from '../../src/db/client.local.js';
+import { closePostgresClient, createDb, getMigratorDb } from '../../src/db/client.js';
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { scanStatusRepo } from '../../src/db/repositories/scan-status.repo.js';
 import { sessionsRepo } from '../../src/db/repositories/sessions.repo.js';
 
-beforeAll(() => {
-  migrate(getLocalDb(), { migrationsFolder: resolve(__dirname, '../../drizzle') });
-});
+const db = createDb();
+
+beforeAll(async () => {
+  const migratorDb = getMigratorDb();
+  await migrate(migratorDb, {
+    migrationsFolder: resolve(import.meta.dirname, '../../src/db/migrations'),
+  });
+  await migratorDb.$client.end({ timeout: 5 });
+}, 30_000);
 
 beforeEach(async () => {
   const sessions = await sessionsRepo.list(db);
@@ -24,6 +26,10 @@ beforeEach(async () => {
   await repoRepo.clear(db);
   await scanStatusRepo.clear(db);
   await logsRepo.clear(db);
+});
+
+afterAll(async () => {
+  await closePostgresClient();
 });
 
 describe('sessionsRepo', () => {

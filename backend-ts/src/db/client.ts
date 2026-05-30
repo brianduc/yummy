@@ -49,4 +49,9 @@ export function createDb(_legacyDb?: unknown): Db {
   return pgDb;
 }
 
+export function getMigratorDb(): Db {
+  const migClient = postgres(getDatabaseUrl(), { max: 1 });
+  return drizzle(migClient, { schema }) as unknown as Db;
+}
+
 export { schema };

@@ -1,0 +1,23 @@
+
+> backend-ts@1.0.0 test /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> vitest run
+
+
+ RUN  v4.1.4 /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+
+ ❯ tests/integration/world-sdlc-tool-loop.test.ts (12 tests | 12 skipped) 15ms
+ ❯ tests/integration/world.test.ts (15 tests | 15 skipped) 14ms
+ ❯ tests/integration/world-mcp-server.test.ts (13 tests | 13 skipped) 20ms
+ ❯ tests/integration/config-sessions.test.ts (11 tests | 11 skipped) 17ms
+ ❯ tests/integration/kb.test.ts (6 tests | 6 skipped) 15ms
+ ❯ tests/integration/sdlc.test.ts (5 tests | 5 skipped) 15ms
+ ❯ tests/integration/ask.test.ts (5 tests | 5 skipped) 14ms
+ ❯ tests/integration/metrics.test.ts (3 tests | 3 skipped) 16ms
+ ❯ tests/unit/repositories.test.ts (5 tests | 5 skipped) 15ms
+
+ Test Files  9 failed | 3 passed (12)
+      Tests  20 passed | 75 skipped (95)
+   Start at  16:50:26
+   Duration  4.54s (transform 175ms, setup 0ms, import 3.59s, tests 190ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

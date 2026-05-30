@@ -1,0 +1,13 @@
+
+> backend-ts@1.0.0 test /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> vitest run
+
+
+ RUN  v4.1.4 /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+
+
+ Test Files  12 passed (12)
+      Tests  95 passed (95)
+   Start at  16:50:13
+   Duration  7.37s (transform 177ms, setup 0ms, import 3.73s, tests 2.71s, environment 0ms)
+

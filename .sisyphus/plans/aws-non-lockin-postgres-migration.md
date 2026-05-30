@@ -647,7 +647,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `backend-ts/src/db/migrations/*`, migration script, migration docs
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 8. Update backend integration tests for Postgres
+- [x] 8. Update backend integration tests for Postgres
 
   **What to do**:
   - Replace SQLite `:memory:` setup with Docker Postgres test DB setup.

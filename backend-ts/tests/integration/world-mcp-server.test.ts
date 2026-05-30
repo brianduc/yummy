@@ -45,7 +45,7 @@ describe('POST /world/mcp — MCP server endpoint', () => {
   let app: App;
 
   beforeEach(async () => {
-    resetWorldData();
+    await resetWorldData();
     app = createApp();
     await app.request('/world/config', {
       method: 'PUT',

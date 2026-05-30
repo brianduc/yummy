@@ -130,3 +130,27 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - The Postgres pool must be closed in both migration and server shutdown paths; otherwise `pnpm db:migrate` and SIGTERM handling can hang after successful work.
 - `/sdlc/start` SSE requires an existing session plus non-empty KB insight data before headers stream; local smoke evidence reached the SSE terminal-event path and is saved at `.sisyphus/evidence/task-9-sse-local.txt`.
 - Related Vitest integration tests are still blocked by legacy `_setup.ts` forcing `DATABASE_URL=":memory:"`; full suite migration remains outside this runtime wiring task.
+
+## T8 — Backend Integration Tests Migrated to Postgres (2026-05-30)
+
+### What changed
+- `backend-ts/tests/integration/_setup.ts` — replaced SQLite `:memory:` with Postgres. Removed `process.env.DATABASE_URL = ':memory:'`, replaced `drizzle-orm/better-sqlite3/migrator` with `drizzle-orm/postgres-js/migrator`, removed `client.local.ts` imports. Added `beforeAll` async migrate, `beforeEach` TRUNCATE RESTART IDENTITY CASCADE on all tables, `afterAll` closePostgresClient.
+- `backend-ts/src/db/client.ts` — added `getMigratorDb()` export: single-connection (max: 1) Drizzle client for migrations. Caller responsible for closing `$client` after use.
+- `backend-ts/tests/integration/*.test.ts` (5 files) — replaced `import { db } from 'client.local.js'` with `import { createDb } from 'client.ts'` + `const db = createDb()`.
+- `backend-ts/tests/integration/config-sessions.test.ts` — replaced `db.delete(providerConfig).run()` (SQLite sync) with `await db.delete(providerConfig)` (Postgres async).
+- `backend-ts/tests/integration/world.test.ts` — changed `args: '["ping"]'` (JSON string) to `args: ['ping']` (string array) to match new `jsonb` schema type.
+- `backend-ts/tests/integration/world-mcp-server.test.ts` — added `await` to `resetWorldData()` call (now async).
+- `backend-ts/tests/unit/repositories.test.ts` — converted from SQLite to Postgres using same pattern as integration tests.
+
+### Key patterns
+- `getMigratorDb()` uses `postgres(url, { max: 1 })` for a single-connection migrator client; close with `await migratorDb.$client.end({ timeout: 5 })` after migration.
+- TRUNCATE strategy: `TRUNCATE TABLE sessions, kb_tree, ... RESTART IDENTITY CASCADE` in `beforeEach` — faster than per-repo `clear()` and handles FK dependencies.
+- `resetWorldData()` is now `async` — export signature changed from `(): void` to `(): Promise<void>`.
+- The `WorldServerInsert.args` field is now `string[]` not JSON string (schema changed from `text` to `jsonb`).
+- Migration folder path: `src/db/migrations/` (not the old `drizzle/` folder). Use `resolve(import.meta.dirname, '../../src/db/migrations')` in tests.
+- `createDb()` is safe to call at module level in forked test processes because `DATABASE_URL` is available in env before any module evaluates.
+
+### Test results
+- 95 tests / 12 files: all pass against `postgres://yummy:yummy@localhost:5433/yummy_test`
+- Bad credentials: `PostgresError: password authentication failed` — 9 suites fail, clear error surfaced in `beforeAll` hook
+- Vitest config (`pool: 'forks'`, `isolate: true`, `fileParallelism: false`) preserved unchanged

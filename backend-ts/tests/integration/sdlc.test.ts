@@ -1,7 +1,9 @@
 import './_setup.js';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { db } from '../../src/db/client.local.js';
+import { createDb } from '../../src/db/client.js';
+
+const db = createDb();
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { setAIResponse, setDefaultAIResponse } from './_setup.js';
