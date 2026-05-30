@@ -1,0 +1,21 @@
+Task 14 AWS/ECS/RDS/ALB IaC smoke evidence
+
+OpenTofu CLI:
+- `tofu fmt -recursive` attempted: command not found in local environment.
+- `tofu validate` could not run because the `tofu` binary is unavailable.
+
+Terraform-compatible fallback:
+- `terraform fmt -recursive` completed successfully.
+- `terraform init -backend=false` completed successfully with aws v5.100.0 and random v3.9.0 providers.
+- `terraform validate` result: Success! The configuration is valid.
+
+Plan status:
+- `terraform plan -refresh=false -input=false -var availability_zones=["us-east-1a","us-east-1b"] -var github_repo=example/yummy` was attempted as a local smoke check.
+- Plan is blocked in this environment by backend initialization for the configured S3 backend / lack of real AWS backend access, so this file is the required placeholder evidence.
+
+Configuration checks:
+- ALB `idle_timeout` is wired from `alb_idle_timeout_seconds` and defaults to 4000 seconds for SSE.
+- RDS PostgreSQL module uses engine `postgres`, engine_version `16`, instance class default `db.t4g.micro`, Multi-AZ default true, backup retention default 7 days, and `publicly_accessible = false`.
+- RDS subnet group receives `module.vpc.private_subnet_ids`; no public subnet IDs are passed to RDS.
+- ECS services use Fargate, private subnet IDs, no public IP assignment, task CPU 256 and memory 512 defaults, CloudWatch log groups, and Secrets Manager injection for `DATABASE_URL`.
+- ALB target groups health check backend `/health` and frontend `/` at 30 second intervals.

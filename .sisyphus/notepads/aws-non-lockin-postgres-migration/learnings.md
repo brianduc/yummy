@@ -234,3 +234,13 @@ infra/
 ### Secret scan result
 
 No AWS access keys, secret keys, 12-digit account IDs, or hardcoded AZ names in any `.tf` source file. (evidence: `.sisyphus/evidence/task-13-secret-scan.txt`)
+
+## T14: ECS/RDS/ALB OpenTofu Deployment Modules (2026-05-30)
+
+- Added three deployment modules under `infra/modules/`: `rds` (PostgreSQL 16 RDS), `alb` (public ALB + target groups/listener/rules), and `ecs` (Fargate cluster, backend/frontend task definitions, services, log groups).
+- RDS is explicitly private-only: subnet group receives `module.vpc.private_subnet_ids`, `publicly_accessible = false`, and only the existing RDS security group is attached.
+- The existing secrets module generates a password-only secret; ECS needs a complete `DATABASE_URL`. The RDS module now creates a separate `${name_prefix}/db/database-url` Secrets Manager secret after the endpoint is known, and ECS injects that secret as `DATABASE_URL` instead of using a plaintext environment variable.
+- ALB idle timeout defaults to 4000 seconds via `alb_idle_timeout_seconds` for SSE. Backend target group health check is `/health`; frontend target group health check is `/`; both default to 30 second intervals.
+- Required `/api/*` backend listener rule is present. Because the current Hono backend routes are mounted at root (`/ask`, `/sdlc`, `/sessions`, etc.) and the frontend API client currently sends root paths, the ALB module also adds explicit backend rules for those existing root API prefixes.
+- ECS tasks run in private subnets with `assign_public_ip = false`, launch type `FARGATE`, default CPU 256/memory 512, and CloudWatch log groups `/ecs/${name_prefix}/backend` and `/ecs/${name_prefix}/frontend`.
+- Local environment lacks `tofu` and `terraform-ls`; validation used Terraform-compatible fallback: `terraform fmt -recursive`, `terraform init -backend=false`, and `terraform validate` all succeeded. Plan smoke is still blocked locally by the configured S3 backend/AWS access; placeholder evidence saved in `.sisyphus/evidence/task-14-aws-health.txt`.

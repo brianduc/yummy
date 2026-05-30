@@ -50,3 +50,106 @@ variable "app_secrets" {
   default     = {}
   sensitive   = true
 }
+
+variable "secret_recovery_window_days" {
+  description = "Number of days before deleted Secrets Manager secrets can be permanently deleted"
+  type        = number
+  default     = 7
+}
+
+variable "backend_port" {
+  description = "Backend container port"
+  type        = number
+  default     = 8000
+}
+
+variable "frontend_port" {
+  description = "Frontend container port"
+  type        = number
+  default     = 3000
+}
+
+variable "backend_image_tag" {
+  description = "Backend ECR image tag to deploy"
+  type        = string
+  default     = "latest"
+}
+
+variable "frontend_image_tag" {
+  description = "Frontend ECR image tag to deploy"
+  type        = string
+  default     = "latest"
+}
+
+variable "database_name" {
+  description = "Initial RDS database name"
+  type        = string
+  default     = "yummy"
+}
+
+variable "database_username" {
+  description = "RDS master username"
+  type        = string
+  default     = "yummy"
+}
+
+variable "rds_instance_class" {
+  description = "RDS instance class for the dev database"
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "rds_multi_az" {
+  description = "Whether the dev RDS instance is Multi-AZ"
+  type        = bool
+  default     = true
+}
+
+variable "rds_backup_retention_days" {
+  description = "Number of days to retain RDS automated backups"
+  type        = number
+  default     = 7
+}
+
+variable "alb_idle_timeout_seconds" {
+  description = "ALB idle timeout in seconds; must remain above 65 seconds for SSE"
+  type        = number
+  default     = 4000
+}
+
+variable "alb_health_check_interval_seconds" {
+  description = "ALB target group health check interval in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "backend_desired_count" {
+  description = "Desired backend ECS task count"
+  type        = number
+  default     = 1
+}
+
+variable "frontend_desired_count" {
+  description = "Desired frontend ECS task count"
+  type        = number
+  default     = 1
+}
+
+variable "backend_environment" {
+  description = "Plaintext backend ECS environment variables"
+  type        = map(string)
+  default = {
+    NODE_ENV = "production"
+    PORT     = "8000"
+  }
+}
+
+variable "frontend_environment" {
+  description = "Plaintext frontend ECS environment variables"
+  type        = map(string)
+  default = {
+    NODE_ENV = "production"
+    PORT     = "3000"
+    HOSTNAME = "0.0.0.0"
+  }
+}

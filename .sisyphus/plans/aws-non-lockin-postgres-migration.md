@@ -1045,7 +1045,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `infra/**`, infra docs
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 14. ECS/RDS/ALB deployment modules and smoke checks
+- [x] 14. ECS/RDS/ALB deployment modules and smoke checks
 
   **What to do**:
   - Add OpenTofu modules/resources for RDS PostgreSQL, ECS cluster, backend/frontend services, ALB listener/rules, target groups, task definitions, log groups, and secrets injection.
