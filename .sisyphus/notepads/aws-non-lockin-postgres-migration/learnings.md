@@ -171,3 +171,30 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - **frontend/.open-next/**: Pre-built Cloudflare artifact directory exists in working tree. Added `frontend/.open-next/` to root `.gitignore` to prevent accidental commits.
 - **backend build**: `pnpm build` exits 0 — tsc clean after removing `@cloudflare/workers-types`.
 - **Key pattern**: Gate strategy = rename scripts to `:legacy` + comment headers on files, not deletion. Preserves intent for potential future reference without polluting active paths.
+
+## T12: Docker Compose Local Parity (2026-05-30)
+
+### What was created/changed
+
+- `docker-compose.yml` — replaced legacy Python `./backend` context with 3-service stack: `postgres` (postgres:16-alpine), `backend` (builds from `backend-ts/Dockerfile`), `frontend` (builds from `frontend/Dockerfile`). `postgres` uses healthcheck with `pg_isready`. Backend `depends_on postgres: condition: service_healthy`. Frontend `depends_on backend: condition: service_healthy`. Postgres host port defaults to 5433 via `${POSTGRES_HOST_PORT:-5433}` to avoid conflicts.
+- `backend-ts/Dockerfile` — multi-stage (deps stage: pnpm install; runner stage: node:20-slim, pnpm@9, curl, non-root user `hono:nodejs` uid/gid 1001). CMD: `sh -c "pnpm db:migrate && pnpm start"`. HEALTHCHECK on `/health`.
+- `README.md` — added Docker Compose section documenting all 3 services, ports, verification commands, and override for `NEXT_PUBLIC_API_URL`.
+
+### Key patterns
+
+- `POSTGRES_HOST_PORT` env var allows overriding host-side Postgres port (default 5433). Useful when local Postgres already uses 5432 or 5433.
+- Backend `DATABASE_URL` is set in `docker-compose.yml` environment block pointing to `postgres` service hostname (internal Docker network). Never baked into image.
+- `pnpm db:migrate && pnpm start` as CMD ensures migrations run before serving. If migration fails (bad DB URL), `pnpm db:migrate` exits non-zero and the container exits — clear failure signal.
+- `env_file: path: .env, required: false` allows optional root `.env` to inject provider keys without breaking fresh installs.
+- `NEXT_PUBLIC_API_URL` must be a build ARG (baked at build time). Default is `http://localhost:8000` for local compose usage.
+
+### Verification results
+
+- `curl -fsS http://localhost:8000/health` → `{"status":"ok","db":"ok"}` ✓
+- `curl http://localhost:3000/` → HTTP 200, YUMMY HTML ✓
+- Bad `DATABASE_URL` → migration fails with `ECONNREFUSED`, container exits with code 1 ✓
+
+### Evidence
+
+- `.sisyphus/evidence/task-12-compose-health.txt` — health + frontend 200 output
+- `.sisyphus/evidence/task-12-compose-db-failure.txt` — bad-URL startup failure

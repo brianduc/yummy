@@ -129,17 +129,41 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 | API | [http://localhost:8000](http://localhost:8000) |
 | Swagger | [http://localhost:8000/docs](http://localhost:8000/docs) |
 
-## Docker
+## Docker Compose (Postgres + backend + frontend)
+
+The compose stack starts three services: a Postgres 16 database, the TypeScript backend, and the Next.js frontend.
 
 ```bash
-export NEXT_PUBLIC_API_URL=http://localhost:8000
-export CORS_ORIGINS=http://localhost:3000
-docker compose build
 docker compose up -d
 ```
 
-For separate domains, build the frontend with `NEXT_PUBLIC_API_URL=https://api.yourdomain.com`
-and run the backend with `CORS_ORIGINS=https://app.yourdomain.com`.
+Services:
+
+| Service  | Host port | Notes |
+|----------|-----------|-------|
+| postgres | 5433      | Internal port 5432. Credentials: yummy/yummy/yummy |
+| backend  | 8000      | Runs `pnpm db:migrate` then `pnpm start`. Waits for postgres healthy. |
+| frontend | 3000      | `NEXT_PUBLIC_API_URL` baked at build time (default `http://localhost:8000`). |
+
+Verify after startup:
+
+```bash
+curl -fsS http://localhost:8000/health
+curl -fsS http://localhost:3000/
+```
+
+Expected: `{"status":"ok","db":"ok"}` and YUMMY HTML.
+
+To override the public API URL (e.g. for a remote backend):
+
+```bash
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com docker compose build frontend
+docker compose up -d
+```
+
+Provider API keys and other secrets should be placed in a root `.env` file (copy from `.env.example`). The backend service loads `.env` if present but does **not** require it — provider credentials can be set in the UI after startup.
+
+> **Note:** Postgres host port defaults to 5433 (not 5432) to avoid conflicts with a locally running Postgres instance.
 
 AWS deploy docs: [docs/aws/APP_RUNNER_AMPLIFY.md](docs/aws/APP_RUNNER_AMPLIFY.md)  
 Docs index: [docs/README.md](docs/README.md)

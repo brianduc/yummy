@@ -911,7 +911,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: package files, ignored/generated artifacts, docs updates
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 12. Local Docker Compose parity for frontend/backend/Postgres
+- [x] 12. Local Docker Compose parity for frontend/backend/Postgres
 
   **What to do**:
   - Add/update local compose setup for Postgres, backend Node container, and frontend Next container.

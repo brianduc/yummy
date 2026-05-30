@@ -1,21 +1,36 @@
-# Local / server: backend + frontend (build on machine or in CI)
-# Set NEXT_PUBLIC_API_URL to the URL browsers will use to reach the API (public URL).
-#
-# Example (split domains):
-#   NEXT_PUBLIC_API_URL=https://api.example.com
-#   CORS_ORIGINS=https://app.example.com
-#
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: yummy
+      POSTGRES_PASSWORD: yummy
+      POSTGRES_DB: yummy
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yummy -d yummy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   backend:
     build:
-      context: ./backend
+      context: ./backend-ts
       dockerfile: Dockerfile
     ports:
       - "${BACKEND_PORT:-8000}:8000"
-    env_file:
-      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
+      DATABASE_URL: postgres://yummy:yummy@postgres:5432/yummy
+      PORT: "8000"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      NODE_ENV: production
+    env_file:
+      - path: .env
+        required: false
 
   frontend:
     build:
@@ -26,4 +41,5 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy

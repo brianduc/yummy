@@ -1,0 +1,5 @@
+
+> backend-ts@1.0.0 db:migrate /app
+> tsx src/db/migrate.ts
+
+ ELIFECYCLE  Command failed with exit code 1.

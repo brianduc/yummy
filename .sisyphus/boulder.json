@@ -13,7 +13,8 @@
     "ses_187d2c5acffe81b80lxdTa8Cb5",
     "ses_187bb88aeffei435EEaTCBKRvr",
     "ses_187b36064ffe5SCCvUr1pl6g1I",
-    "ses_187b0191fffeaGg56M0DXQ5crR"
+    "ses_187b0191fffeaGg56M0DXQ5crR",
+    "ses_187ad09b3ffetGfJkN6CiD2NdE"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -27,7 +28,8 @@
     "ses_187d2c5acffe81b80lxdTa8Cb5": "appended",
     "ses_187bb88aeffei435EEaTCBKRvr": "appended",
     "ses_187b36064ffe5SCCvUr1pl6g1I": "appended",
-    "ses_187b0191fffeaGg56M0DXQ5crR": "appended"
+    "ses_187b0191fffeaGg56M0DXQ5crR": "appended",
+    "ses_187ad09b3ffetGfJkN6CiD2NdE": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -85,6 +87,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-05-30T09:58:41.157Z"
+    },
+    "todo:12": {
+      "task_key": "todo:12",
+      "task_label": "12",
+      "task_title": "Local Docker Compose parity for frontend/backend/Postgres",
+      "session_id": "ses_187ad09b3ffetGfJkN6CiD2NdE",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-30T10:03:12.074Z"
     }
   }
 }
