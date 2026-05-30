@@ -979,7 +979,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: Dockerfiles, compose files, README/start docs
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 13. OpenTofu AWS foundation modules
+- [x] 13. OpenTofu AWS foundation modules
 
   **What to do**:
   - Create OpenTofu/Terraform-compatible module structure for AWS dev environment.

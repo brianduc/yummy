@@ -14,7 +14,8 @@
     "ses_187bb88aeffei435EEaTCBKRvr",
     "ses_187b36064ffe5SCCvUr1pl6g1I",
     "ses_187b0191fffeaGg56M0DXQ5crR",
-    "ses_187ad09b3ffetGfJkN6CiD2NdE"
+    "ses_187ad09b3ffetGfJkN6CiD2NdE",
+    "ses_187a8e96effeoC1u0WcLkHAmGU"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -29,7 +30,8 @@
     "ses_187bb88aeffei435EEaTCBKRvr": "appended",
     "ses_187b36064ffe5SCCvUr1pl6g1I": "appended",
     "ses_187b0191fffeaGg56M0DXQ5crR": "appended",
-    "ses_187ad09b3ffetGfJkN6CiD2NdE": "appended"
+    "ses_187ad09b3ffetGfJkN6CiD2NdE": "appended",
+    "ses_187a8e96effeoC1u0WcLkHAmGU": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -96,6 +98,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-05-30T10:03:12.074Z"
+    },
+    "todo:13": {
+      "task_key": "todo:13",
+      "task_label": "13",
+      "task_title": "OpenTofu AWS foundation modules",
+      "session_id": "ses_187a8e96effeoC1u0WcLkHAmGU",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-30T10:09:40.846Z"
     }
   }
 }

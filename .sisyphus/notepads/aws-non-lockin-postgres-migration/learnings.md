@@ -198,3 +198,39 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 
 - `.sisyphus/evidence/task-12-compose-health.txt` — health + frontend 200 output
 - `.sisyphus/evidence/task-12-compose-db-failure.txt` — bad-URL startup failure
+
+## T13: OpenTofu AWS Foundation Modules (2026-05-30)
+
+### Module structure created
+
+```
+infra/
+  dev/
+    terraform.tf    — S3+DynamoDB backend, aws + random providers, required_version >= 1.6
+    variables.tf    — all variables (aws_region, project, env, vpc_cidr, azs, subnets, github_repo, app_secrets)
+    main.tf         — locals (name_prefix, common_tags) + 5 module calls
+    outputs.tf      — vpc_id, subnet_ids, ecr_urls, iam_role_arns, sg_ids, db_secret_arn
+  modules/
+    vpc/            — VPC, IGW, public + private subnets, EIP, single NAT GW, route tables
+    ecr/            — backend + frontend repos, lifecycle policy (keep last 10)
+    iam/            — ECS task execution role + managed policy, GitHub OIDC provider + role
+    secrets/        — random_password for DB, aws_secretsmanager_secret for DB + app secrets
+    security/       — ALB SG (80/443), ECS SG (from ALB), RDS SG (5432 from ECS)
+```
+
+### Key patterns
+
+- `nonsensitive(toset(keys(var.app_secrets)))` required for `for_each` on sensitive map — Terraform rejects sensitive values as `for_each` keys directly.
+- GitHub OIDC thumbprints `6938fd4d98bab03faadb97b34396831e3780aea1` + `1c58a3a8518e8759bf075b76b750d4f2df264fcd` — these are the two known GitHub Actions OIDC CA thumbprints as of 2024 per AWS docs.
+- Single NAT GW in public subnet[0] is intentional for dev cost savings. Prod should use one per AZ.
+- `recovery_window_in_days = 0` can be set if you need to immediately delete Secrets Manager secrets in dev (no recovery window).
+- Remote state bootstrap is a manual one-time step — document in `docs/aws/REMOTE_STATE_BOOTSTRAP.md` before first `tofu init`.
+- `terraform init -backend=false` + `terraform validate` passes with `terraform` binary (no `tofu` required on local Mac).
+
+### Validation result
+
+`terraform validate` → `Success! The configuration is valid.` (evidence: `.sisyphus/evidence/task-13-tofu-validate.txt`)
+
+### Secret scan result
+
+No AWS access keys, secret keys, 12-digit account IDs, or hardcoded AZ names in any `.tf` source file. (evidence: `.sisyphus/evidence/task-13-secret-scan.txt`)
