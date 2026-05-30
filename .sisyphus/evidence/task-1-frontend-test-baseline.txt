@@ -1,0 +1,50 @@
+# Frontend Test Baseline — captured 2026-05-30
+# Command: cd frontend && npm test
+
+> yummy-frontend@1.0.0 test
+> vitest run
+
+[Warning] The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+
+ RUN  v2.1.9 /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/frontend
+
+ ✓ test/workspace-layout.test.tsx (9 tests) 133ms
+ ✓ test/stream-lifecycle.test.tsx (4 tests) 205ms
+ ✓ test/workspace/dashboard.test.tsx (7 tests) 220ms
+ ✓ app/workspace/[sessionId]/characterization.test.tsx (6 tests) 337ms
+ ✓ test/activity-bar-routing.test.tsx (27 tests) 354ms
+ ✓ test/workspace-providers.test.tsx (20 tests) 606ms
+ ✓ components/workspace/WorkspaceLayout.test.tsx (8 tests) 657ms
+ ✓ app/workspace/[sessionId]/settingsSync.test.tsx (5 tests) 67ms
+ ✓ test/sdlc-provider.test.tsx (3 tests) 17ms
+ ✓ test/world.test.tsx (8 tests) 15ms
+ ✓ components/workspace/YumAISidebar.test.tsx (4 tests) 228ms
+ ✓ test/world-sdlc.test.tsx (6 tests) 283ms
+ ✓ app/workspace/[sessionId]/navigation.test.tsx (1 test) 144ms
+ ✓ test/workspace/explorer-route.test.tsx (6 tests) 63ms
+ ✓ components/workspace/AppHeader.test.tsx (9 tests) 109ms
+ ✓ test/workspace-chat-cr.test.tsx (2 tests) 31ms
+ ✓ test/sdlc-route.test.tsx (2 tests) 58ms
+ ✓ test/workspace-navigation-update.test.tsx (5 tests) 3ms
+ ✓ test/database-route.test.tsx (2 tests) 31ms
+ ✓ components/workspace/AppSidebar.test.tsx (3 tests) 182ms
+ ✓ test/workspace/wiki-route.test.tsx (3 tests) 34ms
+ ✓ test/sessions-route.test.tsx (2 tests) 33ms
+ ✓ test/settings-route.test.tsx (2 tests) 49ms
+ ✓ test/workspace/delete-modal.test.tsx (3 tests) 87ms
+ ✓ test/workspace/jira-route.test.tsx (3 tests) 17ms
+ ✓ test/tracing-route.test.tsx (2 tests) 49ms
+ ✓ test/workspace/graph-route.test.tsx (3 tests) 19ms
+ ✓ test/workspace/insight-route.test.tsx (3 tests) 19ms
+ ✓ test/world-route.test.tsx (2 tests) 15ms
+ ✓ test/workspace/history-route.test.tsx (3 tests) 15ms
+
+ Test Files  30 passed (30)
+      Tests  163 passed (163)
+   Start at  16:02:48
+   Duration  4.63s (transform 671ms, setup 1.58s, collect 4.82s, tests 4.08s, environment 13.75s, prepare 1.56s)
+
+# SUMMARY
+# Test Files: 30 passed, 0 failed
+# Tests:      163 passed, 0 failed
+# Exit code:  0 (all green)

@@ -1,0 +1,97 @@
+TASK-4: NEXT_PUBLIC_API_URL Behavior Documentation
+Generated: 2026-05-30
+=====================================================
+
+VARIABLE: NEXT_PUBLIC_API_URL
+PURPOSE: Controls the base URL that the browser uses to call the Hono backend API.
+
+==========================================================================
+WHERE IT IS USED
+==========================================================================
+
+File: frontend/lib/api.ts (line 12)
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+This is the ONLY place NEXT_PUBLIC_API_URL is read at runtime. BASE_URL is
+used in every fetch/SSE call throughout api.ts:
+  - request() helper (line 15): fetch(`${BASE_URL}${path}`, ...)
+  - sdlcStream() (line 45): fetch(`${BASE_URL}${path}`, ...)
+  - askStream() (line 134): fetch(`${BASE_URL}${endpoint}`, ...)
+
+All API calls in the app flow through this single BASE_URL constant.
+
+==========================================================================
+BUILD-TIME vs RUNTIME BEHAVIOR
+==========================================================================
+
+NEXT_PUBLIC_* variables in Next.js are INLINED at build time by the Next.js
+compiler. The value is substituted into the JavaScript bundle during `next build`.
+
+This means:
+  - The API URL is FIXED when the Docker image is built.
+  - Changing NEXT_PUBLIC_API_URL at container start time (via env var injection)
+    has NO effect — the value is already baked into the JS bundle.
+  - To point the frontend at a different API URL, the Docker image must be
+    REBUILT with the new value passed as a build argument.
+
+==========================================================================
+DOCKERFILE EVIDENCE
+==========================================================================
+
+frontend/Dockerfile lines 16-20:
+  # Baked at build time — must match your public API URL (e.g. https://api.yourdomain.com)
+  ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+  ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+  RUN npm run build
+
+The comment in the Dockerfile explicitly acknowledges this: "Baked at build time".
+The ARG is set before `npm run build`, so the build compiler picks it up.
+The ENV line is redundant for Next.js inlining (ARG alone suffices at build time),
+but is kept for Docker layer documentation purposes.
+
+Default fallback: http://localhost:8000 (development localhost).
+
+==========================================================================
+RUNTIME FALLBACK IN CODE
+==========================================================================
+
+The api.ts line 12 also has:
+  || 'http://localhost:8000'
+
+This fallback is evaluated at runtime in Node.js (e.g., in SSR/server components),
+but since all components are 'use client', this code runs in the browser where
+process.env.NEXT_PUBLIC_API_URL is already inlined by the bundler as a string
+literal. The || fallback only activates if the var was undefined at build time.
+
+==========================================================================
+IMPLICATIONS FOR AWS DEPLOYMENT
+==========================================================================
+
+1. The API URL CANNOT be changed at container runtime via environment variables.
+   It must be provided as a Docker build ARG: --build-arg NEXT_PUBLIC_API_URL=...
+
+2. For multi-environment deployments (staging vs prod), separate image builds
+   are required with different NEXT_PUBLIC_API_URL values.
+
+3. Alternative: Use a JavaScript-based runtime config (window.__CONFIG__.apiUrl
+   fetched from a /config.json endpoint) instead of NEXT_PUBLIC_* — but this
+   requires frontend code changes and is OUT OF SCOPE for this assessment.
+
+4. For AWS App Runner / ECS: pass NEXT_PUBLIC_API_URL as a build-time ARG in
+   the CI/CD pipeline, NOT as a task/service environment variable.
+
+==========================================================================
+SUMMARY
+==========================================================================
+
+Variable     : NEXT_PUBLIC_API_URL
+Default      : http://localhost:8000
+Read in      : frontend/lib/api.ts (line 12) — sole consumer
+Inlined at   : `next build` time (BUILD-TIME — not runtime configurable)
+Set in Docker: ARG + ENV before `npm run build` (Dockerfile lines 17-18)
+Fallback     : 'http://localhost:8000' (in source code)
+Env files    : .env.local (local dev, written by start.sh)
+
+ACTION REQUIRED FOR DEPLOYMENT: Pass correct API URL as Docker build argument.
+  docker build --build-arg NEXT_PUBLIC_API_URL=https://api.yourdomain.com .

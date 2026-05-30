@@ -1,0 +1,59 @@
+EVIDENCE: Task 5 — Vitest Constraints Preservation
+Generated: 2026-05-30
+
+SOURCE FILE: backend-ts/vitest.config.ts (read directly)
+
+VERIFIED CONSTRAINTS:
+  pool: 'forks'           — Line 10: each test file runs in a separate forked Node process
+  isolate: true           — Line 11: module registry isolated between test files
+  fileParallelism: false  — Line 12: test files run SERIALLY (never in parallel)
+  testTimeout: 15_000     — Line 8
+  hookTimeout: 15_000     — Line 9
+  environment: 'node'     — Line 6
+  globals: true           — Line 5
+  include: ['tests/**/*.test.ts'] — Line 7
+
+FULL vitest.config.ts CONTENT:
+---
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
+    pool: 'forks',
+    isolate: true,
+    fileParallelism: false,
+  },
+  resolve: {
+    alias: {
+      '@': new URL('./src', import.meta.url).pathname,
+    },
+  },
+});
+---
+
+PRESERVATION RULING:
+  These constraints MUST NOT change after the Postgres migration. Rationale:
+  - fileParallelism: false prevents concurrent test files from clobbering the shared DB
+    (parallel TRUNCATE/INSERT against same tables would cause non-deterministic failures)
+  - pool: 'forks' ensures each file gets a fresh Node process with clean module registry
+    (prevents the Drizzle client singleton from leaking state across files)
+  - isolate: true ensures no module-cache bleed within the forks pool
+
+ANTI-PATTERNS (DO NOT DO):
+  - Do NOT set fileParallelism: true — this will cause race conditions on shared Postgres DB
+  - Do NOT switch pool to 'threads' — Drizzle client and postgres-js have process-local state
+  - Do NOT add --reporter=concurrent — does not change parallelism but do not confuse it
+
+POSTGRES-SPECIFIC NOTE:
+  With real Postgres (vs :memory:) the serial execution constraint becomes MORE important,
+  not less. A single Postgres instance serving multiple concurrent test files would require
+  per-file schema isolation (separate schemas or separate DBs), which adds complexity.
+  Serial execution with TRUNCATE between tests is simpler, correct, and already enforced
+  by fileParallelism: false.
+
+VERIFIED: All three constraints present and unchanged in backend-ts/vitest.config.ts.

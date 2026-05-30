@@ -1,0 +1,37 @@
+EVIDENCE: Task 5 — Test DB Strategy (rejection of :memory: as default)
+Generated: 2026-05-30
+
+FINDING: backend-ts/tests/integration/_setup.ts line 12:
+  process.env.DATABASE_URL = ':memory:';
+
+This line hard-codes the SQLite in-memory database for ALL integration tests.
+After the Postgres migration this line MUST be removed and replaced with:
+  - DATABASE_URL environment variable set externally (local dev or CI)
+  - Value: postgres://yummy:yummy@localhost:5433/yummy_test
+  - :memory: is explicitly rejected as integration test default
+
+STRATEGY DECISION:
+  Primary: Docker Postgres 16-alpine on port 5433 (host), 5432 (container)
+  Credentials: POSTGRES_USER=yummy / POSTGRES_PASSWORD=yummy / POSTGRES_DB=yummy_test
+  DB URL: postgres://yummy:yummy@localhost:5433/yummy_test
+  Reset: TRUNCATE ... RESTART IDENTITY CASCADE in beforeEach
+  Migration: pnpm db:migrate (must be updated to Drizzle postgres-js migrator in T8)
+  Fallback: pg-mem ONLY — not the primary strategy
+
+  pg-mem is disqualified as primary because:
+  - Incomplete TRUNCATE RESTART IDENTITY CASCADE support
+  - Missing Postgres-specific operators used by the Drizzle postgres-js migrator
+  - Production runs Postgres — tests must match production dialect
+
+CURRENT _SETUP.TS STATE (SQLite):
+  - migrate() call uses: drizzle-orm/better-sqlite3/migrator
+  - db client: src/db/client.local.js (BetterSQLite3Database)
+  - beforeAll: migrate(getLocalDb(), { migrationsFolder: '../../drizzle' })
+
+REQUIRED _SETUP.TS STATE (Postgres, T8):
+  - migrate() call uses: drizzle-orm/postgres-js/migrator
+  - db client: src/db/client.js (PostgresJsDatabase)
+  - beforeAll: await migrate(getMigratorDb(), { migrationsFolder: '../../drizzle' })
+  - DATABASE_URL set via environment, NOT hard-coded to :memory:
+
+VERIFIED: docs/db/postgres-test-strategy.md created with full strategy.

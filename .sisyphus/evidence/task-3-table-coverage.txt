@@ -1,0 +1,42 @@
+Task 3 table coverage evidence
+
+Source command used for verification:
+  python3 - <<'PY'
+  import re
+  schema = open('backend-ts/src/db/schema.ts').read()
+  doc = open('docs/db/postgres-schema-mapping.md').read()
+  tables = re.findall(r"sqliteTable\('([^']+)'", schema)
+  missing = [table for table in tables if f"### `{table}`" not in doc]
+  print('schema tables:', ', '.join(tables))
+  print('table count:', len(tables))
+  print('missing mappings:', missing)
+  raise SystemExit(1 if missing else 0)
+  PY
+
+Schema tables extracted from backend-ts/src/db/schema.ts:
+  1. sessions
+  2. kb_tree
+  3. kb_insights
+  4. kb_meta
+  5. repo_info
+  6. world_servers
+  7. scan_status
+  8. request_logs
+  9. provider_config
+  10. world_config
+
+Mapping sections present in docs/db/postgres-schema-mapping.md:
+  1. ### `sessions`
+  2. ### `kb_tree`
+  3. ### `kb_insights`
+  4. ### `kb_meta`
+  5. ### `repo_info`
+  6. ### `world_servers`
+  7. ### `scan_status`
+  8. ### `request_logs`
+  9. ### `provider_config`
+  10. ### `world_config`
+
+Result: zero missing table names in mapping; all 10 current sqliteTable declarations are covered.
+
+Migration-history note: backend-ts/src/db/migrations/0002_yummy_world.sql adds request_logs.kind, but current schema.ts does not declare it. The mapping document records this as drift requiring an explicit preserve/archive/drop decision during implementation.

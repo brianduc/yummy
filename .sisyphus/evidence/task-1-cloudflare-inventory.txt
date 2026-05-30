@@ -1,0 +1,164 @@
+# Cloudflare Reference Inventory — captured 2026-05-30
+# Search patterns: wrangler|cloudflare|D1|DurableObject|ASSETS|IMAGES|c.env|\.open-next
+# Scope: frontend/ and backend-ts/ (excluding node_modules, .git)
+#
+# Classification legend:
+#   RUNTIME-CRITICAL   — active runtime dependency; blocking AWS migration
+#   BUILD-DEPLOY-ONLY  — used in build/deploy scripts, not runtime logic
+#   GENERATED-ARTIFACT — auto-generated output (not source-of-truth)
+#   DOCS-ONLY          — documentation/comments only
+#   LEGACY             — historical reference, not in active code path
+#
+# ============================================================
+# SECTION 1: BACKEND — SOURCE FILES (RUNTIME-CRITICAL)
+# ============================================================
+
+backend-ts/src/db/client.ts:1      import type { D1Database, D1Result } from '@cloudflare/workers-types';  [RUNTIME-CRITICAL]
+backend-ts/src/db/client.ts:4      import { type DrizzleD1Database, drizzle as drizzleD1 } from 'drizzle-orm/d1';  [RUNTIME-CRITICAL]
+backend-ts/src/db/client.ts:8-10   type Bindings = { DB: D1Database };  [RUNTIME-CRITICAL]
+backend-ts/src/db/client.ts:18-24  createDb(d1: D1Database) overload → drizzleD1(d1)  [RUNTIME-CRITICAL]
+backend-ts/src/db/client.ts:36     export type Db = ... D1Result ...  [RUNTIME-CRITICAL]
+
+backend-ts/src/app.ts:43           createDb(c.env?.DB)  — reads D1 binding from Worker context  [RUNTIME-CRITICAL]
+  # NOTE: c.env?.DB is the seam. In Node mode (index.ts), c.env is undefined → falls through to local SQLite.
+  # In Worker mode (worker.ts), c.env.DB is the D1 binding.
+
+backend-ts/src/config/env.ts:2-4   Comment: "Environment loader for Cloudflare Workers."  [DOCS-ONLY]
+  # The actual env loading uses process.env; comment is stale.
+
+backend-ts/src/db/migrate.ts:4     Comment: "Cloudflare D1 migrations still use Wrangler:"  [DOCS-ONLY]
+
+# ============================================================
+# SECTION 2: BACKEND — CONFIG FILES (BUILD-DEPLOY-ONLY)
+# ============================================================
+
+backend-ts/wrangler.jsonc:1-18     Full wrangler config: d1_databases binding, name=yummy-api, main=src/worker.ts  [BUILD-DEPLOY-ONLY]
+  # Details:
+  #   binding: "DB", database_name: "yummy-db", database_id: "1777ee53-a214-4da3-83b9-d6731933d1af"
+  #   migrations_dir: "drizzle"
+
+backend-ts/package.json:10         "deploy": "wrangler deploy"  [BUILD-DEPLOY-ONLY]
+backend-ts/package.json:11         "dev:worker": "wrangler dev"  [BUILD-DEPLOY-ONLY]
+backend-ts/package.json:19         "db:migrate:local": "wrangler d1 migrations apply yummy-db --local"  [BUILD-DEPLOY-ONLY]
+backend-ts/package.json:20         "db:migrate:remote": "wrangler d1 migrations apply yummy-db --remote"  [BUILD-DEPLOY-ONLY]
+backend-ts/package.json:45         "@cloudflare/workers-types": "^4.20260522.1" (devDependency)  [BUILD-DEPLOY-ONLY]
+backend-ts/package.json:52         "wrangler": "^4.93.1" (devDependency)  [BUILD-DEPLOY-ONLY]
+
+# ============================================================
+# SECTION 3: BACKEND — WORKER ENTRYPOINT (BUILD-DEPLOY-ONLY)
+# ============================================================
+
+backend-ts/src/worker.ts:1-3       import { createApp } from './app.js'; export default createApp();
+  # This file is the Cloudflare Worker entrypoint referenced by wrangler.jsonc.
+  # Not used by index.ts (the Node entry). Classification: [BUILD-DEPLOY-ONLY]
+  # But changing createApp() impacts this file — gitnexus impact: d=1 caller.
+
+# ============================================================
+# SECTION 4: BACKEND — DIST FILES (GENERATED-ARTIFACT)
+# ============================================================
+
+backend-ts/dist/config/env.js:2    Comment copy of "Environment loader for Cloudflare Workers"  [GENERATED-ARTIFACT]
+backend-ts/dist/db/migrate.js:4    Comment copy of "Cloudflare D1 migrations still use Wrangler"  [GENERATED-ARTIFACT]
+
+# ============================================================
+# SECTION 5: BACKEND — LOCK FILE (GENERATED-ARTIFACT)
+# ============================================================
+
+backend-ts/pnpm-lock.yaml          Multiple @cloudflare/* package entries:
+  @cloudflare/kv-asset-handler@0.5.0           [GENERATED-ARTIFACT]
+  @cloudflare/unenv-preset@2.16.1              [GENERATED-ARTIFACT]
+  @cloudflare/workerd-darwin-64@1.20260520.1   [GENERATED-ARTIFACT]
+  @cloudflare/workerd-darwin-arm64@1.20260520.1 [GENERATED-ARTIFACT]
+  @cloudflare/workerd-linux-64@1.20260520.1    [GENERATED-ARTIFACT]
+  @cloudflare/workerd-linux-arm64@1.20260520.1 [GENERATED-ARTIFACT]
+  @cloudflare/workerd-windows-64@1.20260520.1  [GENERATED-ARTIFACT]
+  @cloudflare/workers-types@4.20260522.1       [GENERATED-ARTIFACT]
+  wrangler@4.93.1                               [GENERATED-ARTIFACT]
+
+# ============================================================
+# SECTION 6: FRONTEND — SOURCE CONFIG FILES (BUILD-DEPLOY-ONLY)
+# ============================================================
+
+frontend/open-next.config.ts:1-3   import { defineCloudflareConfig } from '@opennextjs/cloudflare'; export default defineCloudflareConfig({});  [BUILD-DEPLOY-ONLY]
+  # This is the OpenNext Cloudflare provider config. Drives `npm run deploy` and `npm run build` (which calls opennextjs-cloudflare).
+
+frontend/wrangler.jsonc:1-23       Full wrangler config: main=.open-next/worker.js, assets.binding=ASSETS, service=WORKER_SELF_REFERENCE  [BUILD-DEPLOY-ONLY]
+  # ASSETS binding references the Worker asset binding.
+
+frontend/package.json:15           "deploy": "npm run build && opennextjs-cloudflare deploy"  [BUILD-DEPLOY-ONLY]
+frontend/package.json:16           "upload": "npm run build && opennextjs-cloudflare upload"  [BUILD-DEPLOY-ONLY]
+frontend/package.json:17           "cf-typegen": "wrangler types"  [BUILD-DEPLOY-ONLY]
+frontend/package.json:38           "@opennextjs/cloudflare": "^1.19.11" (dependency)  [BUILD-DEPLOY-ONLY]
+frontend/package.json:53           "wrangler": "^4.93.1" (devDependency)  [BUILD-DEPLOY-ONLY]
+
+  # CRITICAL NOTE: frontend/package.json does NOT currently invoke opennextjs-cloudflare in the
+  # default "build" script. The "build" script is the standard "next build".
+  # The Cloudflare path is only triggered by "deploy" and "upload" scripts.
+
+# ============================================================
+# SECTION 7: FRONTEND — GENERATED ARTIFACTS (.open-next/)
+# ============================================================
+
+# The frontend/.open-next/ directory IS PRESENT in the working tree.
+# All files below are generated by `opennextjs-cloudflare build`. NOT source files.
+
+frontend/.open-next/worker.js                  Worker entrypoint (imports cloudflare/init.js, cloudflare/images.js)  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare/init.js         runWithCloudflareRequestContext, cloudflareContextALS  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare/skew-protection.js  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare/images.js       handleImageRequest, handleCdnCgiImageRequest  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/worker.js     Template worker (wrangler build resolves imports)  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/init.js       runWithCloudflareRequestContext template  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/images.js     Image handler template  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/skew-protection.js  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/init.d.ts     Type declarations  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/images.d.ts   CloudflareEnv, handleImageRequest types  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/worker.d.ts   CloudflareEnv fetch type  [GENERATED-ARTIFACT]
+frontend/.open-next/cloudflare-templates/skew-protection.d.ts  [GENERATED-ARTIFACT]
+frontend/.open-next/.build/durable-objects/sharded-tag-cache.js  DurableObject extension DOShardedTagCache  [GENERATED-ARTIFACT]
+frontend/.open-next/.build/durable-objects/queue.js              DurableObject extension DOQueueHandler  [GENERATED-ARTIFACT]
+frontend/.open-next/.build/durable-objects/bucket-cache-purge.js DurableObject extension BucketCachePurge + https://api.cloudflare.com/... API call  [GENERATED-ARTIFACT]
+frontend/.open-next/server-functions/default/handler.mjs.meta.json  Bundle manifest with .open-next paths  [GENERATED-ARTIFACT]
+  # This is a very large JSON manifest (~5000+ lines). All .open-next path references are generated artifact content.
+
+# ============================================================
+# SECTION 8: DOCUMENTATION FILES (DOCS-ONLY)
+# ============================================================
+
+instruction.md:1                   Title: "YUMMY — Local Dev & Cloudflare Deploy"  [DOCS-ONLY]
+instruction.md:43-139              Full Cloudflare deploy section: wrangler login, d1 create, wrangler deploy, opennextjs-cloudflare build/deploy/preview  [DOCS-ONLY]
+
+# ============================================================
+# SECTION 9: PLAN/NOTEPAD FILES (DOCS-ONLY / OUT-OF-SCOPE)
+# ============================================================
+
+.sisyphus/plans/aws-non-lockin-postgres-migration.md   Multiple references — migration plan documentation  [DOCS-ONLY]
+.sisyphus/boulder.json             Task title reference  [DOCS-ONLY]
+
+# ============================================================
+# SUMMARY TABLE
+# ============================================================
+#
+# Classification          | Count | Files
+# RUNTIME-CRITICAL        |   6   | backend-ts/src/db/client.ts (5 refs), backend-ts/src/app.ts (1 ref)
+# BUILD-DEPLOY-ONLY       |  15   | backend-ts/wrangler.jsonc, backend-ts/package.json (4 scripts+2 deps),
+#                         |       | backend-ts/src/worker.ts, frontend/open-next.config.ts,
+#                         |       | frontend/wrangler.jsonc, frontend/package.json (3 scripts+2 deps)
+# GENERATED-ARTIFACT      |  30+  | backend-ts/dist/*, backend-ts/pnpm-lock.yaml, frontend/.open-next/**
+# DOCS-ONLY               |   5   | backend-ts/src/config/env.ts (comment), backend-ts/src/db/migrate.ts (comment),
+#                         |       | instruction.md, .sisyphus/plans/*, .sisyphus/boulder.json
+#
+# KEY SEAM IDENTIFIED:
+#   backend-ts/src/app.ts:43 — createDb(c.env?.DB)
+#   When c.env is undefined (Node.js runtime), falls back to local SQLite via _localDbGetter.
+#   When c.env.DB is present (Worker runtime), uses D1.
+#   This is THE migration seam for the database client.
+#
+# KEY RISK:
+#   frontend/.open-next/ directory is committed to source (not gitignored).
+#   Contains Durable Object classes (DOShardedTagCache, DOQueueHandler, BucketCachePurge).
+#   These must be removed or gitignored before AWS path is clean.
+#
+# DurableObject locations (generated):
+#   frontend/.open-next/.build/durable-objects/sharded-tag-cache.js
+#   frontend/.open-next/.build/durable-objects/queue.js
+#   frontend/.open-next/.build/durable-objects/bucket-cache-purge.js

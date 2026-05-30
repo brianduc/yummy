@@ -1,0 +1,150 @@
+TASK-4: Next.js Runtime Feature Inventory
+Generated: 2026-05-30
+========================================
+
+SEARCH SCOPE: frontend/app/**/*.tsx, frontend/app/**/*.ts, frontend/next.config.mjs,
+              frontend/lib/api.ts, frontend/Dockerfile, frontend/package.json
+
+==========================================================================
+1. SERVER-ONLY NEXT.JS APIs (cookies, headers, redirect from next/headers)
+==========================================================================
+RESULT: NONE FOUND
+
+Grep pattern: cookies\(|headers\(|redirect\(
+Files searched: all *.tsx, *.ts under frontend/
+Matches: 0
+
+No usage of next/headers, next/cookies, or server-side redirect().
+
+==========================================================================
+2. SERVER ACTIONS ("use server")
+==========================================================================
+RESULT: NONE FOUND
+
+Grep pattern: 'use server'|"use server"
+Files searched: all *.tsx, *.ts under frontend/
+Matches: 0
+
+No server actions exist anywhere in the frontend.
+
+==========================================================================
+3. CLIENT/SERVER COMPONENT BOUNDARIES
+==========================================================================
+RESULT: ALL ROUTE FILES ARE CLIENT COMPONENTS
+
+Files explicitly marked 'use client':
+  - frontend/app/page.tsx                              (line 1: 'use client')
+  - frontend/app/workspace/[sessionId]/layout.tsx      (line 1: "use client")
+  - frontend/app/workspace/[sessionId]/page.tsx        (line 1: 'use client')
+  - frontend/app/workspace/[sessionId]/settings/page.tsx (line 1: 'use client')
+
+All other workspace sub-route pages (explorer, wiki, sdlc, jira, history, graph,
+insight, tracing, world, sessions, database) are also client components (confirmed
+by absence of any server-only imports or API usage).
+
+Root layout (frontend/app/layout.tsx): Server component by default, but contains
+ONLY metadata export + html/body shell. No server-only API calls.
+
+==========================================================================
+4. DYNAMIC ROUTE CONFIGURATION
+==========================================================================
+RESULT: DYNAMIC [sessionId] SEGMENT — NO generateStaticParams
+
+Dynamic route: frontend/app/workspace/[sessionId]/
+  - No generateStaticParams() export anywhere in this segment
+  - No export const dynamic = '...' override
+  - No export const dynamicParams = false
+  - Sessions are user-created at runtime; static pre-generation is impossible
+
+IMPLICATION: With output: 'export', Next.js would require generateStaticParams
+for all dynamic segments. Since [sessionId] values are runtime-created, static
+export is BLOCKED by this route alone.
+
+==========================================================================
+5. ISR / REVALIDATION
+==========================================================================
+RESULT: NONE FOUND
+
+Grep pattern: revalidate|export const dynamic
+Matches: 0
+
+No ISR (Incremental Static Regeneration) or revalidation config anywhere.
+
+==========================================================================
+6. IMAGE OPTIMIZATION (next/image)
+==========================================================================
+RESULT: NONE FOUND
+
+Grep pattern: next/image
+Files searched: all *.tsx, *.ts under frontend/
+Matches: 0
+
+No use of Next.js <Image> component. All images (if any) would be plain <img>.
+No images/assets are present in the frontend (public/ is created empty in Dockerfile).
+
+==========================================================================
+7. REWRITES / REDIRECTS (next.config.mjs)
+==========================================================================
+RESULT: NONE
+
+frontend/next.config.mjs contents:
+  - output: 'standalone'
+  - reactCompiler: true
+  - typescript.ignoreBuildErrors: true
+  - allowedDevOrigins: ['staging.yummycode.cloud']
+  - NO rewrites(), NO redirects(), NO headers() config functions
+
+==========================================================================
+8. CURRENT output MODE
+==========================================================================
+frontend/next.config.mjs line 9: output: 'standalone'
+
+'standalone' produces a self-contained Node.js server under .next/standalone/.
+This requires a Node.js runtime (NOT a static CDN / S3 bucket).
+The Dockerfile (runner stage) runs: CMD ["node", "server.js"]
+
+==========================================================================
+9. NEXT_PUBLIC_* ENV VARS
+==========================================================================
+See task-4-api-url.txt for full API URL documentation.
+
+Only one NEXT_PUBLIC_* variable found in the entire frontend:
+  - NEXT_PUBLIC_API_URL
+
+Locations:
+  frontend/lib/api.ts line 12:
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+  frontend/Dockerfile lines 17-18:
+    ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+    ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+  frontend/SETUP.md line 15 (docs only):
+    NEXT_PUBLIC_API_URL: the public URL your browser will call
+
+==========================================================================
+10. MIDDLEWARE (middleware.ts)
+==========================================================================
+RESULT: NOT PRESENT
+
+No frontend/middleware.ts file found. No Edge middleware.
+
+==========================================================================
+SUMMARY TABLE
+==========================================================================
+
+Feature                     | Found | SSR Required? | Blocks Static Export?
+----------------------------|-------|---------------|----------------------
+cookies() / next/headers    | NO    | N/A           | N/A
+headers() / next/headers    | NO    | N/A           | N/A
+Server Actions ('use server')| NO   | N/A           | N/A
+Dynamic [sessionId] route   | YES   | YES           | YES — no generateStaticParams
+generateStaticParams        | NO    | -             | Missing = export blocked
+next/image optimization     | NO    | N/A           | N/A
+ISR / revalidate            | NO    | N/A           | N/A
+Rewrites / Redirects config | NO    | N/A           | N/A
+Edge Middleware             | NO    | N/A           | N/A
+output: 'standalone'        | YES   | YES           | (already set)
+NEXT_PUBLIC_API_URL         | YES   | Build-time    | Baked at image build
+
+VERDICT: SSR / CONTAINER REQUIRED

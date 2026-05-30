@@ -1,0 +1,7 @@
+The existing documentation in `docs/aws/APP_RUNNER_AMPLIFY.md` is now considered **legacy**. While it remains in the codebase for historical context or very small prototypes, it's not the primary implementation target for this migration. App Runner's limitations (such as the 120s timeout and lack of native VPC integration) make it unsuitable for the platform's growth.
+*   **Database Alternatives**: No Amazon Aurora, DynamoDB, or other NoSQL variants.
+*   **Orchestration Alternatives**: No EKS (Kubernetes) or App Runner (as primary).
+*   **Caching & Messaging**: No Redis, Memcached, or SQS implementation.
+*   **Advanced Security**: No WAF (Web Application Firewall) or Shield Advanced.
+*   **Resiliency**: No multi-region or multi-AZ configuration (unless default to RDS).
+*   **Refactoring**: No route refactors, dependency upgrades, or Lambda rewrites.

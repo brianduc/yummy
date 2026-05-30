@@ -1,0 +1,24 @@
+Task 3 SQLite-specific pattern replacement evidence
+
+Required searches performed:
+  - ast-grep pattern sqliteTable($$$) in backend-ts/src/db/schema.ts: 10 matches
+  - ast-grep pattern text($$$) in backend-ts/src/db/schema.ts: 51 matches
+  - ast-grep pattern integer($$$) in backend-ts/src/db/schema.ts: 17 matches
+  - grep migrations for datetime, AUTOINCREMENT, INSERT OR IGNORE, CREATE TABLE IF NOT EXISTS, backticks, DEFAULT true/false
+
+SQLite-specific pattern inventory and Postgres replacement:
+  - sqliteTable(...) -> pgTable(...), regenerate Postgres migrations from a pg-core schema.
+  - text(...) ordinary strings -> Postgres text.
+  - text(..., { mode: 'json' }) JSON-as-text -> jsonb with JSON.parse transform.
+  - world_servers.args and world_servers.headers_json manual JSON text -> nullable jsonb with JSON.parse transform.
+  - integer(..., { mode: 'boolean' }) and integer DEFAULT true/false -> boolean with 0/1 to false/true transform.
+  - integer millisecond epoch values -> bigint where preserving epoch IDs/timestamps is safer.
+  - real -> double precision.
+  - datetime('now') -> now() on timestamptz columns.
+  - INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING.
+  - CREATE TABLE IF NOT EXISTS -> Drizzle-generated deterministic CREATE TABLE migration.
+  - backtick identifiers -> unquoted lowercase snake_case identifiers or Postgres quotes only if needed.
+  - ALTER TABLE ... ADD in SQLite history -> regenerated Postgres baseline/forward migrations, with request_logs.kind drift explicitly resolved.
+  - AUTOINCREMENT -> no occurrences found; no SERIAL/IDENTITY mapping needed for current schema.
+
+Result: every SQLite-specific pattern found in schema/migration sources has an explicit Postgres replacement in docs/db/postgres-schema-mapping.md.

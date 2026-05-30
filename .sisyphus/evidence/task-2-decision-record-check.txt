@@ -1,0 +1,7 @@
+*   **Compute**: AWS ECS Fargate for both backend and frontend.
+*   **Networking**: Application Load Balancer (ALB) for request routing and TLS termination.
+*   **Database**: Amazon RDS for PostgreSQL (Standard Edition).
+*   **Infrastructure as Code**: OpenTofu (for vendor-neutral governance over Terraform).
+*   **Artifacts**: Standard OCI-compliant Docker images stored in Amazon ECR.
+*   **Tooling**: No migration from OpenTofu to Terraform or CloudFormation.
+*   `docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md`: Detailed ECS Fargate setup.

@@ -1,58 +1,33 @@
 {
-  "active_plan": "/Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/.sisyphus/plans/workspace-restructure.md",
-  "started_at": "2026-05-26T04:17:57.839Z",
+  "active_plan": "/Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/.sisyphus/plans/aws-non-lockin-postgres-migration.md",
+  "started_at": "2026-05-30T09:01:31.367Z",
   "session_ids": [
-    "ses_19d8d2c6bffe5OXOTNPlgJ07Mg"
+    "ses_187f48040ffevjetSDLdX6hF1B",
+    "ses_187e119dbffediU7wmvr7Fx36A",
+    "ses_187e0d78cffe9CLombgzIbydCr",
+    "ses_187e08b26ffe1MgIHkdqG7sKF9",
+    "ses_187e046f9ffeNedR1VJeDPakcz",
+    "ses_187e00aadffeKyDEaKPLe8NZ2I"
   ],
   "session_origins": {
-    "ses_19d8d2c6bffe5OXOTNPlgJ07Mg": "direct"
+    "ses_187f48040ffevjetSDLdX6hF1B": "direct",
+    "ses_187e119dbffediU7wmvr7Fx36A": "appended",
+    "ses_187e0d78cffe9CLombgzIbydCr": "appended",
+    "ses_187e08b26ffe1MgIHkdqG7sKF9": "appended",
+    "ses_187e046f9ffeNedR1VJeDPakcz": "appended",
+    "ses_187e00aadffeKyDEaKPLe8NZ2I": "appended"
   },
-  "plan_name": "workspace-restructure",
+  "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
   "task_sessions": {
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "Update `workspace-navigation.ts` with new activity items",
-      "session_id": "ses_19d7e53ffffetW60HNn3d01ZVV",
+      "task_title": "Pre-migration baseline and Cloudflare inventory",
+      "session_id": "ses_187e00aadffeKyDEaKPLe8NZ2I",
       "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-05-26T04:20:01.432Z"
-    },
-    "todo:9": {
-      "task_key": "todo:9",
-      "task_label": "9",
-      "task_title": "Implement dashboard page (GREEN)",
-      "session_id": "ses_19d7a2a10ffeTTuKnwCx4gXSxQ",
-      "agent": "Sisyphus-Junior",
-      "category": "visual-engineering",
-      "updated_at": "2026-05-26T04:26:13.723Z"
-    },
-    "todo:12": {
-      "task_key": "todo:12",
-      "task_label": "12",
-      "task_title": "Implement explorer route (GREEN)",
-      "session_id": "ses_19d740929ffebG51vUjOr5lsnT",
-      "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-05-26T04:30:34.784Z"
-    },
-    "todo:19": {
-      "task_key": "todo:19",
-      "task_label": "19",
-      "task_title": "Strip MainStage tabbed code from page.tsx",
-      "session_id": "ses_19d712d01ffe5jbHYzz5Jr7dJf",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-05-26T04:34:56.728Z"
-    },
-    "final-wave:f1": {
-      "task_key": "final-wave:f1",
-      "task_label": "F1",
-      "task_title": "**Plan Compliance Audit** — `oracle`",
-      "session_id": "ses_19d6d5ac9ffeuUTWdUKAd7NsaN",
-      "agent": "Sisyphus-Junior",
-      "updated_at": "2026-05-26T04:46:03.890Z"
+      "category": "unspecified-high",
+      "updated_at": "2026-05-30T09:07:10.911Z"
     }
   }
 }

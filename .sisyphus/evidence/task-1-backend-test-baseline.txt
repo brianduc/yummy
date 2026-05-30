@@ -1,0 +1,19 @@
+# Backend Test Baseline — captured 2026-05-30
+# Command: cd backend-ts && pnpm test
+
+> backend-ts@1.0.0 test /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> vitest run
+
+
+ RUN  v4.1.4 /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+
+
+ Test Files  12 passed (12)
+      Tests  95 passed (95)
+   Start at  16:02:46
+   Duration  8.38s (transform 219ms, setup 0ms, import 6.50s, tests 883ms, environment 1ms)
+
+# SUMMARY
+# Test Files: 12 passed, 0 failed
+# Tests:      95 passed, 0 failed
+# Exit code:  0 (all green)
