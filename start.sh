@@ -80,6 +80,8 @@ set +a
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 AI_PROVIDER="${AI_PROVIDER:-gemini}"
+: "${DATABASE_URL:=postgres://yummy:yummy@localhost:${POSTGRES_HOST_PORT:-5433}/yummy}"
+export DATABASE_URL
 
 echo ""
 echo -e "${CYAN}YUMMY - AI SDLC Platform ${YELLOW}[$MODE mode]${NC}"
@@ -123,8 +125,46 @@ if [ ! -d "node_modules" ]; then
 fi
 echo -e "${GREEN}[Backend] Dependencies OK${NC}"
 
+# Ensure the Postgres dependency exists before migrations/backend startup.
+# Docker Compose exposes the local dev database on POSTGRES_HOST_PORT (5433 by default).
+DB_HOST="$(node -e 'const u = new URL(process.env.DATABASE_URL); console.log(u.hostname)' 2>/dev/null || true)"
+DB_PORT="$(node -e 'const u = new URL(process.env.DATABASE_URL); console.log(u.port || "5432")' 2>/dev/null || true)"
+
+if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ]; then
+  echo -e "${RED}[Backend] ERROR: DATABASE_URL is not a valid Postgres URL: $DATABASE_URL${NC}"
+  exit 1
+fi
+
+postgres_ready() {
+  (echo > "/dev/tcp/$DB_HOST/$DB_PORT") >/dev/null 2>&1
+}
+
+if ! postgres_ready; then
+  if [[ "$DB_HOST" == "localhost" || "$DB_HOST" == "127.0.0.1" ]] && command -v docker &>/dev/null && docker compose version &>/dev/null; then
+    echo -e "${YELLOW}[Backend] Local Postgres not reachable at $DB_HOST:$DB_PORT. Starting docker compose postgres...${NC}"
+    (cd "$ROOT_DIR" && docker compose up -d postgres)
+
+    for _ in {1..30}; do
+      if postgres_ready; then
+        break
+      fi
+      sleep 1
+    done
+  fi
+fi
+
+if ! postgres_ready; then
+  echo -e "${RED}[Backend] ERROR: Postgres is not reachable at $DB_HOST:$DB_PORT.${NC}"
+  echo -e "${YELLOW}Set DATABASE_URL or start local Postgres. For the bundled dev DB, run:${NC}"
+  echo -e "${YELLOW}  docker compose up -d postgres${NC}"
+  exit 1
+fi
+
 # Apply DB migrations (idempotent)
-pnpm db:migrate >/dev/null 2>&1 || true
+if ! pnpm db:migrate; then
+  echo -e "${RED}[Backend] ERROR: Database migration failed.${NC}"
+  exit 1
+fi
 
 echo -e "${YELLOW}[Backend] Starting at http://localhost:$BACKEND_PORT ...${NC}"
 PORT="$BACKEND_PORT" pnpm dev &

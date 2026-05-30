@@ -7,7 +7,7 @@ TypeScript port of the Python FastAPI backend. Strict API parity with the origin
 - **Runtime**: Node.js 20+
 - **Framework**: [Hono](https://hono.dev) via `@hono/node-server`
 - **Validation + Docs**: `@hono/zod-openapi` (auto Swagger UI at `/docs`)
-- **DB**: SQLite + [Drizzle ORM](https://orm.drizzle.team) (`better-sqlite3`)
+- **DB**: PostgreSQL + [Drizzle ORM](https://orm.drizzle.team) (`postgres`)
 - **Tests**: Vitest
 
 ## AI providers

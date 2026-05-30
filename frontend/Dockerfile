@@ -1,5 +1,5 @@
 # YUMMY Web — production image (Next.js standalone)
-FROM node:20-slim AS base
+FROM node:lts-alpine AS base
 
 FROM base AS deps
 WORKDIR /app

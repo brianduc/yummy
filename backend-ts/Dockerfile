@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:lts-alpine AS base
 RUN npm install -g pnpm@9
 
 FROM base AS deps
@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
-FROM node:20-slim AS runner
+FROM node:lts-alpine AS runner
 WORKDIR /app
 RUN npm install -g pnpm@9
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
