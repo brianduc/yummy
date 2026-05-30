@@ -154,3 +154,10 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - 95 tests / 12 files: all pass against `postgres://yummy:yummy@localhost:5433/yummy_test`
 - Bad credentials: `PostgresError: password authentication failed` — 9 suites fail, clear error surfaced in `beforeAll` hook
 - Vitest config (`pool: 'forks'`, `isolate: true`, `fileParallelism: false`) preserved unchanged
+
+## Frontend Standard Next.js Container Build (Task 10)
+- Replaced `opennext-cloudflare` with standard Next.js standalone output and Docker build.
+- Confirmed Next.js `output: 'standalone'` correctly produces a self-contained Node server.
+- The dynamic routing (`[sessionId]`) strictly requires this SSR/Node.js runtime, making static export impossible.
+- Removed Cloudflare workers config from Next and deployed as a standard Next.js Docker container using `node:20-slim`.
+- API base URL behavior (`NEXT_PUBLIC_API_URL`) requires baked-in build args; implemented this in Dockerfile.

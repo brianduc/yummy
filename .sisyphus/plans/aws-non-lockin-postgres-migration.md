@@ -778,7 +778,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `backend-ts/src/index.ts`, `backend-ts/src/app.ts`, health/router files
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 10. Frontend standard Next standalone/container path
+- [x] 10. Frontend standard Next standalone/container path
 
   **What to do**:
   - Replace AWS deployment path with standard `next build` / standalone output and Docker image.

@@ -11,7 +11,8 @@
     "ses_187db8669ffenuaaD43AEndZCK",
     "ses_187d30d04ffe3D3orZuMO0DRnj",
     "ses_187d2c5acffe81b80lxdTa8Cb5",
-    "ses_187bb88aeffei435EEaTCBKRvr"
+    "ses_187bb88aeffei435EEaTCBKRvr",
+    "ses_187b36064ffe5SCCvUr1pl6g1I"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -23,7 +24,8 @@
     "ses_187db8669ffenuaaD43AEndZCK": "appended",
     "ses_187d30d04ffe3D3orZuMO0DRnj": "appended",
     "ses_187d2c5acffe81b80lxdTa8Cb5": "appended",
-    "ses_187bb88aeffei435EEaTCBKRvr": "appended"
+    "ses_187bb88aeffei435EEaTCBKRvr": "appended",
+    "ses_187b36064ffe5SCCvUr1pl6g1I": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -63,6 +65,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-05-30T09:51:25.875Z"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "Frontend standard Next standalone/container path",
+      "session_id": "ses_187b36064ffe5SCCvUr1pl6g1I",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-05-30T09:55:17.239Z"
     }
   }
 }

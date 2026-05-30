@@ -4,17 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run build:next && opennextjs-cloudflare build --skipNextBuild",
-    "build:next": "next build",
-    "build:cloudflare": "npm run build",
+    "build": "next build",
     "start": "next start",
     "lint": "biome check app components hooks lib test",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "preview": "npm run build && opennextjs-cloudflare preview",
-    "deploy": "npm run build && opennextjs-cloudflare deploy",
-    "upload": "npm run build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
@@ -35,7 +29,6 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.11",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^20",
@@ -49,7 +42,6 @@
     "postcss": "^8.5.9",
     "tailwindcss": "^3.4.19",
     "typescript": "^5",
-    "vitest": "^2.1.8",
-    "wrangler": "^4.93.1"
+    "vitest": "^2.1.8"
   }
 }
