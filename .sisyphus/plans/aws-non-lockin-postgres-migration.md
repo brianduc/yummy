@@ -513,7 +513,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: test strategy doc
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 6. Convert Drizzle schema/client/config to Postgres
+- [x] 6. Convert Drizzle schema/client/config to Postgres
 
   **What to do**:
   - Run `gitnexus_impact` on `createDb` and related DB symbols before edits.

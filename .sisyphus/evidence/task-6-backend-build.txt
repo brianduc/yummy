@@ -1,0 +1,4 @@
+
+> backend-ts@1.0.0 build /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> tsc -p tsconfig.json
+

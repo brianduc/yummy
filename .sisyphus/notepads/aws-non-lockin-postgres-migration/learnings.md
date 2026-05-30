@@ -102,3 +102,13 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - Pass `NEXT_PUBLIC_API_URL=https://api.yourdomain.com` as Docker build ARG in CI/CD
 - Deploy container to App Runner or ECS Fargate — port 3000
 - Do NOT set NEXT_PUBLIC_API_URL as a runtime env var (it has no effect)
+
+
+## Task 6: Drizzle Postgres Schema/Client Conversion (2026-05-30)
+
+- Required `gitnexus_impact` on `createDb` returned MEDIUM risk: 7 direct router callers (`ask`, `config`, `kb`, `metrics`, `sdlc`, `sessions`, `world`) and transitive `app.ts`/entrypoints.
+- `sg` CLI was unavailable locally (`command not found`), so the required AST inventories were completed with the available AST search tool: `sqliteTable` matches were removed from `schema.ts`, and `text(..., { mode: 'json' })` matches are now zero.
+- Postgres Drizzle query builders do not expose the previous SQLite `.all()`, `.get()`, and `.run()` helpers; repositories were updated to await query builders directly and use `limit(1)` destructuring for single-row reads.
+- `world_servers.args` and `world_servers.headers_json` are now native `jsonb` values at the DB boundary. The public API remains unchanged: `args` is an array and `headers_json` is still accepted/returned as a JSON string.
+- Active startup and migration paths no longer import `client.local.ts`; `client.local.ts` is retained only as a marked legacy SQLite helper per task requirements.
+- `pnpm build` exits 0 after the conversion; evidence saved in `.sisyphus/evidence/task-6-backend-build.txt` and `.sisyphus/evidence/task-6-sqlite-d1-search.txt`.

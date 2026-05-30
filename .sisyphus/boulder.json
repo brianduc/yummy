@@ -7,7 +7,8 @@
     "ses_187e0d78cffe9CLombgzIbydCr",
     "ses_187e08b26ffe1MgIHkdqG7sKF9",
     "ses_187e046f9ffeNedR1VJeDPakcz",
-    "ses_187e00aadffeKyDEaKPLe8NZ2I"
+    "ses_187e00aadffeKyDEaKPLe8NZ2I",
+    "ses_187db8669ffenuaaD43AEndZCK"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -15,7 +16,8 @@
     "ses_187e0d78cffe9CLombgzIbydCr": "appended",
     "ses_187e08b26ffe1MgIHkdqG7sKF9": "appended",
     "ses_187e046f9ffeNedR1VJeDPakcz": "appended",
-    "ses_187e00aadffeKyDEaKPLe8NZ2I": "appended"
+    "ses_187e00aadffeKyDEaKPLe8NZ2I": "appended",
+    "ses_187db8669ffenuaaD43AEndZCK": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -28,6 +30,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-05-30T09:07:10.911Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Convert Drizzle schema/client/config to Postgres",
+      "session_id": "ses_187db8669ffenuaaD43AEndZCK",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-30T09:17:06.410Z"
     }
   }
 }

@@ -10,24 +10,24 @@ export type RequestLog = RequestLogRow;
 
 export const logsRepo = {
   async list(db: DB): Promise<RequestLog[]> {
-    return await db.select().from(requestLogs).orderBy(desc(requestLogs.id)).all();
+    return await db.select().from(requestLogs).orderBy(desc(requestLogs.id));
   },
 
   async add(db: DB, log: RequestLogInsert): Promise<void> {
-    await db.insert(requestLogs).values(log).run();
+    await db.insert(requestLogs).values(log);
   },
 
   async clear(db: DB): Promise<void> {
-    await db.delete(requestLogs).run();
+    await db.delete(requestLogs);
   },
 
   async count(db: DB): Promise<number> {
-    const rows = await db.select({ id: requestLogs.id }).from(requestLogs).all();
+    const rows = await db.select({ id: requestLogs.id }).from(requestLogs);
     return rows.length;
   },
 
   async totalCost(db: DB): Promise<number> {
-    const rows = await db.select({ cost: requestLogs.cost }).from(requestLogs).all();
+    const rows = await db.select({ cost: requestLogs.cost }).from(requestLogs);
     return rows.reduce((sum, r) => sum + (r.cost ?? 0), 0);
   },
 };

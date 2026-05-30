@@ -1,0 +1,8 @@
+Search patterns: sqlite-core, drizzle-orm/d1, D1Database, better-sqlite3, client.local
+Scope: backend-ts/src/**/*.ts
+
+No active SQLite/D1 imports or client.local references found outside legacy src/db/client.local.ts.
+
+Legacy-only references retained by requirement:
+src/db/client.local.ts:10: import Database from 'better-sqlite3';
+src/db/client.local.ts:14: } from 'drizzle-orm/better-sqlite3';

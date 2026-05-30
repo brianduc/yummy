@@ -1,38 +1,41 @@
-import type { D1Database, D1Result } from '@cloudflare/workers-types';
-import type { RunResult } from 'better-sqlite3';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { type DrizzleD1Database, drizzle as drizzleD1 } from 'drizzle-orm/d1';
-import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
+import { type PostgresJsDatabase, drizzle } from 'drizzle-orm/postgres-js';
+import postgres, { type Sql } from 'postgres';
 import * as schema from './schema.js';
 
 export type Bindings = {
-  DB: D1Database;
+  DB?: unknown;
 };
 
-let _localDbGetter: (() => BetterSQLite3Database<typeof schema>) | undefined;
+export type Db = PostgresJsDatabase<typeof schema> & { $client: Sql };
 
-export function _registerLocalDb(getter: () => BetterSQLite3Database<typeof schema>): void {
-  _localDbGetter = getter;
-}
+let pgClient: Sql | undefined;
+let pgDb: Db | undefined;
 
-export function createDb(d1: D1Database): DrizzleD1Database<typeof schema>;
-export function createDb(d1?: undefined): BetterSQLite3Database<typeof schema>;
-export function createDb(
-  d1?: D1Database,
-): DrizzleD1Database<typeof schema> | BetterSQLite3Database<typeof schema> {
-  if (d1) {
-    return drizzleD1(d1, { schema });
+function getDatabaseUrl(): string {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required for the Postgres database connection.');
   }
 
-  if (_localDbGetter) {
-    return _localDbGetter();
-  }
-
-  throw new Error(
-    'No local DB registered. Import ./db/client.local.ts before starting the Node server.',
-  );
+  return databaseUrl;
 }
 
-export type Db = BaseSQLiteDatabase<'async' | 'sync', D1Result | RunResult, typeof schema>;
+export function getPostgresClient(): Sql {
+  if (!pgClient) {
+    pgClient = postgres(getDatabaseUrl(), { max: 10 });
+  }
+
+  return pgClient;
+}
+
+export function createDb(_legacyDb?: unknown): Db {
+  if (!pgDb) {
+    pgDb = drizzle(getPostgresClient(), { schema });
+  }
+
+  return pgDb;
+}
+
+export const db = createDb();
 
 export { schema };

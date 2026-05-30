@@ -1,5 +1,5 @@
 /**
- * Drizzle schema — SQLite.
+ * Drizzle schema — Postgres.
  *
  * Tables map 1:1 to the Python in-memory DB dict:
  *   sessions                   -> sessions
@@ -14,62 +14,62 @@
  * (chat_history, agent_outputs, jira_backlog, logs, files[]).
  */
 import { sql } from 'drizzle-orm';
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { bigint, boolean, doublePrecision, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 // ─── Sessions ────────────────────────────────────────────
-export const sessions = sqliteTable('sessions', {
+export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   createdAt: text('created_at').notNull(),
 
   // JSON arrays / objects
-  logs: text('logs', { mode: 'json' })
+  logs: jsonb('logs')
     .notNull()
     .$type<Array<{ role: string; text: string }>>()
-    .default(sql`'[]'`),
-  chatHistory: text('chat_history', { mode: 'json' })
+    .default(sql`'[]'::jsonb`),
+  chatHistory: jsonb('chat_history')
     .notNull()
     .$type<Array<{ role: string; text: string; timestamp?: string; trace?: unknown }>>()
-    .default(sql`'[]'`),
-  agentOutputs: text('agent_outputs', { mode: 'json' })
+    .default(sql`'[]'::jsonb`),
+  agentOutputs: jsonb('agent_outputs')
     .notNull()
     .$type<Record<string, unknown>>()
-    .default(sql`'{}'`),
-  jiraBacklog: text('jira_backlog', { mode: 'json' })
+    .default(sql`'{}'::jsonb`),
+  jiraBacklog: jsonb('jira_backlog')
     .notNull()
     .$type<unknown[]>()
-    .default(sql`'[]'`),
-  metrics: text('metrics', { mode: 'json' })
+    .default(sql`'[]'::jsonb`),
+  metrics: jsonb('metrics')
     .notNull()
     .$type<{ tokens: number }>()
-    .default(sql`'{"tokens":0}'`),
+    .default(sql`'{"tokens":0}'::jsonb`),
 
   workflowState: text('workflow_state').notNull().default('idle'),
 });
 
 // ─── Knowledge base — tree (one row per file) ────────────
-export const kbTree = sqliteTable('kb_tree', {
+export const kbTree = pgTable('kb_tree', {
   path: text('path').primaryKey(),
   name: text('name').notNull(),
   status: text('status').notNull().default('pending'), // pending | processing | done
 });
 
 // ─── Knowledge base — insights (one row per chunk) ───────
-export const kbInsights = sqliteTable('kb_insights', {
-  id: integer('id').primaryKey(),
-  files: text('files', { mode: 'json' }).notNull().$type<string[]>(),
+export const kbInsights = pgTable('kb_insights', {
+  id: bigint('id', { mode: 'number' }).primaryKey(),
+  files: jsonb('files').notNull().$type<string[]>(),
   summary: text('summary').notNull(),
-  createdAt: integer('created_at').notNull(), // ms epoch (sort order)
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(), // ms epoch (sort order)
 });
 
 // ─── Knowledge base — singleton meta row (project summary) ─
-export const kbMeta = sqliteTable('kb_meta', {
+export const kbMeta = pgTable('kb_meta', {
   id: integer('id').primaryKey().default(1),
   projectSummary: text('project_summary').notNull().default(''),
 });
 
 // ─── Repo info — singleton row id=1 ──────────────────────
-export const repoInfo = sqliteTable('repo_info', {
+export const repoInfo = pgTable('repo_info', {
   id: integer('id').primaryKey().default(1),
   owner: text('owner').notNull(),
   repo: text('repo').notNull(),
@@ -80,45 +80,45 @@ export const repoInfo = sqliteTable('repo_info', {
 });
 
 // ─── World servers ───────────────────────────────────────
-export const worldServers = sqliteTable('world_servers', {
+export const worldServers = pgTable('world_servers', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   transport: text('transport').notNull(),
   command: text('command'),
-  args: text('args'),
+  args: jsonb('args').$type<string[]>(),
   url: text('url'),
-  headersJson: text('headers_json'),
-  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
-  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+  headersJson: jsonb('headers_json').$type<Record<string, unknown>>(),
+  enabled: boolean('enabled').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
   lastStatus: text('last_status').notNull().default('unknown'),
 });
 
 // ─── Scan status — singleton row id=1 (nullable when no scan yet) ─
-export const scanStatus = sqliteTable('scan_status', {
+export const scanStatus = pgTable('scan_status', {
   id: integer('id').primaryKey().default(1),
-  running: integer('running', { mode: 'boolean' }).notNull().default(false),
+  running: boolean('running').notNull().default(false),
   text: text('text').notNull().default(''),
   progress: integer('progress').notNull().default(0),
-  error: integer('error', { mode: 'boolean' }).notNull().default(false),
+  error: boolean('error').notNull().default(false),
   // Track whether a status row has been initialized — Python uses None as "no scan".
-  initialized: integer('initialized', { mode: 'boolean' }).notNull().default(false),
+  initialized: boolean('initialized').notNull().default(false),
 });
 
 // ─── Request logs (newest-first via id DESC) ─────────────
-export const requestLogs = sqliteTable('request_logs', {
-  id: integer('id').primaryKey(), // ms epoch (matches Python int(time.time()*1000))
+export const requestLogs = pgTable('request_logs', {
+  id: bigint('id', { mode: 'number' }).primaryKey(), // ms epoch (matches Python int(time.time()*1000))
   time: text('time').notNull(), // HH:MM:SS
   agent: text('agent').notNull(),
   provider: text('provider').notNull(),
   model: text('model').notNull(),
   inTokens: integer('in_tokens').notNull(),
   outTokens: integer('out_tokens').notNull(),
-  latency: real('latency').notNull(),
-  cost: real('cost').notNull(),
+  latency: doublePrecision('latency').notNull(),
+  cost: doublePrecision('cost').notNull(),
 });
 
 // ─── Provider config — singleton row id=1 ────────────────
-export const providerConfig = sqliteTable('provider_config', {
+export const providerConfig = pgTable('provider_config', {
   id: integer('id').primaryKey().default(1),
   provider: text('provider').notNull().default('gemini'),
   geminiKey: text('gemini_key').notNull().default(''),
@@ -136,12 +136,12 @@ export const providerConfig = sqliteTable('provider_config', {
   bedrockModel: text('bedrock_model').notNull().default(''),
 });
 
-export const worldConfig = sqliteTable('world_config', {
+export const worldConfig = pgTable('world_config', {
   id: integer('id').primaryKey().default(1),
   mcpServerToken: text('mcp_server_token').notNull().default(''),
-  mcpServerEnabled: integer('mcp_server_enabled', { mode: 'boolean' }).notNull().default(false),
+  mcpServerEnabled: boolean('mcp_server_enabled').notNull().default(false),
   mcpServerPort: text('mcp_server_port').notNull().default(''),
-  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
 });
 
 // ─── Inferred row types ──────────────────────────────────

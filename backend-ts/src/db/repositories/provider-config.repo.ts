@@ -20,7 +20,8 @@ export const providerConfigRepo = {
    */
   async get(db: DB): Promise<ProviderConfig | undefined> {
     try {
-      return await db.select().from(providerConfig).where(eq(providerConfig.id, 1)).get();
+      const [row] = await db.select().from(providerConfig).where(eq(providerConfig.id, 1)).limit(1);
+      return row;
     } catch {
       // Table not yet created (pre-migration state) — fall back to env gracefully.
       return undefined;
@@ -51,11 +52,15 @@ export const providerConfigRepo = {
     };
 
     try {
-      const existing = await db.select().from(providerConfig).where(eq(providerConfig.id, 1)).get();
+      const [existing] = await db
+        .select()
+        .from(providerConfig)
+        .where(eq(providerConfig.id, 1))
+        .limit(1);
       if (existing) {
-        await db.update(providerConfig).set(row).where(eq(providerConfig.id, 1)).run();
+        await db.update(providerConfig).set(row).where(eq(providerConfig.id, 1));
       } else {
-        await db.insert(providerConfig).values(row).run();
+        await db.insert(providerConfig).values(row);
       }
     } catch {
       // Table not yet created — silently skip (migration pending).

@@ -18,7 +18,7 @@ const ROW_ID = 1;
 
 export const scanStatusRepo = {
   async get(db: DB): Promise<ScanStatus | undefined> {
-    const row = await db.select().from(scanStatus).where(eq(scanStatus.id, ROW_ID)).get();
+    const [row] = await db.select().from(scanStatus).where(eq(scanStatus.id, ROW_ID)).limit(1);
     if (!row?.initialized) return undefined;
     return {
       running: row.running,
@@ -37,11 +37,11 @@ export const scanStatusRepo = {
       error: s.error,
       initialized: true,
     };
-    const existing = await db.select().from(scanStatus).where(eq(scanStatus.id, ROW_ID)).get();
+    const [existing] = await db.select().from(scanStatus).where(eq(scanStatus.id, ROW_ID)).limit(1);
     if (existing) {
-      await db.update(scanStatus).set(row).where(eq(scanStatus.id, ROW_ID)).run();
+      await db.update(scanStatus).set(row).where(eq(scanStatus.id, ROW_ID));
     } else {
-      await db.insert(scanStatus).values(row).run();
+      await db.insert(scanStatus).values(row);
     }
   },
 
@@ -56,6 +56,6 @@ export const scanStatusRepo = {
   },
 
   async clear(db: DB): Promise<void> {
-    await db.delete(scanStatus).where(eq(scanStatus.id, ROW_ID)).run();
+    await db.delete(scanStatus).where(eq(scanStatus.id, ROW_ID));
   },
 };

@@ -19,18 +19,15 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function parseJsonArray(value: string | null): string[] | undefined {
+function parseJsonArray(value: string[] | null): string[] | undefined {
   if (!value) return undefined;
-  const parsed = JSON.parse(value) as unknown;
-  return Array.isArray(parsed) ? parsed.map(String) : undefined;
+  return value.map(String);
 }
 
-function parseHeaders(value: string | null): Record<string, string> | undefined {
+function parseHeaders(value: Record<string, unknown> | null): Record<string, string> | undefined {
   if (!value) return undefined;
-  const parsed = JSON.parse(value) as unknown;
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
   return Object.fromEntries(
-    Object.entries(parsed).map(([key, headerValue]) => [key, String(headerValue)]),
+    Object.entries(value).map(([key, headerValue]) => [key, String(headerValue)]),
   );
 }
 

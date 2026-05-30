@@ -45,13 +45,22 @@ function mapServerRow(row: WorldServerRow): WorldServer {
     name: row.name,
     transport: row.transport as 'stdio' | 'http',
     command: row.command ?? null,
-    args: row.args ? (JSON.parse(row.args) as string[]) : null,
+    args: row.args ?? null,
     url: row.url ?? null,
-    headers_json: row.headersJson ?? null,
+    headers_json: row.headersJson ? JSON.stringify(row.headersJson) : null,
     enabled: row.enabled,
-    created_at: row.createdAt,
+    created_at: row.createdAt.toISOString(),
     last_status: row.lastStatus as 'connected' | 'disconnected' | 'error' | 'unknown',
   };
+}
+
+function parseHeadersJson(value: string): Record<string, unknown> {
+  const parsed = JSON.parse(value) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new HttpError(400, 'headers_json must be a JSON object');
+  }
+
+  return parsed as Record<string, unknown>;
 }
 
 function mapConfigRow(row: {
@@ -150,11 +159,11 @@ worldRouter.openapi(
       name: body.name,
       transport: body.transport,
       command: body.command ?? null,
-      args: body.args ? JSON.stringify(body.args) : null,
+      args: body.args ?? null,
       url: body.url ?? null,
-      headersJson: body.headers_json ?? null,
+      headersJson: body.headers_json ? parseHeadersJson(body.headers_json) : null,
       enabled: body.enabled ?? true,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
       lastStatus: 'unknown',
     });
     return c.json(mapServerRow(created), 201);
@@ -181,9 +190,9 @@ worldRouter.openapi(
       ...(body.name !== undefined && { name: body.name }),
       ...(body.transport !== undefined && { transport: body.transport }),
       ...(body.command !== undefined && { command: body.command }),
-      ...(body.args !== undefined && { args: JSON.stringify(body.args) }),
+      ...(body.args !== undefined && { args: body.args }),
       ...(body.url !== undefined && { url: body.url }),
-      ...(body.headers_json !== undefined && { headersJson: body.headers_json }),
+      ...(body.headers_json !== undefined && { headersJson: parseHeadersJson(body.headers_json) }),
       ...(body.enabled !== undefined && { enabled: body.enabled }),
     });
     if (!updated) throw new HttpError(404, `MCP server not found: ${id}`);

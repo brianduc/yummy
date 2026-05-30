@@ -1,10 +1,9 @@
 /**
- * Node-only SQLite database helpers — MUST NOT be imported in the CF Worker
- * bundle chain (worker.ts or anything it imports). Safe to use from:
- * index.ts, migrate.ts, and tests.
+ * Legacy Node-only SQLite database helpers.
  *
- * Side effect on import: registers the local SQLite getter with client.ts
- * so that createDb(undefined) in routers works transparently in Node mode.
+ * The active runtime path uses Postgres via client.ts. Keep this file for
+ * pre-migration local utilities only; do not import it from production startup,
+ * migrations, routers, or tests after the Postgres cutover.
  */
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -13,7 +12,6 @@ import {
   type BetterSQLite3Database,
   drizzle as drizzleBetterSQLite,
 } from 'drizzle-orm/better-sqlite3';
-import { _registerLocalDb } from './client.js';
 import * as schema from './schema.js';
 
 let localSqlite: Database.Database | undefined;
@@ -60,8 +58,6 @@ export function getLocalDb(): BetterSQLite3Database<typeof schema> {
 
   return localDb;
 }
-
-_registerLocalDb(getLocalDb);
 
 export const db = getLocalDb();
 
