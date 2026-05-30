@@ -81,9 +81,7 @@ export async function updateWorldConfig(
   if (existing) {
     await db.update(worldConfig).set(patch).where(eq(worldConfig.id, 1));
   } else {
-    await db
-      .insert(worldConfig)
-      .values({ id: 1, ...partial, updatedAt: patch.updatedAt });
+    await db.insert(worldConfig).values({ id: 1, ...partial, updatedAt: patch.updatedAt });
   }
 
   return await getWorldConfig(db);

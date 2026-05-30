@@ -1,0 +1,177 @@
+F2 Code Quality Review
+Generated: 2026-05-30
+Branch: feat/yummy-world
+
+============================================================
+SUMMARY
+============================================================
+Build [PASS] | Lint [FAIL] | Tests [258 pass / 0 fail] | Files [mostly clean / 2 issues] | VERDICT: CONDITIONAL APPROVE
+
+============================================================
+1. BUILD RESULTS
+============================================================
+Backend Build (pnpm build / tsc):
+  Status: PASS
+  Output: tsc exited 0, no type errors
+
+Frontend Build (npm run build / next build):
+  Status: PASS
+  Next.js 16.2.6 Turbopack - compiled successfully in 3.0s
+  Routes: 15 app routes, all correct (1 static, 14 dynamic SSR)
+  No opennextjs-cloudflare in build output
+
+IaC Validation (terraform validate):
+  Status: PASS
+  terraform init -backend=false and terraform validate both succeeded
+
+============================================================
+2. TEST RESULTS
+============================================================
+Backend Tests (Postgres):
+  Command: DATABASE_URL=postgres://yummy:yummy@localhost:5433/yummy_test pnpm test
+  Status: PASS
+  Files: 12 passed (12)
+  Tests: 95 passed (95)
+  Duration: 7.34s
+
+Frontend Tests:
+  Command: npm test
+  Status: PASS
+  Files: 30 passed (30)
+  Tests: 163 passed (163)
+  Duration: 3.32s
+
+TOTAL: 258 pass / 0 fail
+
+============================================================
+3. LINT
+============================================================
+Status: FAIL
+Tool: Biome
+Errors: 15 errors across 15 files
+
+Affected files (all FIXABLE):
+  - src/app.ts — unsorted imports
+  - src/db/client.ts — unsorted imports
+  - src/db/migrations/meta/0000_snapshot.json — formatter
+  - src/db/migrations/meta/_journal.json — formatter
+  - src/db/repositories/repo.repo.ts — formatter
+  - src/db/repositories/world.repo.ts — formatter
+  - src/db/schema.ts — formatter
+  - src/routers/ask.router.ts — formatter
+  - tests/integration/_setup.ts — formatter
+  - tests/integration/ask.test.ts — unsorted imports + formatter
+  - tests/integration/config-sessions.test.ts — unsorted imports
+  - tests/integration/metrics.test.ts — unsorted imports
+  - tests/integration/sdlc.test.ts — unsorted imports
+  - tests/integration/world-sdlc-tool-loop.test.ts — unsorted imports
+
+Nature: ALL are auto-fixable import-sort / formatting issues (pnpm biome check --write).
+  None are logical errors, semantic issues, or safety problems.
+  All 15 are in migration/test files that were added as part of Tasks 6-8.
+
+Verdict on lint: LOW SEVERITY — all auto-fixable formatting/import-order.
+  Does not affect runtime behaviour, type safety, or test correctness.
+  Can be resolved with: cd backend-ts && pnpm biome check --write src tests
+
+============================================================
+4. AI SLOP / CODE QUALITY PATTERNS
+============================================================
+TODO/FIXME/HACK/XXX: NONE found in any backend or frontend source files.
+
+Commented-out code blocks: NONE found in backend-ts/src or frontend source.
+
+console.log in production code:
+  backend-ts/src/db/migrate.ts:17 — console.log("Applied Postgres migrations...") — ACCEPTABLE (migration runner info)
+  backend-ts/src/index.ts:44,45 — startup info log (port, docs URL) — ACCEPTABLE (server lifecycle)
+  backend-ts/src/index.ts:53 — shutdown signal log — ACCEPTABLE
+
+============================================================
+5. UNSAFE PATTERNS
+============================================================
+`as any` / @ts-ignore / @ts-nocheck:
+  frontend/app/page.tsx:22,26 — `as any[]` / `as any` on api.sessions calls
+    NOTE: These are in frontend/app/page.tsx which is NOT in the migration scope. Pre-existing.
+  frontend/components/workspace/TracingPanel.tsx:52 — `(log as any).model` — PRE-EXISTING
+  frontend/components/workspace/ContextPanel.tsx:55 — `[] as any[]` — PRE-EXISTING
+  frontend/components/workspace/SdlcPanel.tsx:455,456 — `(outputs as any)[key]` — PRE-EXISTING
+
+  VERDICT: All `as any` occurrences are in pre-existing frontend files NOT in this migration's
+  changed backend source files. None introduced by this migration.
+
+Empty catch blocks (bare `catch {` without logging):
+  src/routers/utils.router.ts:71 — `catch {` — gated/fallback context
+  src/routers/world.router.ts:318 — `catch {` — tool call cleanup
+  src/routers/sdlc.router.ts:114 — `catch {` — SSE heartbeat cleanup
+  src/routers/sdlc.router.ts:439 — `catch {` — stream close cleanup
+  src/db/repositories/provider-config.repo.ts:25,65 — `catch {` — optional config reads
+
+  VERDICT: All bare catch blocks are in intentional silent-failure scenarios (SSE stream teardown,
+  optional config reads). This is a pre-existing pattern, not introduced by migration.
+
+============================================================
+6. CLOUDFLARE / DEAD CODE CHECK
+============================================================
+Active Cloudflare runtime refs in src (backend-ts/src, frontend/app, frontend/components):
+  backend-ts/src/worker.ts — Contains comment: "LEGACY: Cloudflare Workers deployment path — gated."
+  The file imports createApp() but is clearly marked legacy with gate comment.
+  No wrangler, D1, c.env.DB, or opennextjs-cloudflare in any active build/deploy path.
+
+wrangler.jsonc: Retained in backend-ts and frontend but both are legacy/reference only.
+  backend-ts/package.json: wrangler scripts are present but gated (not in pnpm build/dev/start).
+  frontend/open-next.config.ts: retained as reference file, not invoked by npm run build.
+
+VERDICT: Cloudflare code is properly gated. No active AWS build path invokes Cloudflare tooling.
+
+============================================================
+7. SECRETS CHECK
+============================================================
+Hardcoded secrets in source: NONE found in backend-ts/src or frontend source.
+
+CI workflow (.github/workflows/deploy-aws.yml):
+  POSTGRES_PASSWORD: yummy — This is the test DB service password for CI integration tests.
+  Used in GitHub Actions `services.postgres.env` block (test-only, not production RDS).
+  Production credentials are all fetched from ${{ secrets.* }} references.
+
+.env.example files: Contain placeholder values only (no real keys).
+
+VERDICT: No secrets committed. CI test DB credentials are test-only fixtures.
+
+============================================================
+8. SCOPE CREEP CHECK
+============================================================
+Expected scope: db/, client/, dockerfiles, infra/, CI, docs/, package configs, drizzle
+
+Files outside expected scope that were modified:
+  - backend-ts/src/routers/*.router.ts — All routers touched, likely for import/type updates
+  - backend-ts/src/services/ai/providers/* — Touched in this branch
+  - frontend/components/workspace/* — Extensive UI component changes
+  - frontend/hooks/* — Hook updates
+
+NOTE: The frontend component and hook changes are LARGE in scope. Many workspace components
+(ChatPanel, SdlcPanel, ActivityBar, YumAISidebar, etc.) and all hooks were modified.
+However, Task 10 (frontend standalone path) and associated UI work appear to justify
+frontend changes. These appear to be companion refactors rather than scope creep per se,
+but they are substantial.
+
+The AI provider files (bedrock, copilot, gemini, ollama, openai) and dispatcher were
+also touched. This is beyond core DB/runtime migration scope. F1 architecture review
+should assess whether these were necessary.
+
+VERDICT: Scope is LARGER than pure DB migration. Justifiable within plan tasks but
+executor should verify AI provider changes were intentional (not incidental edits).
+
+============================================================
+9. VERDICT
+============================================================
+Build [PASS] | Lint [FAIL - 15 auto-fixable formatting/import errors] | Tests [258 pass / 0 fail] | IaC [PASS] | Files [mostly clean / 2 notes]
+
+Issues requiring attention before merge:
+  1. LINT (LOW): 15 Biome format/import errors — run `cd backend-ts && pnpm biome check --write src tests`
+  2. SCOPE (MEDIUM): AI provider + frontend UI component changes are outside core migration scope.
+     Recommend F1/F4 to verify these were intentional plan artifacts.
+
+VERDICT: CONDITIONAL APPROVE
+  Approve if: (a) lint is fixed with `pnpm biome check --write`, and
+             (b) F4 scope review confirms AI provider and frontend UI changes are plan-justified.
+  No blocking type errors, no secrets, no runtime-active Cloudflare references, all tests pass.

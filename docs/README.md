@@ -10,18 +10,19 @@ This repository is a **public** prototype of **YUMMY** — an AI-powered multi-a
 
 ### Deployment (AWS)
 
-Start here (fastest path, no Docker needed on your machine):
+**Current recommended path** (ECS Fargate + RDS PostgreSQL, fully portable):
 
-- `aws/ROUTE53_DOMAIN.md`: register a domain in Route 53 + DNS fundamentals (beginner-friendly)
-- **`aws/APP_RUNNER_AMPLIFY.md`**: **recommended** — deploy backend on App Runner + frontend on Amplify Hosting + custom domains in Route 53
+- `aws/AWS_DEPLOYMENT_ECS_FARGATE.md`: full ECS Fargate + ALB + RDS PostgreSQL deploy with OpenTofu
+- `aws/CI_CD_GITHUB_ACTIONS.md`: GitHub Actions CI/CD pipeline (OIDC, no long-lived keys)
+- `aws/DECISIONS.md`: architecture decisions and scope guardrails
+- `aws/REMOTE_STATE_BOOTSTRAP.md`: OpenTofu S3 + DynamoDB remote state setup
 
-Advanced / later (when you outgrow App Runner):
+**Legacy** (preserved for reference only, not recommended for new deploys):
 
-- `aws/AWS_DEPLOYMENT_ECS_FARGATE.md`: full ECS Fargate + ALB split deploy (VPC, ECR, task definitions)
-- `aws/CI_CD_GITHUB_ACTIONS.md`: build and push container images from GitHub (for the ECS path)
-- `aws/TROUBLESHOOTING.md`: common AWS issues
+- `aws/APP_RUNNER_AMPLIFY.md`: legacy App Runner + Amplify path (AWS App Runner is no longer open to new customers)
+- `aws/ROUTE53_DOMAIN.md`: register a domain in Route 53 + DNS fundamentals
 
-The Docker artifacts in the repo (`docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `.github/workflows/docker-build.yml`) are kept for the advanced path and for local container runs. You do NOT need them for the recommended fast path above.
+For local development, use `docker compose up` (see `../README.md`).
 
 ### Architecture & roadmap
 

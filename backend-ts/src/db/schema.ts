@@ -14,7 +14,16 @@
  * (chat_history, agent_outputs, jira_backlog, logs, files[]).
  */
 import { sql } from 'drizzle-orm';
-import { bigint, boolean, doublePrecision, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  bigint,
+  boolean,
+  doublePrecision,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core';
 
 // ─── Sessions ────────────────────────────────────────────
 export const sessions = pgTable('sessions', {
@@ -35,10 +44,7 @@ export const sessions = pgTable('sessions', {
     .notNull()
     .$type<Record<string, unknown>>()
     .default(sql`'{}'::jsonb`),
-  jiraBacklog: jsonb('jira_backlog')
-    .notNull()
-    .$type<unknown[]>()
-    .default(sql`'[]'::jsonb`),
+  jiraBacklog: jsonb('jira_backlog').notNull().$type<unknown[]>().default(sql`'[]'::jsonb`),
   metrics: jsonb('metrics')
     .notNull()
     .$type<{ tokens: number }>()

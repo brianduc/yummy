@@ -1,0 +1,21 @@
+T9: Health Endpoint Verification (LIVE)
+Date: 2026-05-30
+
+Test 1 — Local backend with Postgres:
+Command: DATABASE_URL=postgres://yummy:yummy@localhost:5433/yummy_test pnpm start (background)
+curl -fsS http://localhost:8000/health
+Response: {"status":"ok","db":"ok"}
+Status: HTTP 200
+
+Test 2 — Docker compose backend:
+Command: curl -fsS http://localhost:8000/health (against running compose stack)
+Response: {"status":"ok","db":"ok"}
+Status: HTTP 200
+
+SSE Protocol Check (prior evidence task-9-sse-local.txt):
+Response lines:
+  data: {"t":"start","agent":"ba"}
+  data: {"t":"error","message":"GEMINI_API_KEY is not configured..."}
+Status: SSE headers and streaming protocol work correctly; error is expected in keyless env
+
+RESULT: PASS — /health returns {status:ok,db:ok}; SSE protocol confirmed

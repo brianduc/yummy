@@ -1,0 +1,68 @@
+F4 Scope Fidelity Check — AWS Non-Lock-In + Postgres Migration
+
+SUMMARY
+Tasks [13/15 compliant] | Contamination [3 issues] | Unaccounted [2 files] | VERDICT: REJECT
+
+AUDIT BASIS
+- Plan read: .sisyphus/plans/aws-non-lockin-postgres-migration.md
+- Required stat command run: GIT_MASTER=1 git diff HEAD~6 --stat -- ':!node_modules' ':!pnpm-lock.yaml' ':!package-lock.json'
+- Commit history command run: GIT_MASTER=1 git log --oneline
+- Additional full migration audit range used: HEAD~10..HEAD because git log shows 10 migration commits, while HEAD~6 only covers T10-T15 and omits T1-T9.
+- Temporary full diff snapshot used for scans: /var/folders/8z/hlbr69vs6d12ykmmxxll358c0000gn/T/opencode/yummy-migration-diff.patch
+- No tests/builds re-run; F3 owns execution QA.
+
+COMMIT FLOW
+Expected per plan Commit Strategy: 5 commits.
+Actual migration commits found: 10 commits.
+
+Actual commit mapping:
+1. 497af0b chore(migration): capture aws postgres baseline -> T1-T5 baseline, decisions, schema mapping, frontend runtime assessment, test strategy.
+2. 5b0d5d5 feat(db): migrate drizzle schema to postgres -> T6 pg schema/client/config plus repository DB API adaptation.
+3. 10c1a94 feat(db): add postgres migrations and data import -> T7 migrations/import scripts plus T9 Node runtime health pieces.
+4. 604af85 test(db): run integration tests on postgres -> T8 backend Postgres integration tests.
+5. d93c453 feat(frontend): add standalone aws container path -> T10 frontend standalone/container path.
+6. ebdf263 chore(cloudflare): remove default worker deployment path -> T11 Cloudflare tooling removal/gating.
+7. 86fa9ee feat(runtime): add local docker postgres parity -> T12 compose parity.
+8. fe088b2 chore(infra): add opentofu aws foundation -> T13 foundation IaC.
+9. 8a8b253 chore(infra): deploy ecs rds alb dev stack -> T14 ECS/RDS/ALB modules.
+10. b9a1e8d ci(aws): add deploy and smoke workflow -> T15 CI/CD and deployment docs.
+
+Commit-flow finding: task coverage exists, but actual 10 commits do not match the expected 5-commit flow in the plan/prompt.
+
+TASK COMPLIANCE MATRIX
+- T1-T5 baseline/design: COMPLIANT by scope; evidence/docs added for baseline, guardrails, schema mapping, runtime assessment, and test strategy.
+- T6 pg schema/client/config: COMPLIANT by scope; Drizzle pg-core/Postgres client added, package adds postgres only, schema uses snake_case columns.
+- T7+T9 migrations/runtime: PARTIAL. Postgres migrations and runtime health exist, but active routers still contain createDb(c.env?.DB) compatibility call sites even though createDb ignores the argument. This is not an active D1 dependency, but it conflicts with the cleanup wording around Worker c.env.DB removal.
+- T8 tests: COMPLIANT by scope; test setup and test imports updated for Postgres.
+- T10 frontend: COMPLIANT by scope; package build changed to next build, standalone output/Dockerfile added, Cloudflare deps removed.
+- T11 Cloudflare removal: PARTIAL. backend-ts/wrangler.jsonc and backend-ts/src/worker.ts are marked legacy, but frontend/wrangler.jsonc remains tracked with active-looking Worker config and no LEGACY header. frontend/open-next.config.ts and backend-ts/wrangler.jsonc comments incorrectly say App Runner/Amplify or App Runner instead of the selected ECS/Fargate path.
+- T12 compose: COMPLIANT by scope; docker-compose.yml covers postgres/backend/frontend and README documents Postgres compose.
+- T13 foundation IaC: COMPLIANT by scope; VPC/ECR/IAM/secrets/security modules added. DynamoDB appears only as OpenTofu remote-state locking, which is explicitly allowed by the plan exception.
+- T14 ECS/RDS/ALB: COMPLIANT by scope; ALB/ECS/RDS modules added. No Aurora/EKS/Redis/SQS/WAF resources found in infra.
+- T15 CI/CD: COMPLIANT by scope; deploy workflow and AWS docs added with OIDC/ECR/ECS/RDS/OpenTofu flow.
+
+FORBIDDEN EXTRAS SCAN
+- Aurora: no active infra resource found; appears in guardrail/docs only.
+- EKS: no active infra resource found; appears in guardrail/docs only.
+- Redis/ElastiCache: no active infra resource found; appears in guardrail/docs only.
+- SQS: no active infra resource found; appears in guardrail/docs only.
+- WAF: no active infra resource found; appears in guardrail/docs only.
+- Multi-region: no active implementation found; appears in guardrail/docs only.
+- DynamoDB: found only as infra/dev/terraform.tf remote-state lock table (allowed exception, not application datastore).
+- Cloudflare/Wrangler/OpenNext: removed from active package scripts/deps, but legacy config leftovers remain; frontend/wrangler.jsonc lacks legacy gating.
+- Route refactors: only /health shape changed as expected. world router/client changes are tied to Postgres jsonb/timestamp row shape adaptation; no broad route restructure found.
+- Schema casing: snake_case preserved in API fields and DB column names; no auto-camelCase conversion found.
+- Dependency major upgrades: none observed in backend-ts/package.json or frontend/package.json. Backend adds postgres ^3.4.7 and removes @cloudflare/workers-types/wrangler; frontend removes @opennextjs/cloudflare/wrangler while preserving existing major versions.
+- Business logic edits: no broad business-logic refactor found beyond DB driver/json/timestamp adaptation.
+
+CONTAMINATION ISSUES
+1. Commit-flow contamination: actual migration flow is 10 commits, not the expected 5 commits.
+2. Cloudflare cleanup contamination: frontend/wrangler.jsonc remains tracked and unmarked as LEGACY while pointing at .open-next/worker.js and ASSETS.
+3. Legacy/target architecture wording contamination: backend-ts/wrangler.jsonc and frontend/open-next.config.ts legacy comments reference App Runner/Amplify/App Runner as active AWS target, conflicting with the selected ECS Fargate target.
+
+UNACCOUNTED FILES
+1. .sisyphus/plans/aws-non-lockin-postgres-migration.md — plan file is present in the migration diff even though Work_Context says plan files are read-only and orchestrator-managed.
+2. .sisyphus/boulder.json — orchestration/session metadata changes are present across commits but are not an implementation deliverable for T1-T15.
+
+VERDICT
+REJECT for scope fidelity until the unaccounted plan/metadata diff is addressed or explicitly accepted by the orchestrator, the frontend Cloudflare wrangler config is removed or clearly legacy-gated, legacy comments are corrected to ECS/Fargate, and the commit-flow mismatch is accepted or reconciled.

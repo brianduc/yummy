@@ -1,0 +1,19 @@
+T1: Baseline Evidence Files Check
+Date: 2026-05-30
+Method: File existence + non-zero size check
+
+Files verified (12/12 present and non-empty):
+✅ task-1-baseline.txt          (1554 bytes)
+✅ task-1-backend-test-baseline.txt  (562 bytes)
+✅ task-1-frontend-test-baseline.txt (2331 bytes)
+✅ task-7-pg-migrations.txt     (798 bytes)
+✅ task-8-backend-postgres-tests.txt (370 bytes)
+✅ task-9-health-ok.json        (25 bytes)
+✅ task-10-next-build.txt       (1063 bytes)
+✅ task-11-package-cloudflare-search.txt (880 bytes)
+✅ task-12-compose-health.txt   (1988 bytes)
+✅ task-13-tofu-validate.txt    (934 bytes)
+✅ task-14-aws-health.txt       (1525 bytes)
+✅ task-15-actions-summary.txt  (2197 bytes)
+
+RESULT: PASS — 12/12 baseline files exist with real content

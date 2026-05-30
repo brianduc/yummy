@@ -1,3 +1,4 @@
+// LEGACY: Cloudflare Workers deployment config. Not used in AWS ECS Fargate path. Retained for reference.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",

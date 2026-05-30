@@ -1,0 +1,26 @@
+T13+T14: IaC Validate + Module Coverage (LIVE)
+Date: 2026-05-30
+
+T13 — terraform validate:
+Command: cd infra/dev && terraform init -backend=false && terraform validate
+Providers: hashicorp/aws v5.100.0, hashicorp/random v3.9.0
+Result: "Success! The configuration is valid."
+
+Note: tofu binary not available on this machine; terraform (compatible) used instead.
+Prior evidence (task-13-tofu-validate.txt) recorded same result.
+
+T14 — Dev stack modules (infra/dev/main.tf):
+module "vpc"       ✅ - VPC, subnets, availability zones
+module "ecr"       ✅ - Container registry for backend and frontend images
+module "secrets"   ✅ - Secrets Manager (DATABASE_URL injection)
+module "security"  ✅ - Security groups (ALB, ECS tasks, RDS)
+module "rds"       ✅ - RDS PostgreSQL 16, multi-AZ, private subnets
+module "iam"       ✅ - ECS task roles, OIDC GitHub Actions role
+module "alb"       ✅ - ALB with idle_timeout=4000s for SSE
+module "ecs"       ✅ - Fargate services (backend + frontend), CloudWatch logs
+
+ALB SSE timeout: alb_idle_timeout_seconds default 4000 — covers long-lived SSE connections
+RDS: engine=postgres, version=16, publicly_accessible=false, private subnets only
+ECS: no public IP, Fargate, non-root containers
+
+RESULT: PASS — terraform validate succeeds; 8 modules cover complete AWS dev stack

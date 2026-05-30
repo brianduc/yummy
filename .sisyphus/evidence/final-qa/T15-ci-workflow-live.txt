@@ -1,0 +1,23 @@
+T15: CI Workflow YAML Validation (LIVE)
+Date: 2026-05-30
+File: .github/workflows/deploy-aws.yml (355 lines)
+
+Structural checks:
+- No tabs (YAML rule):   PASS
+- Has "on:" trigger:     PASS
+- Has "jobs:" section:   PASS
+
+Jobs found (6/6):
+  backend-test:   postgres:16-alpine service, pnpm test, DATABASE_URL=postgres://yummy:yummy@localhost:5432/yummy_test
+  frontend-test:  npm ci, npm test, npm run build
+  docker-build:   needs[backend-test, frontend-test], push to main/master, ECR via OIDC
+  tofu-plan:      needs[backend-test, frontend-test], setup-opentofu@v1 (1.9.0), tofu validate + plan
+  deploy-dev:     needs[docker-build, tofu-plan], environment: dev (manual approval gate), tofu apply
+  smoke-dev:      needs[deploy-dev], curl /health → {"status":"ok","db":"ok"}, curl / → 200, SSE probe
+
+Security:
+- OIDC-based AWS auth (no long-lived keys in GitHub Secrets)
+- Role ARN sourced from vars.GITHUB_ACTIONS_ROLE_ARN (set post-tofu-apply)
+- No AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in workflow
+
+RESULT: PASS — valid YAML, 6 jobs, OIDC auth, complete CI/CD pipeline

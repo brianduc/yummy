@@ -46,7 +46,11 @@ interface SessionLike {
   chatHistory: Array<{ role: string; text: string; timestamp?: string; trace?: unknown }>;
 }
 
-function chatMessage(role: string, text: string, trace?: unknown): SessionLike['chatHistory'][number] {
+function chatMessage(
+  role: string,
+  text: string,
+  trace?: unknown,
+): SessionLike['chatHistory'][number] {
   const message: SessionLike['chatHistory'][number] = { role, text, timestamp: nowIso() };
   if (trace !== undefined) message.trace = trace;
   return message;

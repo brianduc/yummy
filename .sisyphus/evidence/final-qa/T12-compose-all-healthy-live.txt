@@ -1,0 +1,19 @@
+T12: Docker Compose All 3 Services Healthy (LIVE)
+Date: 2026-05-30
+Command: docker compose up -d --build && docker compose ps
+
+Services:
+NAME                        IMAGE                     STATUS                    PORTS
+yummy-monorepo-backend-1    yummy-monorepo-backend    Up 18 seconds (healthy)   0.0.0.0:8000->8000/tcp
+yummy-monorepo-frontend-1   yummy-monorepo-frontend   Up 12 seconds (healthy)   0.0.0.0:3000->3000/tcp
+yummy-monorepo-postgres-1   postgres:16-alpine        Up 24 seconds (healthy)   0.0.0.0:5433->5432/tcp
+
+Verifications:
+curl -fsS http://localhost:8000/health → {"status":"ok","db":"ok"}  ✅
+curl -fsS -o /dev/null -w "%{http_code}" http://localhost:3000/ → 200  ✅
+
+Backend image: non-root user (hono:nodejs, uid 1001)
+Frontend image: non-root user (nextjs:nodejs, uid 1001)
+Postgres: credentials yummy/yummy, internal port 5432 exposed on host 5433
+
+RESULT: PASS — all 3 services healthy; backend DB-connected; frontend serving HTML

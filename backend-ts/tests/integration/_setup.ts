@@ -5,11 +5,7 @@ import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
 
 import { closePostgresClient, createDb, getMigratorDb } from '../../src/db/client.js';
 import { createWorldServer, updateWorldConfig } from '../../src/db/repositories/world.repo.js';
-import type {
-  WorldConfigInsert,
-  WorldServerInsert,
-  WorldServerRow,
-} from '../../src/db/schema.js';
+import type { WorldConfigInsert, WorldServerInsert, WorldServerRow } from '../../src/db/schema.js';
 
 const db = createDb();
 

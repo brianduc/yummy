@@ -1,0 +1,18 @@
+T10: Frontend Build + Standalone Output (LIVE)
+Date: 2026-05-30
+Command: npm run build (Next.js 16.2.6 Turbopack)
+
+Build output:
+✓ Compiled successfully in 2.5s
+✓ Generating static pages (3/3)
+Exit code: 0
+
+Routes: 15 routes (2 static, 13 dynamic ƒ)
+
+Standalone directory: frontend/.next/standalone/
+Contents: node_modules/, package.json, server.js
+Status: EXISTS — OCI container copies this directly
+
+Frontend tests: 30 files passed, 163 tests passed (3.14s)
+
+RESULT: PASS — production build succeeds, standalone output present for Docker

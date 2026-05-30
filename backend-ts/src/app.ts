@@ -11,7 +11,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 
 import { hydrateRuntimeConfig } from './config/runtime.js';
-import { type Bindings, type Db, createDb } from './db/client.js';
+import { type Bindings, createDb, type Db } from './db/client.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { askRouter } from './routers/ask.router.js';
 import { configRouter } from './routers/config.router.js';

@@ -4,6 +4,7 @@ import { createApp } from '../../src/app.js';
 import { createDb } from '../../src/db/client.js';
 
 const db = createDb();
+
 import { logsRepo } from '../../src/db/repositories/logs.repo.js';
 
 const app = createApp();

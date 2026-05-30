@@ -1,0 +1,16 @@
+T8: Backend Tests Against Postgres (LIVE)
+Date: 2026-05-30
+Command: DATABASE_URL=postgres://yummy:yummy@localhost:5433/yummy_test pnpm test
+
+Result:
+ Test Files  12 passed (12)
+      Tests  95 passed (95)
+   Start at  17:25:49
+   Duration  7.20s
+
+Edge Case — Bad DB URL:
+Command: DATABASE_URL=postgres://bad:creds@localhost:5433/nonexistent pnpm test
+Result: 9 suites FAIL — "PostgresError: password authentication failed for user bad"
+Confirms: Tests are genuinely DB-connected, not silently skipping
+
+RESULT: PASS — 95/95 tests pass against Postgres; bad-creds correctly rejects

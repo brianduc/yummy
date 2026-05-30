@@ -5,6 +5,7 @@ import { runtimeConfig } from '../../src/config/runtime.js';
 import { createDb } from '../../src/db/client.js';
 
 const db = createDb();
+
 import { providerConfig } from '../../src/db/schema.js';
 
 const app = createApp();

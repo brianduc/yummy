@@ -4,6 +4,7 @@ import { createApp } from '../../src/app.js';
 import { createDb } from '../../src/db/client.js';
 
 const db = createDb();
+
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { sessionsRepo } from '../../src/db/repositories/sessions.repo.js';
@@ -115,9 +116,9 @@ describe('ask integration', () => {
     expect(hist.chat_history[1]?.text).toBe('The answer is 42.');
     expect(hist.chat_history[0]?.timestamp).toBeDefined();
     expect(hist.chat_history[1]?.timestamp).toBeDefined();
-    expect(hist.chat_history[0]?.timestamp?.localeCompare(hist.chat_history[1]?.timestamp ?? '')).toBeLessThanOrEqual(
-      0,
-    );
+    expect(
+      hist.chat_history[0]?.timestamp?.localeCompare(hist.chat_history[1]?.timestamp ?? ''),
+    ).toBeLessThanOrEqual(0);
   });
 
   it('GET /sessions/{id} returns chat history ordered by timestamp', async () => {

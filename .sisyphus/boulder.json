@@ -17,7 +17,13 @@
     "ses_187ad09b3ffetGfJkN6CiD2NdE",
     "ses_187a8e96effeoC1u0WcLkHAmGU",
     "ses_187a3000afferZ6WhJTpZQpor3",
-    "ses_1879ad89effea218NJYzwkpFuS"
+    "ses_1879ad89effea218NJYzwkpFuS",
+    "ses_187964dd1ffepc3LzINRgsT7L6",
+    "ses_187962943ffexqRkgXY5b16EwX",
+    "ses_187960178ffeDrE6FAg18a6JIs",
+    "ses_18795dfffffeNTnNkzyJI1Pjbj",
+    "ses_1878ebc80ffeYpPsyeDmOHYlum",
+    "ses_1878eabf0ffeB4pjbnBEOIxDs4"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -35,7 +41,13 @@
     "ses_187ad09b3ffetGfJkN6CiD2NdE": "appended",
     "ses_187a8e96effeoC1u0WcLkHAmGU": "appended",
     "ses_187a3000afferZ6WhJTpZQpor3": "appended",
-    "ses_1879ad89effea218NJYzwkpFuS": "appended"
+    "ses_1879ad89effea218NJYzwkpFuS": "appended",
+    "ses_187964dd1ffepc3LzINRgsT7L6": "appended",
+    "ses_187962943ffexqRkgXY5b16EwX": "appended",
+    "ses_187960178ffeDrE6FAg18a6JIs": "appended",
+    "ses_18795dfffffeNTnNkzyJI1Pjbj": "appended",
+    "ses_1878ebc80ffeYpPsyeDmOHYlum": "appended",
+    "ses_1878eabf0ffeB4pjbnBEOIxDs4": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -129,6 +141,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-05-30T10:23:41.035Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_1878eabf0ffeB4pjbnBEOIxDs4",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-30T10:32:33.673Z"
     }
   }
 }

@@ -1,0 +1,18 @@
+T11: No Active Cloudflare Scripts (LIVE)
+Date: 2026-05-30
+Command: grep -n "wrangler|opennextjs-cloudflare|@opennextjs/cloudflare" frontend/package.json backend-ts/package.json | grep -v ":legacy"
+
+Result: 0 lines (no active Cloudflare scripts)
+
+Remaining Cloudflare references (all :legacy-suffixed, excluded from AWS path):
+backend-ts/package.json:18:    "deploy:legacy": "wrangler deploy",
+backend-ts/package.json:19:    "dev:worker:legacy": "wrangler dev",
+backend-ts/package.json:20:    "db:migrate:local:legacy": "wrangler d1 migrations apply yummy-db --local",
+backend-ts/package.json:21:    "db:migrate:remote:legacy": "wrangler d1 migrations apply yummy-db --remote"
+frontend/package.json: NO MATCHES
+
+Artifact note: frontend/.open-next/cloudflare/ exists as local residue from prior run.
+Confirmed GITIGNORED at root .gitignore line 18: "frontend/.open-next/"
+Not committed, not in any Dockerfile COPY path.
+
+RESULT: PASS — no active Cloudflare scripts; only :legacy-suffixed historical references remain

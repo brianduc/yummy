@@ -19,9 +19,7 @@ export const repoRepo = {
     if (existing) {
       await db.update(repoInfo).set(info).where(eq(repoInfo.id, 1));
     } else {
-      await db
-        .insert(repoInfo)
-        .values({ id: 1, ...info });
+      await db.insert(repoInfo).values({ id: 1, ...info });
     }
     return { id: 1, ...info };
   },

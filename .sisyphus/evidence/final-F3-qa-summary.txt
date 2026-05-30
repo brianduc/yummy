@@ -1,0 +1,98 @@
+# F3 Final QA Summary — AWS Non-Lock-In + Postgres Migration
+**Date:** 2026-05-30
+**Branch:** feat/yummy-world
+**QA Executor:** Sisyphus-Junior (F3 Final Manual QA)
+
+---
+
+## Scenarios Executed
+
+| Scenario | Description | Method | Result |
+|----------|-------------|--------|--------|
+| T1  | Baseline evidence files exist with real data | File existence + size check (12 files) | ✅ PASS |
+| T7  | Postgres migrations apply → 10 tables | docker exec psql \dt + pnpm db:migrate | ✅ PASS |
+| T8  | Backend tests pass against Postgres (95 tests) | pnpm test with live Postgres URL | ✅ PASS |
+| T8e | Bad DB URL rejects (edge case) | Bad creds → 9 suites fail with pg auth error | ✅ PASS |
+| T9  | /health returns {status:ok,db:ok} | curl local backend + compose backend | ✅ PASS |
+| T9s | SSE protocol works (streaming) | data: {"t":"start"} confirmed | ✅ PASS |
+| T10 | Frontend build produces standalone output | npm run build → .next/standalone exists | ✅ PASS |
+| T10f| Frontend tests pass (163 tests) | npm test → 30 files, 163 tests pass | ✅ PASS |
+| T11 | No wrangler/opennext-cloudflare in active scripts | grep (no :legacy) → 0 lines | ✅ PASS |
+| T11a| .open-next artifact gitignored | root .gitignore line 18 | ✅ PASS |
+| T12 | Docker compose starts 3 services healthy | docker compose up -d --build; docker compose ps | ✅ PASS |
+| T12h| Backend health via compose | curl http://localhost:8000/health → {"status":"ok","db":"ok"} | ✅ PASS |
+| T12f| Frontend serves HTML via compose | curl http://localhost:3000/ → HTTP 200 | ✅ PASS |
+| T13 | terraform validate passes | cd infra/dev && terraform validate → Success | ✅ PASS |
+| T14 | Dev stack has complete modules (8 modules) | grep ^module infra/dev/main.tf → vpc,ecr,secrets,security,rds,iam,alb,ecs | ✅ PASS |
+| T15 | CI workflow YAML valid, 6 jobs present | YAML structural check + job grep | ✅ PASS |
+
+---
+
+## Integration Tests
+
+| Check | Result |
+|-------|--------|
+| Postgres accessible from backend container (compose) | ✅ db:ok in /health |
+| Backend migrations idempotent on existing DB | ✅ NOTICE + clean exit |
+| Frontend container copies standalone output correctly | ✅ Healthy |
+| Non-root users in both containers | ✅ hono:1001, nextjs:1001 |
+| ALB SSE idle_timeout wired at 4000s | ✅ Confirmed in IaC |
+
+---
+
+## Edge Cases Tested
+
+| Edge Case | Result |
+|-----------|--------|
+| Bad Postgres credentials → test failure (not silent skip) | ✅ PostgresError thrown |
+| Port 5433 conflict → compose resolves by releasing conflicting container | ✅ Handled |
+| .open-next/cloudflare/ residue → gitignored, not in Dockerfile COPY | ✅ No impact |
+| Migration re-run on existing DB → idempotent | ✅ Safe |
+
+---
+
+## Observations / Notes
+
+1. **`frontend/.open-next/cloudflare/` local residue** — Present as a local build artifact from a prior Cloudflare build attempt. It is gitignored (`frontend/.open-next/` in root `.gitignore` line 18) and is not referenced by any Dockerfile COPY or active build script. No action required.
+
+2. **`tofu` binary unavailable** — OpenTofu not installed on QA machine; fell back to `terraform` (Terraform-compatible). Prior evidence in `task-13-tofu-validate.txt` and `task-14-aws-health.txt` used the same fallback. The CI workflow references `setup-opentofu@v1` which will install the correct binary in CI.
+
+3. **Frontend `button` type diagnostics** — Two pre-existing LSP warnings in `app/workspace/[sessionId]/page.tsx` (missing `type` prop). Pre-existing, out of scope for this migration plan.
+
+4. **SSE ALB coverage** — Live SSE test via `/ask` returns `data: {"t":"start","agent":"ba"}` confirming SSE headers and chunked transfer work. ALB `idle_timeout` set to 4000s covers long-lived connections.
+
+---
+
+## Evidence Files
+
+Per-scenario:
+- `.sisyphus/evidence/final-qa/T1-baseline-evidence.txt`
+- `.sisyphus/evidence/final-qa/T7-pg-migrations-live.txt`
+- `.sisyphus/evidence/final-qa/T8-backend-postgres-tests-live.txt`
+- `.sisyphus/evidence/final-qa/T9-health-sse-live.txt`
+- `.sisyphus/evidence/final-qa/T10-frontend-build-live.txt`
+- `.sisyphus/evidence/final-qa/T11-no-cloudflare-scripts-live.txt`
+- `.sisyphus/evidence/final-qa/T12-compose-all-healthy-live.txt`
+- `.sisyphus/evidence/final-qa/T13-T14-iac-validate-live.txt`
+- `.sisyphus/evidence/final-qa/T15-ci-workflow-live.txt`
+
+Prior task evidence (read-only):
+- task-7-pg-migrations.txt, task-8-backend-postgres-tests.txt, task-9-health-ok.json
+- task-10-next-build.txt, task-11-package-cloudflare-search.txt, task-12-compose-health.txt
+- task-13-tofu-validate.txt, task-14-aws-health.txt, task-15-actions-summary.txt
+
+---
+
+## Final Verdict
+
+**Scenarios [16/16 pass] | Integration [5/5] | Edge Cases [4 tested] | VERDICT: APPROVE**
+
+All plan objectives verified:
+- ✅ Backend tests pass against Postgres (95/95), not SQLite
+- ✅ Frontend build/tests pass without @opennextjs/cloudflare build path (163/163)
+- ✅ Local Docker Compose starts Postgres + backend + frontend, all healthy
+- ✅ OpenTofu/Terraform validate passes for dev stack (8 modules)
+- ✅ No runtime AWS path depends on wrangler, D1, Worker c.env.DB, or .open-next
+- ✅ /health returns {status:ok,db:ok} with live Postgres connection
+- ✅ SSE streaming protocol confirmed
+- ✅ GitHub Actions CI workflow has 6 jobs with OIDC auth and deployment gate

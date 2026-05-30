@@ -44,3 +44,8 @@ T13 graph page: the route page stays thin and renders `NodeGraph` directly from 
 - frontend/app/workspace/[sessionId]/layout.tsx no longer owns active tab/activity state; workspace navigation is route-driven.
 - WorkspaceLayoutProps should not require active navigation props when WorkspaceLayout only renders AppSidebar, AppHeader, route children, and CopilotSheet.
 - Verification: layout diagnostics clean, WorkspaceLayout diagnostics clean, and npm run build in frontend/ passed with all workspace routes listed.
+
+## 2026-05-30 — Backend Biome autofix
+- `pnpm biome check --write src tests` in `backend-ts/` fixed 14 files with no logic changes.
+- Follow-up verification: `pnpm build` passed; `pnpm biome check src tests` reported no fixes needed.
+- `pnpm test` currently fails in existing DB setup because `DATABASE_URL` is not a valid URL for the Postgres client (`Invalid URL` from `postgres.js`), so the failure is environmental rather than formatter-related.

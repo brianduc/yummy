@@ -4,6 +4,7 @@ import { createApp } from '../../src/app.js';
 import { createDb } from '../../src/db/client.js';
 
 const db = createDb();
+
 import { kbRepo } from '../../src/db/repositories/kb.repo.js';
 import { repoRepo } from '../../src/db/repositories/repo.repo.js';
 import { streamAI } from '../../src/services/ai/dispatcher.js';

@@ -1,0 +1,20 @@
+T7: Postgres Migration Verification (LIVE)
+Date: 2026-05-30
+Command: docker exec yummy-test-pg psql -U yummy -d yummy_test -c "\dt"
+         DATABASE_URL=postgres://yummy:yummy@localhost:5433/yummy_test pnpm db:migrate
+
+Tables found (10/10):
+ public | kb_insights     | table | yummy
+ public | kb_meta         | table | yummy
+ public | kb_tree         | table | yummy
+ public | provider_config | table | yummy
+ public | repo_info       | table | yummy
+ public | request_logs    | table | yummy
+ public | scan_status     | table | yummy
+ public | sessions        | table | yummy
+ public | world_config    | table | yummy
+ public | world_servers   | table | yummy
+
+Migration re-run output: "Applied Postgres migrations" (idempotent — NOTICEs for already-existing schema, clean exit)
+
+RESULT: PASS — 10 tables present, migration idempotent
