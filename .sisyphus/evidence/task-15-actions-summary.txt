@@ -1,0 +1,55 @@
+Task 15 — GitHub Actions CI/CD workflow job summary
+Generated: 2026-05-30
+
+File: .github/workflows/deploy-aws.yml
+
+Jobs defined:
+  1. backend-test
+     - runs-on: ubuntu-latest
+     - service: postgres:16-alpine (yummy/yummy, port 5432)
+     - steps: setup-node@v4, pnpm/action-setup@v4, pnpm install, pnpm db:migrate, pnpm test
+     - env: DATABASE_URL=postgres://yummy:yummy@localhost:5432/yummy_test
+
+  2. frontend-test
+     - runs-on: ubuntu-latest
+     - steps: setup-node@v4, npm ci, npm test, npm run build
+     - env: NEXT_PUBLIC_API_URL baked via vars.NEXT_PUBLIC_API_URL
+
+  3. docker-build
+     - needs: [backend-test, frontend-test]
+     - trigger: push to main/master only (not PRs)
+     - steps: configure-aws-credentials (OIDC), ecr-login, build-push-action (backend), build-push-action (frontend)
+     - tags: <sha> and latest
+     - outputs: backend_image, frontend_image
+
+  4. tofu-plan
+     - needs: [backend-test, frontend-test]
+     - trigger: push to main/master + PRs
+     - steps: setup-opentofu@v1 (1.9.0), configure-aws-credentials (OIDC), tofu init, tofu validate, tofu plan
+     - vars passed: backend_image_tag=${{ github.sha }}, frontend_image_tag=${{ github.sha }}
+
+  5. deploy-dev
+     - needs: [docker-build, tofu-plan]
+     - trigger: push to main/master only
+     - environment: dev (requires manual approval via GitHub Environment required reviewer)
+     - steps: setup-opentofu, configure-aws-credentials (OIDC), tofu init, tofu apply -auto-approve, aws ecs wait services-stable
+
+  6. smoke-dev
+     - needs: deploy-dev
+     - trigger: push to main/master only
+     - checks:
+         * Backend health: curl /health → {"status":"ok","db":"ok"} (10 retries)
+         * Frontend: curl / → HTTP 200
+         * SSE probe: continue-on-error: true
+
+OIDC: configure-aws-credentials@v4 with role-to-assume=${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+No AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY stored in GitHub Secrets.
+
+GitHub repository variables required:
+  - AWS_REGION
+  - AWS_ACCOUNT_ID
+  - GITHUB_ACTIONS_ROLE_ARN  (from tofu output github_actions_role_arn)
+  - NEXT_PUBLIC_API_URL
+
+GitHub Environments required:
+  - dev  (with required reviewer for deploy gate)

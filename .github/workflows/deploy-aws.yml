@@ -1,0 +1,354 @@
+# YUMMY — CI/CD pipeline: test → build → push ECR → tofu plan → deploy dev → smoke
+#
+# Jobs:
+#   backend-test    — Vitest against Postgres 16 service container
+#   frontend-test   — Vitest + next build
+#   docker-build    — Build & push both images to ECR (tagged with git SHA)
+#   tofu-plan       — OpenTofu init + validate + plan (dev workspace)
+#   deploy-dev      — tofu apply -auto-approve (main branch only, after manual approval)
+#   smoke-dev       — curl ALB health + DB status after deploy
+#
+# Prerequisites (GitHub repository settings):
+#   Variables  : AWS_REGION, AWS_ACCOUNT_ID, NEXT_PUBLIC_API_URL (e.g. https://api.yourdomain.com)
+#   Secrets    : (none — OIDC replaces long-lived keys)
+#   Environments: "dev" environment with a required reviewer for the deploy-dev job
+#
+# OIDC: configure-aws-credentials uses role-to-assume; no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
+# The role ARN is exposed by tofu output github_actions_role_arn. Add it as a repository variable
+# named GITHUB_ACTIONS_ROLE_ARN after the first tofu apply.
+
+name: Deploy — AWS (dev)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # required for OIDC token
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-southeast-1' }}
+  IMAGE_TAG: ${{ github.sha }}
+
+# ─────────────────────────────────────────────────────────────
+# 1. Backend tests (Postgres service container)
+# ─────────────────────────────────────────────────────────────
+jobs:
+  backend-test:
+    name: Backend tests (Postgres)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: yummy
+          POSTGRES_PASSWORD: yummy
+          POSTGRES_DB: yummy_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U yummy -d yummy_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install backend dependencies
+        working-directory: backend-ts
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        working-directory: backend-ts
+        env:
+          DATABASE_URL: postgres://yummy:yummy@localhost:5432/yummy_test
+        run: pnpm db:migrate
+
+      - name: Run tests
+        working-directory: backend-ts
+        env:
+          DATABASE_URL: postgres://yummy:yummy@localhost:5432/yummy_test
+        run: pnpm test
+
+# ─────────────────────────────────────────────────────────────
+# 2. Frontend tests + build validation
+# ─────────────────────────────────────────────────────────────
+  frontend-test:
+    name: Frontend tests + build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build (validates Next.js output)
+        working-directory: frontend
+        env:
+          # NEXT_PUBLIC_API_URL is baked at build time — use placeholder for CI build check.
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+        run: npm run build
+
+# ─────────────────────────────────────────────────────────────
+# 3. Build Docker images and push to ECR
+#    Runs only on main/master push (not on PRs).
+# ─────────────────────────────────────────────────────────────
+  docker-build:
+    name: Build & push Docker images
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    outputs:
+      backend_image: ${{ steps.push.outputs.backend_image }}
+      frontend_image: ${{ steps.push.outputs.frontend_image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Resolve ECR registry
+        id: registry
+        run: echo "registry=${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend-ts
+          file: backend-ts/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.registry.outputs.registry }}/yummy-backend:${{ env.IMAGE_TAG }}
+            ${{ steps.registry.outputs.registry }}/yummy-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+          tags: |
+            ${{ steps.registry.outputs.registry }}/yummy-frontend:${{ env.IMAGE_TAG }}
+            ${{ steps.registry.outputs.registry }}/yummy-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Output image URIs
+        id: push
+        run: |
+          echo "backend_image=${{ steps.registry.outputs.registry }}/yummy-backend:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${{ steps.registry.outputs.registry }}/yummy-frontend:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
+
+# ─────────────────────────────────────────────────────────────
+# 4. OpenTofu plan (dev workspace)
+#    Runs on push to main and on PRs that touch infra/.
+# ─────────────────────────────────────────────────────────────
+  tofu-plan:
+    name: OpenTofu plan (dev)
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: >
+      github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') ||
+      github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: '1.9.0'
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: tofu init
+        working-directory: infra/dev
+        run: tofu init
+
+      - name: tofu validate
+        working-directory: infra/dev
+        run: tofu validate
+
+      - name: tofu plan
+        working-directory: infra/dev
+        run: |
+          tofu plan \
+            -var="backend_image_tag=${{ env.IMAGE_TAG }}" \
+            -var="frontend_image_tag=${{ env.IMAGE_TAG }}" \
+            -out=tfplan
+        env:
+          # Pass NEXT_PUBLIC_API_URL as a tofu variable if the module consumes it.
+          TF_VAR_next_public_api_url: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+
+# ─────────────────────────────────────────────────────────────
+# 5. Deploy to dev (main branch only — requires environment approval)
+# ─────────────────────────────────────────────────────────────
+  deploy-dev:
+    name: Deploy to dev
+    runs-on: ubuntu-latest
+    needs: [docker-build, tofu-plan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment: dev   # GitHub Environment with required reviewer(s)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: '1.9.0'
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: tofu init
+        working-directory: infra/dev
+        run: tofu init
+
+      - name: tofu apply
+        working-directory: infra/dev
+        run: |
+          tofu apply -auto-approve \
+            -var="backend_image_tag=${{ env.IMAGE_TAG }}" \
+            -var="frontend_image_tag=${{ env.IMAGE_TAG }}"
+        env:
+          TF_VAR_next_public_api_url: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+
+      - name: Capture ALB DNS name
+        id: alb
+        working-directory: infra/dev
+        run: echo "dns=$(tofu output -raw alb_dns_name)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for ECS services to stabilise
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$(tofu -chdir=infra/dev output -raw ecs_cluster_name)" \
+            --services \
+              "$(tofu -chdir=infra/dev output -raw backend_ecs_service_name)" \
+              "$(tofu -chdir=infra/dev output -raw frontend_ecs_service_name)"
+
+# ─────────────────────────────────────────────────────────────
+# 6. Smoke tests against the live dev environment
+# ─────────────────────────────────────────────────────────────
+  smoke-dev:
+    name: Smoke tests (dev)
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve ALB DNS
+        id: alb
+        working-directory: infra/dev
+        run: |
+          pip install --quiet opentofu 2>/dev/null || true
+          # Install tofu
+          curl -sSL https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.zip -o /tmp/tofu.zip
+          unzip -q /tmp/tofu.zip -d /usr/local/bin/
+          tofu init -input=false
+          echo "dns=$(tofu output -raw alb_dns_name)" >> "$GITHUB_OUTPUT"
+
+      - name: Backend health check
+        run: |
+          ALB_DNS="${{ steps.alb.outputs.dns }}"
+          echo "Checking http://${ALB_DNS}/health ..."
+          for i in $(seq 1 10); do
+            STATUS=$(curl -fsS --max-time 10 "http://${ALB_DNS}/health" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status',''))" 2>/dev/null || echo "")
+            DB_STATUS=$(curl -fsS --max-time 10 "http://${ALB_DNS}/health" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('db',''))" 2>/dev/null || echo "")
+            echo "Attempt ${i}: status=${STATUS} db=${DB_STATUS}"
+            if [ "$STATUS" = "ok" ] && [ "$DB_STATUS" = "ok" ]; then
+              echo "Health check passed."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "ERROR: Backend health check failed after 10 attempts."
+          exit 1
+
+      - name: Frontend reachability check
+        run: |
+          ALB_DNS="${{ steps.alb.outputs.dns }}"
+          echo "Checking http://${ALB_DNS}/ ..."
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "http://${ALB_DNS}/")
+          echo "HTTP status: ${HTTP_CODE}"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Frontend returned HTTP ${HTTP_CODE}."
+            exit 1
+          fi
+          echo "Frontend reachability check passed."
+
+      - name: SSE endpoint reachability (optional — non-fatal)
+        run: |
+          ALB_DNS="${{ steps.alb.outputs.dns }}"
+          echo "Checking SSE endpoint (soft check — non-fatal)..."
+          # Just verify the endpoint returns a response quickly; full SSE stream not required in smoke.
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" --max-time 5 \
+            -H "Accept: text/event-stream" \
+            "http://${ALB_DNS}/health" || echo "000")
+          echo "SSE probe HTTP status: ${HTTP_CODE}"
+        continue-on-error: true

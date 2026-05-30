@@ -1,0 +1,23 @@
+Task 15 — Docs coverage check
+Generated: 2026-05-30
+
+Files checked:
+  - docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md
+  - docs/aws/CI_CD_GITHUB_ACTIONS.md
+
+Required topic coverage:
+
+Topic                          | File                          | Match count
+-------------------------------|-------------------------------|------------
+GitHub OIDC / OIDC             | CI_CD_GITHUB_ACTIONS.md       | 10
+tofu init / tofu plan          | AWS_DEPLOYMENT_ECS_FARGATE.md | 5
+ECR                            | AWS_DEPLOYMENT_ECS_FARGATE.md | 12
+ECS Fargate                    | AWS_DEPLOYMENT_ECS_FARGATE.md | 5
+RDS PostgreSQL / RDS           | AWS_DEPLOYMENT_ECS_FARGATE.md | 12
+rollback / Rollback            | AWS_DEPLOYMENT_ECS_FARGATE.md | 1 (section)
+
+Legacy reference:
+  AWS_DEPLOYMENT_ECS_FARGATE.md  — contains "Legacy reference" section noting APP_RUNNER_AMPLIFY.md is legacy
+  CI_CD_GITHUB_ACTIONS.md        — contains "Legacy note" callout at top noting APP_RUNNER_AMPLIFY.md is legacy
+
+All required topics covered. PASS.

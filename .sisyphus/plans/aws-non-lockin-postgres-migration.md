@@ -1114,7 +1114,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `infra/**`, ECS/RDS docs
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 15. GitHub Actions CI/CD and deployment documentation
+- [x] 15. GitHub Actions CI/CD and deployment documentation
 
   **What to do**:
   - Add CI workflow for backend tests/build, frontend tests/build, Docker image builds, OpenTofu validate/plan, and dev deployment.

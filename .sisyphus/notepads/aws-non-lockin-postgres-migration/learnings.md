@@ -244,3 +244,34 @@ No AWS access keys, secret keys, 12-digit account IDs, or hardcoded AZ names in 
 - Required `/api/*` backend listener rule is present. Because the current Hono backend routes are mounted at root (`/ask`, `/sdlc`, `/sessions`, etc.) and the frontend API client currently sends root paths, the ALB module also adds explicit backend rules for those existing root API prefixes.
 - ECS tasks run in private subnets with `assign_public_ip = false`, launch type `FARGATE`, default CPU 256/memory 512, and CloudWatch log groups `/ecs/${name_prefix}/backend` and `/ecs/${name_prefix}/frontend`.
 - Local environment lacks `tofu` and `terraform-ls`; validation used Terraform-compatible fallback: `terraform fmt -recursive`, `terraform init -backend=false`, and `terraform validate` all succeeded. Plan smoke is still blocked locally by the configured S3 backend/AWS access; placeholder evidence saved in `.sisyphus/evidence/task-14-aws-health.txt`.
+
+## T15: GitHub Actions CI/CD Pipeline (2026-05-30)
+
+### Files created
+
+- `.github/workflows/deploy-aws.yml` — 6-job pipeline: backend-test → frontend-test → docker-build → tofu-plan → deploy-dev (approval gated) → smoke-dev
+- `docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md` — step-by-step ECS Fargate deploy guide (remote state bootstrap, tofu apply, ECR push, rollback)
+- `docs/aws/CI_CD_GITHUB_ACTIONS.md` — CI/CD pipeline reference (OIDC setup, job details, secrets management, rollback, multi-env guidance)
+
+### Key patterns
+
+- OIDC via `aws-actions/configure-aws-credentials@v4` with `role-to-assume` — zero long-lived AWS keys in GitHub Secrets.
+- Backend tests use GitHub Actions service container (`postgres:16-alpine`), not Testcontainers. Service container port 5432 maps to host 5432; `DATABASE_URL=postgres://yummy:yummy@localhost:5432/yummy_test`.
+- `NEXT_PUBLIC_API_URL` must be a Docker `--build-arg` (baked at build time). Set as a GitHub repository variable `NEXT_PUBLIC_API_URL`, not a secret.
+- Docker images tagged with `github.sha` + `latest`. Rollback = re-apply tofu with old SHA tag.
+- Manual approval gate: GitHub `dev` Environment with required reviewer. `deploy-dev` job references `environment: dev`.
+- `aws ecs wait services-stable` used post-apply to block smoke tests until tasks are healthy.
+- Smoke tests retry `/health` up to 10×10s. SSE probe is `continue-on-error: true`.
+- `tofu-plan` runs on PRs too (plan only, no apply) — gives infra diff visibility on pull requests.
+- ECR login via `aws-actions/amazon-ecr-login@v2`; `docker/build-push-action@v6` with `type=gha` cache.
+
+### GitHub repository setup checklist
+
+1. Variables: `AWS_REGION`, `AWS_ACCOUNT_ID`, `GITHUB_ACTIONS_ROLE_ARN`, `NEXT_PUBLIC_API_URL`
+2. Environments: `dev` with at least one required reviewer
+3. Bootstrap S3 state bucket + DynamoDB lock table (manual one-time step before `tofu init`)
+4. Run `tofu apply` to create OIDC role, then populate `GITHUB_ACTIONS_ROLE_ARN`
+
+### Legacy reference
+
+`docs/aws/APP_RUNNER_AMPLIFY.md` marked as legacy in both new docs. App Runner's 120s timeout and lack of native VPC integration were the disqualifying factors.
