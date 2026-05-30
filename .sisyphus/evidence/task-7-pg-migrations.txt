@@ -1,0 +1,20 @@
+
+> backend-ts@1.0.0 db:migrate /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts
+> tsx src/db/migrate.ts
+
+Applied Postgres migrations from /Users/duclaidinhcao/Documents/Work/VPB/yummy/yummy-monorepo/backend-ts/src/db/migrations
+            List of relations
+ Schema |      Name       | Type  | Owner 
+--------+-----------------+-------+-------
+ public | kb_insights     | table | yummy
+ public | kb_meta         | table | yummy
+ public | kb_tree         | table | yummy
+ public | provider_config | table | yummy
+ public | repo_info       | table | yummy
+ public | request_logs    | table | yummy
+ public | scan_status     | table | yummy
+ public | sessions        | table | yummy
+ public | world_config    | table | yummy
+ public | world_servers   | table | yummy
+(10 rows)
+

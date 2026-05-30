@@ -1,0 +1,1 @@
+sessions.logs contains invalid JSON: Unexpected token 'o', "not-json" is not valid JSON

@@ -1,0 +1,4 @@
+data: {"t":"start","agent":"ba"}
+
+data: {"t":"error","message":"GEMINI_API_KEY is not configured. Set it in Settings or via the GEMINI_API_KEY env var."}
+

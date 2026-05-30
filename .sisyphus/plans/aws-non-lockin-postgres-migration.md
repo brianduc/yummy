@@ -581,7 +581,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `backend-ts/src/db/*`, `backend-ts/drizzle.config.ts`, related package files
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 7. Generate Postgres migrations and data migration script
+- [x] 7. Generate Postgres migrations and data migration script
 
   **What to do**:
   - Generate fresh Postgres migrations from the pg-core schema.
@@ -712,7 +712,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Files: `backend-ts/tests/*`, `backend-ts/vitest.config.ts`, test scripts as needed
   - Pre-commit: `gitnexus_detect_changes()`
 
-- [ ] 9. Backend Node runtime DB wiring and health checks
+- [x] 9. Backend Node runtime DB wiring and health checks
 
   **What to do**:
   - Extend existing `backend-ts/src/index.ts` Node path rather than creating a new bootstrap.

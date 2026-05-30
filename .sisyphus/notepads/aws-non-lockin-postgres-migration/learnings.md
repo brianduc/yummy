@@ -112,3 +112,21 @@ Static export (`output: 'export'`) is NOT possible due to the `[sessionId]` dyna
 - `world_servers.args` and `world_servers.headers_json` are now native `jsonb` values at the DB boundary. The public API remains unchanged: `args` is an array and `headers_json` is still accepted/returned as a JSON string.
 - Active startup and migration paths no longer import `client.local.ts`; `client.local.ts` is retained only as a marked legacy SQLite helper per task requirements.
 - `pnpm build` exits 0 after the conversion; evidence saved in `.sisyphus/evidence/task-6-backend-build.txt` and `.sisyphus/evidence/task-6-sqlite-d1-search.txt`.
+
+## Task 7: Fresh Postgres migrations and SQLite data import (2026-05-30)
+
+- `drizzle.config.ts` now writes generated Postgres migrations to `backend-ts/src/db/migrations`, matching the active migrator path.
+- Fresh Drizzle output is a single Postgres baseline migration with 10 tables and native `jsonb`, `boolean`, `bigint`, `double precision`, and `timestamp with time zone` columns.
+- `pnpm db:migrate` applies cleanly to Docker Postgres 16 on port 5433 after resetting `public` and `drizzle` schemas; evidence is in `.sisyphus/evidence/task-7-pg-migrations.txt`.
+- Root `scripts/db/*.ts` intentionally load `better-sqlite3` and `postgres` through `backend-ts/package.json` because the monorepo has no root package manifest.
+- Data import dry-run parses SQLite JSON text before import, rejects invalid JSON, converts 0/1 booleans, parses SQLite datetime strings to timestamptz-compatible `Date`, and reports SQLite-only `request_logs.kind` values as an audit/drift artifact instead of importing the dropped column.
+- Validation compares row counts and checks Postgres JSON shapes, boolean column types, and timestamptz column types. Invalid JSON proof is in `.sisyphus/evidence/task-7-invalid-json.txt`.
+
+## Task 9: Backend Node Runtime DB Wiring and Health Checks (2026-05-30)
+
+- Node startup now creates and verifies the Postgres Drizzle client from `DATABASE_URL` before serving; missing or invalid DB config exits with a clear startup message instead of relying on Worker bindings.
+- `createApp({ db })` lets the Node entrypoint pass the runtime Postgres DB for provider-config hydration while Worker-style `c.env?.DB` remains optional for route compatibility.
+- `/health` intentionally skips provider-config hydration and performs a short Postgres `select 1`; healthy response evidence is saved at `.sisyphus/evidence/task-9-health-ok.json`.
+- The Postgres pool must be closed in both migration and server shutdown paths; otherwise `pnpm db:migrate` and SIGTERM handling can hang after successful work.
+- `/sdlc/start` SSE requires an existing session plus non-empty KB insight data before headers stream; local smoke evidence reached the SSE terminal-event path and is saved at `.sisyphus/evidence/task-9-sse-local.txt`.
+- Related Vitest integration tests are still blocked by legacy `_setup.ts` forcing `DATABASE_URL=":memory:"`; full suite migration remains outside this runtime wiring task.

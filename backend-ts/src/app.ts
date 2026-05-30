@@ -11,7 +11,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 
 import { hydrateRuntimeConfig } from './config/runtime.js';
-import { type Bindings, createDb } from './db/client.js';
+import { type Bindings, type Db, createDb } from './db/client.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { askRouter } from './routers/ask.router.js';
 import { configRouter } from './routers/config.router.js';
@@ -22,7 +22,11 @@ import { sessionsRouter } from './routers/sessions.router.js';
 import { utilsRouter } from './routers/utils.router.js';
 import { worldRouter } from './routers/world.router.js';
 
-export function createApp(): OpenAPIHono<{ Bindings: Bindings }> {
+type CreateAppOptions = {
+  db?: Db;
+};
+
+export function createApp(options: CreateAppOptions = {}): OpenAPIHono<{ Bindings: Bindings }> {
   const app = new OpenAPIHono<{ Bindings: Bindings }>();
   let runtimeConfigHydration: Promise<void> | undefined;
 
@@ -40,7 +44,12 @@ export function createApp(): OpenAPIHono<{ Bindings: Bindings }> {
   // Load DB-persisted provider settings before any route reads runtimeConfig.
   // This keeps settings saved from one workspace/process visible to all others.
   app.use('*', async (c, next) => {
-    runtimeConfigHydration ??= hydrateRuntimeConfig(createDb(c.env?.DB));
+    if (c.req.path === '/health') {
+      await next();
+      return;
+    }
+
+    runtimeConfigHydration ??= hydrateRuntimeConfig(options.db ?? createDb(c.env?.DB));
     await runtimeConfigHydration;
     await next();
   });

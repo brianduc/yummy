@@ -28,6 +28,19 @@ export function getPostgresClient(): Sql {
   return pgClient;
 }
 
+export async function checkDbConnection(): Promise<void> {
+  await getPostgresClient()`select 1`;
+}
+
+export async function closePostgresClient(): Promise<void> {
+  if (!pgClient) return;
+
+  const client = pgClient;
+  pgClient = undefined;
+  pgDb = undefined;
+  await client.end({ timeout: 5 });
+}
+
 export function createDb(_legacyDb?: unknown): Db {
   if (!pgDb) {
     pgDb = drizzle(getPostgresClient(), { schema });
@@ -35,7 +48,5 @@ export function createDb(_legacyDb?: unknown): Db {
 
   return pgDb;
 }
-
-export const db = createDb();
 
 export { schema };

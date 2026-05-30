@@ -11,7 +11,7 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { Ollama } from 'ollama';
 import OpenAI from 'openai';
 import { runtimeConfig } from '../config/runtime.js';
-import type { Bindings } from '../db/client.js';
+import { type Bindings, checkDbConnection } from '../db/client.js';
 import { ErrorSchema } from '../schemas/common.schema.js';
 
 export const utilsRouter = new OpenAPIHono<{ Bindings: Bindings }>();
@@ -47,7 +47,9 @@ utilsRouter.openapi(
 );
 
 // ─── GET /health ─────────────────────────────────────────
-const HealthSchema = z.object({ status: z.literal('ok') }).openapi('Health');
+const HealthSchema = z
+  .object({ status: z.enum(['ok', 'error']), db: z.enum(['ok', 'error']) })
+  .openapi('Health');
 
 utilsRouter.openapi(
   createRoute({
@@ -56,9 +58,20 @@ utilsRouter.openapi(
     tags: ['Utilities'],
     responses: {
       200: { content: { 'application/json': { schema: HealthSchema } }, description: 'OK' },
+      503: {
+        content: { 'application/json': { schema: HealthSchema } },
+        description: 'Database unavailable',
+      },
     },
   }),
-  (c) => c.json({ status: 'ok' as const }),
+  async (c) => {
+    try {
+      await checkDbConnection();
+      return c.json({ status: 'ok' as const, db: 'ok' as const });
+    } catch {
+      return c.json({ status: 'error' as const, db: 'error' as const }, 503);
+    }
+  },
 );
 
 // ─── GET /health/model ───────────────────────────────────

@@ -8,7 +8,9 @@
     "ses_187e08b26ffe1MgIHkdqG7sKF9",
     "ses_187e046f9ffeNedR1VJeDPakcz",
     "ses_187e00aadffeKyDEaKPLe8NZ2I",
-    "ses_187db8669ffenuaaD43AEndZCK"
+    "ses_187db8669ffenuaaD43AEndZCK",
+    "ses_187d30d04ffe3D3orZuMO0DRnj",
+    "ses_187d2c5acffe81b80lxdTa8Cb5"
   ],
   "session_origins": {
     "ses_187f48040ffevjetSDLdX6hF1B": "direct",
@@ -17,7 +19,9 @@
     "ses_187e08b26ffe1MgIHkdqG7sKF9": "appended",
     "ses_187e046f9ffeNedR1VJeDPakcz": "appended",
     "ses_187e00aadffeKyDEaKPLe8NZ2I": "appended",
-    "ses_187db8669ffenuaaD43AEndZCK": "appended"
+    "ses_187db8669ffenuaaD43AEndZCK": "appended",
+    "ses_187d30d04ffe3D3orZuMO0DRnj": "appended",
+    "ses_187d2c5acffe81b80lxdTa8Cb5": "appended"
   },
   "plan_name": "aws-non-lockin-postgres-migration",
   "agent": "atlas",
@@ -39,6 +43,15 @@
       "agent": "Sisyphus-Junior",
       "category": "deep",
       "updated_at": "2026-05-30T09:17:06.410Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Generate Postgres migrations and data migration script",
+      "session_id": "ses_187d2c5acffe81b80lxdTa8Cb5",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-30T09:42:42.785Z"
     }
   }
 }

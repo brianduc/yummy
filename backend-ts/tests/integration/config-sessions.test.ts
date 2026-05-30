@@ -11,7 +11,7 @@ describe('config + sessions integration', () => {
   it('GET /health returns ok', async () => {
     const res = await app.request('/health');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ status: 'ok' });
+    expect(await res.json()).toEqual({ status: 'ok', db: 'ok' });
   });
 
   it('GET / returns API info', async () => {
