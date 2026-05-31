@@ -40,6 +40,10 @@ Go to **Settings → Secrets and variables → Actions → Variables** and add:
 | `AWS_ACCOUNT_ID` | 12-digit AWS account ID | `123456789012` |
 | `GITHUB_ACTIONS_ROLE_ARN` | ARN from `tofu output github_actions_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions` |
 | `NEXT_PUBLIC_API_URL` | Public URL for the backend API | `http://<alb-dns-name>` or `https://api.yourdomain.com` |
+| `TOFU_STATE_BUCKET` | OpenTofu remote state bucket name | `yummy-tofu-state-123456789012` |
+| `TOFU_LOCK_TABLE` | OpenTofu remote state lock table | `yummy-tofu-locks` |
+| `GITHUB_REPO` | Repo trusted by the OIDC role | `your-org/yummy-monorepo` |
+| `AVAILABILITY_ZONES_JSON` | JSON array for required OpenTofu AZ input | `["ap-southeast-1a","ap-southeast-1b"]` |
 
 No AWS secrets are stored in GitHub. OIDC replaces `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` entirely.
 
@@ -125,7 +129,7 @@ The IAM role created by `infra/modules/iam` trusts the GitHub OIDC provider with
 | App secrets (API keys) | AWS Secrets Manager | ECS task injects via `secrets:` block |
 | `NEXT_PUBLIC_API_URL` | GitHub repository variable | Baked into Docker image at build time |
 
-Application secrets never appear in workflow logs or environment files. They are injected directly into ECS task environments by the ECS task definition, which references Secrets Manager ARNs.
+Application secrets should be populated directly in AWS Secrets Manager after the first infrastructure apply. Avoid storing real secret values in `terraform.tfvars` or passing them on the command line.
 
 ## Rollback
 

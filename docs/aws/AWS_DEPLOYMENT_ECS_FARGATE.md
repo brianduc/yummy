@@ -32,6 +32,24 @@ All compute runs in **private subnets**. Only the ALB lives in public subnets. T
 | AWS CLI v2 | `aws configure` with admin credentials for bootstrap only |
 | GitHub repo | Forked or cloned YUMMY monorepo |
 
+## Quick start
+
+For the fastest local bootstrap, use the interactive helper at repo root:
+
+```bash
+bash deploy-aws.sh
+```
+
+It will:
+
+- prompt for AWS region, state bucket, lock table, GitHub repo, AZs, image tags, and optional app secret names
+- create or reuse the S3 state bucket and DynamoDB lock table
+- generate `infra/dev/terraform.tfvars`
+- run `tofu init -reconfigure`, `tofu validate`, and `tofu plan`
+- optionally run `tofu apply`
+
+The remaining sections below document the same flow manually.
+
 ## Step 1 — Bootstrap remote state
 
 OpenTofu stores state in S3 with a DynamoDB lock table. Create these once before any `tofu init`.
@@ -63,7 +81,7 @@ aws dynamodb create-table \
   --region "$AWS_REGION"
 ```
 
-Update `infra/dev/terraform.tf` with the actual bucket name and region before the next step.
+If you use `deploy-aws.sh`, it passes backend settings through `tofu init -reconfigure -backend-config=...`, so you do **not** need to edit `infra/dev/terraform.tf`.
 
 ## Step 2 — Configure variables
 
@@ -79,20 +97,35 @@ github_repo    = "your-org/yummy-monorepo"
 backend_image_tag  = "latest"
 frontend_image_tag = "latest"
 
-# App secrets injected into ECS as Secrets Manager values.
+# App secret names to create in Secrets Manager. Populate real values after apply.
 app_secrets = {
-  GEMINI_API_KEY = "your-gemini-key"
-  AI_PROVIDER    = "gemini"
+  GEMINI_API_KEY = ""
+  AI_PROVIDER    = ""
 }
 ```
 
 Never commit `terraform.tfvars` — add it to `.gitignore`.
 
+After the first apply, populate real values directly in AWS Secrets Manager instead of storing them in Terraform vars/state:
+
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id yummy-dev/GEMINI_API_KEY \
+  --secret-string '<real-secret-value>' \
+  --region ap-southeast-1
+```
+
 ## Step 3 — First tofu apply (infrastructure only)
 
 ```bash
 cd infra/dev
-tofu init
+tofu init \
+  -reconfigure \
+  -backend-config="bucket=${STATE_BUCKET}" \
+  -backend-config="key=dev/terraform.tfstate" \
+  -backend-config="region=${AWS_REGION}" \
+  -backend-config="dynamodb_table=${LOCK_TABLE}" \
+  -backend-config="encrypt=true"
 tofu validate
 tofu plan -var="backend_image_tag=placeholder" -var="frontend_image_tag=placeholder"
 tofu apply -var="backend_image_tag=placeholder" -var="frontend_image_tag=placeholder"

@@ -2,6 +2,16 @@
 
 Before running `tofu init` for the first time, create the S3 bucket and DynamoDB lock table that hold remote state. This is a one-time manual step per AWS account.
 
+## Quick start
+
+If you want an interactive bootstrap flow, run:
+
+```bash
+bash deploy-aws.sh
+```
+
+The script prompts for AWS/OpenTofu settings, bootstraps the remote state bucket + lock table, generates `infra/dev/terraform.tfvars`, and runs `tofu init -reconfigure` / `validate` / `plan` for you.
+
 ## Prerequisites
 
 - AWS CLI configured with credentials that have S3 and DynamoDB permissions
@@ -49,7 +59,13 @@ aws dynamodb create-table \
 
 ```bash
 cd infra/dev
-tofu init
+tofu init \
+  -reconfigure \
+  -backend-config="bucket=yummy-tofu-state" \
+  -backend-config="key=dev/terraform.tfstate" \
+  -backend-config="region=us-east-1" \
+  -backend-config="dynamodb_table=yummy-tofu-locks" \
+  -backend-config="encrypt=true"
 ```
 
 OpenTofu will connect to the S3 backend and confirm the state bucket is accessible.
@@ -73,7 +89,7 @@ Do NOT commit `terraform.tfvars` — it is in `.gitignore`.
 
 ## Bucket naming
 
-If the default bucket name `yummy-tofu-state` is already taken (S3 names are globally unique), choose a unique name and update the `bucket` key in `infra/dev/terraform.tf` before bootstrapping.
+If the default bucket name `yummy-tofu-state` is already taken (S3 names are globally unique), choose a unique name and pass it via `deploy-aws.sh --bucket ...` or the `-backend-config="bucket=..."` flag shown above. You do **not** need to edit `infra/dev/terraform.tf`.
 
 ## Cleanup (destroy state bucket)
 

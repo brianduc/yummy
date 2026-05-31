@@ -165,7 +165,8 @@ Provider API keys and other secrets should be placed in a root `.env` file (copy
 
 > **Note:** Postgres host port defaults to 5433 (not 5432) to avoid conflicts with a locally running Postgres instance.
 
-AWS deploy docs: [docs/aws/APP_RUNNER_AMPLIFY.md](docs/aws/APP_RUNNER_AMPLIFY.md)  
+AWS deploy helper: `bash deploy-aws.sh`  
+AWS deploy docs: [docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md](docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md)  
 Docs index: [docs/README.md](docs/README.md)
 
 ## Notes

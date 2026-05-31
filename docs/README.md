@@ -12,6 +12,7 @@ This repository is a **public** prototype of **YUMMY** — an AI-powered multi-a
 
 **Current recommended path** (ECS Fargate + RDS PostgreSQL, fully portable):
 
+- `../deploy-aws.sh`: interactive AWS/OpenTofu bootstrap helper
 - `aws/AWS_DEPLOYMENT_ECS_FARGATE.md`: full ECS Fargate + ALB + RDS PostgreSQL deploy with OpenTofu
 - `aws/CI_CD_GITHUB_ACTIONS.md`: GitHub Actions CI/CD pipeline (OIDC, no long-lived keys)
 - `aws/DECISIONS.md`: architecture decisions and scope guardrails
@@ -37,4 +38,3 @@ For local development, use `docker compose up` (see `../README.md`).
 ### Contributing
 
 - `dev/CONTRIBUTING.md`
-

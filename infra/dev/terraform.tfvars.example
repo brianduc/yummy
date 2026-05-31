@@ -1,0 +1,50 @@
+# ============================================================
+# terraform.tfvars.example — YUMMY dev environment
+# Copy to terraform.tfvars and fill in your values.
+# DO NOT commit terraform.tfvars (it is in .gitignore).
+# ============================================================
+
+# ── Core ──────────────────────────────────────────────────
+aws_region  = "us-east-1"
+project     = "yummy"
+environment = "dev"
+
+# ── Availability zones (must supply ≥2) ───────────────────
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+# ── GitHub OIDC trust (required for GitHub Actions deploy) ─
+github_repo = "your-org/yummy"
+
+# ── ECR image tags ────────────────────────────────────────
+backend_image_tag  = "latest"
+frontend_image_tag = "latest"
+
+# ── App secrets (stored in AWS Secrets Manager) ───────────
+# app_secrets = {
+#   GEMINI_API_KEY = "change-me"
+#   GITHUB_TOKEN   = "change-me"
+# }
+
+# ── Networking (defaults are usually fine) ────────────────
+# vpc_cidr             = "10.0.0.0/16"
+# public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+# private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
+
+# ── RDS ───────────────────────────────────────────────────
+# rds_instance_class          = "db.t4g.micro"
+# rds_multi_az                = false
+# rds_backup_retention_days   = 7
+# database_name               = "yummy"
+# database_username           = "yummy"
+
+# ── ALB (SSE keep-alive requires ≥65 s; default 4000) ─────
+# alb_idle_timeout_seconds              = 4000
+# alb_health_check_interval_seconds     = 30
+
+# ── ECS task counts ───────────────────────────────────────
+# backend_desired_count  = 1
+# frontend_desired_count = 1
+
+# ── Container ports (match Dockerfile EXPOSE) ─────────────
+# backend_port  = 8000
+# frontend_port = 3000

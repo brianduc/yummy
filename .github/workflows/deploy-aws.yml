@@ -215,7 +215,14 @@ jobs:
 
       - name: tofu init
         working-directory: infra/dev
-        run: tofu init
+        run: |
+          tofu init \
+            -reconfigure \
+            -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}" \
+            -backend-config="key=dev/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.TOFU_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
 
       - name: tofu validate
         working-directory: infra/dev
@@ -229,8 +236,8 @@ jobs:
             -var="frontend_image_tag=${{ env.IMAGE_TAG }}" \
             -out=tfplan
         env:
-          # Pass NEXT_PUBLIC_API_URL as a tofu variable if the module consumes it.
-          TF_VAR_next_public_api_url: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+          TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
+          TF_VAR_availability_zones: ${{ vars.AVAILABILITY_ZONES_JSON }}
 
 # ─────────────────────────────────────────────────────────────
 # 5. Deploy to dev (main branch only — requires environment approval)
@@ -259,7 +266,14 @@ jobs:
 
       - name: tofu init
         working-directory: infra/dev
-        run: tofu init
+        run: |
+          tofu init \
+            -reconfigure \
+            -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}" \
+            -backend-config="key=dev/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.TOFU_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
 
       - name: tofu apply
         working-directory: infra/dev
@@ -268,7 +282,8 @@ jobs:
             -var="backend_image_tag=${{ env.IMAGE_TAG }}" \
             -var="frontend_image_tag=${{ env.IMAGE_TAG }}"
         env:
-          TF_VAR_next_public_api_url: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8000' }}
+          TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
+          TF_VAR_availability_zones: ${{ vars.AVAILABILITY_ZONES_JSON }}
 
       - name: Capture ALB DNS name
         id: alb
@@ -310,7 +325,12 @@ jobs:
           # Install tofu
           curl -sSL https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.zip -o /tmp/tofu.zip
           unzip -q /tmp/tofu.zip -d /usr/local/bin/
-          tofu init -input=false
+          tofu init -input=false -reconfigure \
+            -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}" \
+            -backend-config="key=dev/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.TOFU_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
           echo "dns=$(tofu output -raw alb_dns_name)" >> "$GITHUB_OUTPUT"
 
       - name: Backend health check
