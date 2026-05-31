@@ -176,6 +176,7 @@ resource "aws_iam_role_policy" "github_actions_tofu_read" {
           "elasticloadbalancing:DescribeTargetGroups",
           "elasticloadbalancing:DescribeTargetGroupAttributes",
           "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeListenerAttributes",
           "elasticloadbalancing:DescribeRules",
           "elasticloadbalancing:DescribeTags",
           "ecs:DescribeClusters",
