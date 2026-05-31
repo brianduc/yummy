@@ -27,7 +27,7 @@ PRs run `backend-test`, `frontend-test`, and `tofu-plan` only — no image push 
 Follow `docs/aws/AWS_DEPLOYMENT_ECS_FARGATE.md` through Step 3 to create all AWS resources. After `tofu apply` you will have:
 
 - ECR repositories (`yummy-backend`, `yummy-frontend`)
-- GitHub Actions IAM role (OIDC trust)
+- GitHub Actions IAM roles (OIDC trust for deploy/build and infra/apply)
 - ALB DNS name
 
 ### 2. Set GitHub repository variables
@@ -38,7 +38,8 @@ Go to **Settings → Secrets and variables → Actions → Variables** and add:
 |---|---|---|
 | `AWS_REGION` | AWS region for all resources | `ap-southeast-1` |
 | `AWS_ACCOUNT_ID` | 12-digit AWS account ID | `123456789012` |
-| `ACTIONS_ROLE_ARN` | ARN from `tofu output github_actions_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions` |
+| `ACTIONS_ROLE_ARN` | Deploy/build role ARN from `tofu output github_actions_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions` |
+| `ACTIONS_INFRA_ROLE_ARN` | Infra/apply role ARN from `tofu output github_actions_infra_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions-infra` |
 | `NEXT_PUBLIC_API_URL` | Public URL for the backend API | `http://<alb-dns-name>` or `https://api.yourdomain.com` |
 | `TOFU_STATE_BUCKET` | OpenTofu remote state bucket name | `yummy-tofu-state-123456789012` |
 | `TOFU_LOCK_TABLE` | OpenTofu remote state lock table | `yummy-tofu-locks` |
@@ -53,7 +54,7 @@ Go to **Settings → Environments → New environment**, name it `dev`, and add 
 
 ### 4. Configure the OIDC trust in AWS
 
-The OpenTofu IAM module creates the OIDC provider and role automatically (see `infra/modules/iam`). The `github_repo` variable in `infra/dev/variables.tf` must match your repository in `org/repo` format. After `tofu apply`, the role trusts exactly that repo.
+The OpenTofu IAM module creates the OIDC provider and both GitHub Actions roles automatically (see `infra/modules/iam`). The `github_repo` variable in `infra/dev/variables.tf` must match your repository in `org/repo` format. After `tofu apply`, both roles trust exactly that repo.
 
 ## Job details
 
@@ -81,6 +82,7 @@ Builds both Docker images and pushes to ECR. Runs only on push to `main`/`master
 - Frontend build receives `NEXT_PUBLIC_API_URL` as a `--build-arg`.
 - Uses `docker/build-push-action` with GitHub Actions cache (`type=gha`) for layer reuse.
 - Outputs `backend_image` and `frontend_image` URIs for use by downstream jobs.
+- Assumes `ACTIONS_ROLE_ARN` (the deploy/build role), which only needs ECR push access plus remote-state access used elsewhere in the workflow.
 
 ### `tofu-plan`
 
@@ -89,6 +91,7 @@ Runs `tofu init` + `tofu validate` + `tofu plan` in `infra/dev/`. Runs on push t
 - Uses OIDC credentials — no stored AWS keys.
 - Passes `backend_image_tag` and `frontend_image_tag` variables set to the current git SHA.
 - The plan is saved to `tfplan` but not published as a PR comment automatically (add `infracost` or `tofu show` steps if desired).
+- Assumes `ACTIONS_INFRA_ROLE_ARN` so plan and apply share the same higher-privilege infra/apply role.
 
 ### `deploy-dev`
 
@@ -97,6 +100,7 @@ Runs `tofu apply -auto-approve` in `infra/dev/`. Runs only on push to `main`/`ma
 - Requires the `dev` GitHub Environment with at least one required reviewer.
 - After apply, captures the ALB DNS name and waits for ECS services to stabilise using `aws ecs wait services-stable`.
 - Deployment is **dev only**. Production deployments are intentionally not automated.
+- Assumes `ACTIONS_INFRA_ROLE_ARN`, the higher-privilege infra/apply role that can update IAM policies and the rest of the managed stack.
 
 ### `smoke-dev`
 
@@ -114,11 +118,11 @@ The smoke job retries the backend health check up to 10 times (10-second interva
 
 The workflow uses `aws-actions/configure-aws-credentials@v4` with `role-to-assume`. This exchanges the GitHub Actions OIDC token for temporary AWS credentials valid for the duration of the job. No `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` are stored anywhere.
 
-The IAM role created by `infra/modules/iam` trusts the GitHub OIDC provider with a condition on `token.actions.githubusercontent.com:sub` that matches only the configured repository and the `refs/heads/main` ref for deploy jobs. The policy grants:
-- `ecr:GetAuthorizationToken`, `ecr:BatchCheckLayerAvailability`, `ecr:InitiateLayerUpload`, `ecr:PutImage` — for image push
-- `s3:GetObject`, `s3:PutObject`, `dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:DeleteItem` — for tofu state
-- `ecs:UpdateService`, `ecs:DescribeServices` — for deployment
-- Scoped permissions to the resources created by tofu
+The IAM resources created by `infra/modules/iam` now expose two GitHub OIDC roles:
+- `github_actions_role_arn` — lower-privilege deploy/build role used by `docker-build` and `smoke-dev`
+- `github_actions_infra_role_arn` — higher-privilege infra/apply role used by `tofu-plan` and `deploy-dev`
+
+This split avoids the self-management deadlock where `tofu apply` tries to update inline policies on the same role it is currently assuming.
 
 ## Secrets management
 

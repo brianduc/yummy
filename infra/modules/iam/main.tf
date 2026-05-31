@@ -73,6 +73,33 @@ resource "aws_iam_role" "github_actions" {
   tags = var.tags
 }
 
+resource "aws_iam_role" "github_actions_infra" {
+  name = "${var.name_prefix}-github-actions-infra"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.github.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*"
+          }
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
 resource "aws_iam_role_policy" "github_actions_ecr" {
   name = "${var.name_prefix}-github-actions-ecr"
   role = aws_iam_role.github_actions.id
@@ -121,15 +148,40 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
         ]
         Resource = "arn:aws:dynamodb:*:*:table/${var.remote_state_lock_table_name}"
       },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "github_actions_infra_full" {
+  name = "${var.name_prefix}-github-actions-infra-full"
+  role = aws_iam_role.github_actions_infra.id
+
+  # Keep this policy intentionally broad and stable so the infra role can
+  # manage the deploy role and the rest of the stack without self-management
+  # deadlocks during CI applies.
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
       {
         Effect = "Allow"
         Action = [
-          "ecs:UpdateService",
-          "ecs:DescribeServices",
-          "ecs:RegisterTaskDefinition",
-          "ecs:DeregisterTaskDefinition",
-          "ecs:DescribeTaskDefinition",
-          "iam:PassRole"
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem",
+          "ec2:*",
+          "ecr:*",
+          "ecs:*",
+          "elasticloadbalancing:*",
+          "iam:*",
+          "logs:*",
+          "rds:*",
+          "secretsmanager:*"
         ]
         Resource = "*"
       }

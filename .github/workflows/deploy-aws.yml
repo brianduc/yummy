@@ -14,8 +14,9 @@
 #   Environments: "dev" environment with a required reviewer for the deploy-dev job
 #
 # OIDC: configure-aws-credentials uses role-to-assume; no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
-# The role ARN is exposed by tofu output github_actions_role_arn. Add it as a repository variable
-# named ACTIONS_ROLE_ARN after the first tofu apply.
+# After the first tofu apply, set two repository variables from tofu outputs:
+#   ACTIONS_ROLE_ARN         ← github_actions_role_arn (deploy/build role)
+#   ACTIONS_INFRA_ROLE_ARN   ← github_actions_infra_role_arn (infra/apply role)
 
 name: Deploy — AWS (dev)
 
@@ -213,7 +214,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_INFRA_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: tofu init
@@ -266,7 +267,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_INFRA_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: tofu init

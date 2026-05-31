@@ -29,8 +29,13 @@ output "ecs_task_execution_role_arn" {
 }
 
 output "github_actions_role_arn" {
-  description = "ARN of the GitHub Actions OIDC IAM role"
+  description = "ARN of the GitHub Actions deploy/build OIDC IAM role"
   value       = module.iam.github_actions_role_arn
+}
+
+output "github_actions_infra_role_arn" {
+  description = "ARN of the GitHub Actions infra/apply OIDC IAM role"
+  value       = module.iam.github_actions_infra_role_arn
 }
 
 output "db_password_secret_arn" {

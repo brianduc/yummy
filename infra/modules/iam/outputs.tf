@@ -9,8 +9,13 @@ output "ecs_task_execution_role_name" {
 }
 
 output "github_actions_role_arn" {
-  description = "ARN of the GitHub Actions OIDC IAM role"
+  description = "ARN of the GitHub Actions deploy/build OIDC IAM role"
   value       = aws_iam_role.github_actions.arn
+}
+
+output "github_actions_infra_role_arn" {
+  description = "ARN of the GitHub Actions infra/apply OIDC IAM role"
+  value       = aws_iam_role.github_actions_infra.arn
 }
 
 output "github_oidc_provider_arn" {

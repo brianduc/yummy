@@ -136,7 +136,8 @@ Using `placeholder` image tags on first apply is intentional — ECS services wi
 After apply, capture the outputs you will need:
 
 ```bash
-tofu output github_actions_role_arn   # → set as ACTIONS_ROLE_ARN repo variable
+tofu output github_actions_role_arn         # → set as ACTIONS_ROLE_ARN repo variable
+tofu output github_actions_infra_role_arn   # → set as ACTIONS_INFRA_ROLE_ARN repo variable
 tofu output backend_ecr_url           # → yummy-backend ECR repo
 tofu output frontend_ecr_url          # → yummy-frontend ECR repo
 tofu output alb_dns_name              # → your dev URL (until Route 53 is wired)
@@ -200,7 +201,7 @@ After the bootstrap, all deployments go through CI. The `.github/workflows/deplo
 2. Builds and pushes Docker images tagged with the git SHA.
 3. Runs `tofu plan` for review.
 4. Gates on a manual approval via the GitHub `dev` environment.
-5. Runs `tofu apply` with the new image tags.
+5. Runs `tofu apply` with the new image tags using the dedicated infra/apply OIDC role (`ACTIONS_INFRA_ROLE_ARN`).
 6. Waits for ECS services to stabilise.
 7. Runs smoke tests.
 

@@ -559,7 +559,7 @@ import sys, json
 data = json.load(sys.stdin)
 keys = ['backend_ecr_url','frontend_ecr_url','alb_dns_name','ecs_cluster_name',
         'backend_ecs_service_name','frontend_ecs_service_name','rds_endpoint',
-        'github_actions_role_arn']
+        'github_actions_role_arn','github_actions_infra_role_arn']
 for k in keys:
   if k in data:
     print(f'  {k} = {data[k][\"value\"]}')
@@ -602,6 +602,7 @@ for k in keys:
     echo -e "   AWS_REGION=$OPT_REGION"
     echo -e "   AWS_ACCOUNT_ID=\$(aws sts get-caller-identity --query Account --output text)"
     echo -e "   ACTIONS_ROLE_ARN=\$(tofu -chdir=infra/dev output -raw github_actions_role_arn)"
+    echo -e "   ACTIONS_INFRA_ROLE_ARN=\$(tofu -chdir=infra/dev output -raw github_actions_infra_role_arn)"
     echo -e "   NEXT_PUBLIC_API_URL=http://\$(tofu -chdir=infra/dev output -raw alb_dns_name)"
     echo -e "   TOFU_STATE_BUCKET=$OPT_BUCKET"
     echo -e "   TOFU_LOCK_TABLE=$OPT_TABLE"
