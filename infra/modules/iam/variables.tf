@@ -14,6 +14,16 @@ variable "github_repo" {
   type        = string
 }
 
+variable "remote_state_bucket_name" {
+  description = "S3 bucket name used for OpenTofu remote state"
+  type        = string
+}
+
+variable "remote_state_lock_table_name" {
+  description = "DynamoDB table name used for OpenTofu remote state locking"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

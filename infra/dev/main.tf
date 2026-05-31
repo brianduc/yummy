@@ -69,8 +69,10 @@ module "rds" {
 module "iam" {
   source = "../modules/iam"
 
-  name_prefix = local.name_prefix
-  github_repo = var.github_repo
+  name_prefix               = local.name_prefix
+  github_repo               = var.github_repo
+  remote_state_bucket_name  = var.remote_state_bucket_name
+  remote_state_lock_table_name = var.remote_state_lock_table_name
   secrets_arns = concat(
     [module.secrets.db_password_secret_arn, module.rds.database_url_secret_arn],
     values(module.secrets.app_secret_arns)

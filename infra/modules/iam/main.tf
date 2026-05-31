@@ -97,6 +97,33 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
       {
         Effect = "Allow"
         Action = [
+          "s3:ListBucket"
+        ]
+        Resource = "arn:aws:s3:::${var.remote_state_bucket_name}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "arn:aws:s3:::${var.remote_state_bucket_name}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:DescribeTable",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = "arn:aws:dynamodb:*:*:table/${var.remote_state_lock_table_name}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "ecs:UpdateService",
           "ecs:DescribeServices",
           "ecs:RegisterTaskDefinition",
