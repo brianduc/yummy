@@ -15,7 +15,7 @@
 #
 # OIDC: configure-aws-credentials uses role-to-assume; no AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
 # The role ARN is exposed by tofu output github_actions_role_arn. Add it as a repository variable
-# named GITHUB_ACTIONS_ROLE_ARN after the first tofu apply.
+# named ACTIONS_ROLE_ARN after the first tofu apply.
 
 name: Deploy — AWS (dev)
 
@@ -140,7 +140,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to ECR
@@ -210,7 +210,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: tofu init
@@ -236,7 +236,7 @@ jobs:
             -var="frontend_image_tag=${{ env.IMAGE_TAG }}" \
             -out=tfplan
         env:
-          TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
+          TF_VAR_github_repo: ${{ vars.OIDC_REPO }}
           TF_VAR_availability_zones: ${{ vars.AVAILABILITY_ZONES_JSON }}
 
 # ─────────────────────────────────────────────────────────────
@@ -261,7 +261,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: tofu init
@@ -282,7 +282,7 @@ jobs:
             -var="backend_image_tag=${{ env.IMAGE_TAG }}" \
             -var="frontend_image_tag=${{ env.IMAGE_TAG }}"
         env:
-          TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
+          TF_VAR_github_repo: ${{ vars.OIDC_REPO }}
           TF_VAR_availability_zones: ${{ vars.AVAILABILITY_ZONES_JSON }}
 
       - name: Capture ALB DNS name
@@ -314,7 +314,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.GITHUB_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ vars.ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Resolve ALB DNS

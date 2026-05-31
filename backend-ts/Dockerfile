@@ -9,7 +9,7 @@ RUN pnpm install --frozen-lockfile
 FROM node:lts-alpine AS runner
 WORKDIR /app
 RUN npm install -g pnpm@9
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 hono
 
 COPY --from=deps /app/node_modules ./node_modules

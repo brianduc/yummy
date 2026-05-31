@@ -25,8 +25,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Install curl for HEALTHCHECK
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
+RUN apk add --no-cache curl
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 

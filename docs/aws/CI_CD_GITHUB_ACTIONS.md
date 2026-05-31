@@ -38,11 +38,11 @@ Go to **Settings → Secrets and variables → Actions → Variables** and add:
 |---|---|---|
 | `AWS_REGION` | AWS region for all resources | `ap-southeast-1` |
 | `AWS_ACCOUNT_ID` | 12-digit AWS account ID | `123456789012` |
-| `GITHUB_ACTIONS_ROLE_ARN` | ARN from `tofu output github_actions_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions` |
+| `ACTIONS_ROLE_ARN` | ARN from `tofu output github_actions_role_arn` | `arn:aws:iam::123456789012:role/yummy-dev-github-actions` |
 | `NEXT_PUBLIC_API_URL` | Public URL for the backend API | `http://<alb-dns-name>` or `https://api.yourdomain.com` |
 | `TOFU_STATE_BUCKET` | OpenTofu remote state bucket name | `yummy-tofu-state-123456789012` |
 | `TOFU_LOCK_TABLE` | OpenTofu remote state lock table | `yummy-tofu-locks` |
-| `GITHUB_REPO` | Repo trusted by the OIDC role | `your-org/yummy-monorepo` |
+| `OIDC_REPO` | Repo trusted by the OIDC role | `your-org/yummy-monorepo` |
 | `AVAILABILITY_ZONES_JSON` | JSON array for required OpenTofu AZ input | `["ap-southeast-1a","ap-southeast-1b"]` |
 
 No AWS secrets are stored in GitHub. OIDC replaces `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` entirely.

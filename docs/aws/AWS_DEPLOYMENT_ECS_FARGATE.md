@@ -136,7 +136,7 @@ Using `placeholder` image tags on first apply is intentional — ECS services wi
 After apply, capture the outputs you will need:
 
 ```bash
-tofu output github_actions_role_arn   # → set as GITHUB_ACTIONS_ROLE_ARN repo variable
+tofu output github_actions_role_arn   # → set as ACTIONS_ROLE_ARN repo variable
 tofu output backend_ecr_url           # → yummy-backend ECR repo
 tofu output frontend_ecr_url          # → yummy-frontend ECR repo
 tofu output alb_dns_name              # → your dev URL (until Route 53 is wired)
